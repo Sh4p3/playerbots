@@ -49,7 +49,7 @@ bool CheckValuesAction::Execute(Event& event)
 #ifdef MANGOSBOT_ZERO
             const FactionEntry* thisFactionEntry = sFactionStore.LookupEntry(factionId);
 #else
-            const FactionEntry* thisFactionEntry = sFactionStore.LookupEntry<FactionEntry>(factionId);
+            const FactionEntry* thisFactionEntry = sFactionStore.LookupEntry(id);
 #endif
 
             if (!mgr.IsAtWar(factionId))

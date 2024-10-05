@@ -205,6 +205,17 @@ bool QuestDetailsAction::Execute(Event& event)
     p >> quest;
     Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest);
 
+    if (!bot)
+    {
+        sLog.outError("QuestDetailsAction::Execute: bot is nullptr!");
+        return false; 
+    }
+    if (!quest)
+    {
+        sLog.outError("QuestDetailsAction::Execute: quest is nullptr!");
+        return false;
+    }
+
     quest = qInfo->GetQuestId();
     if (!bot->CanTakeQuest(qInfo, false))
     {

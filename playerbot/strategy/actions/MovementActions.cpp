@@ -2285,7 +2285,7 @@ bool MoveOutOfCollisionAction::Execute(Event& event)
         gx = botPos.getX();
         gy = botPos.getY();
         gz = botPos.getZ();
-        if (bot->GetMap()->GetReachableRandomPointOnGround(gx, gy, gz, ai->GetRange("follow")))
+        if (bot->GetMap()->GetReachableRandomPointOnGround(bot->GetMapId(), gx, gy, gz, ai->GetRange("follow")))
         {
             return MoveTo(bot->GetMapId(), gx, gy, gz);
         }
@@ -3294,7 +3294,7 @@ WorldPosition JumpAction::GetPossibleJumpStartForInRange(const WorldPosition& sr
         gx = src.getX();
         gy = src.getY();
         gz = src.getZ();
-        if (jumper->GetMap()->GetReachableRandomPointOnGround(gx, gy, gz, distanceTo))
+        if (jumper->GetMap()->GetReachableRandomPointOnGround(bot->GetMapId(), gx, gy, gz, distanceTo))
         {
             WorldPosition p(jumper->GetMapId(), gx, gy, gz);
             ++attempts;
