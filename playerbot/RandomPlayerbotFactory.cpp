@@ -926,7 +926,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         Player* player = sObjectMgr.GetPlayer(captain);
         if (player)
         {
-            if (player->GetLevel() < 70)
+            if (player->GetLevel() < 80)
                 continue;
 
             uint8 slot = ArenaTeam::GetSlotByType(ArenaType(ARENA_TYPE_2v2));
@@ -984,9 +984,9 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
             continue;
         }
 
-        if (player->GetLevel() < 70)
+        if (player->GetLevel() < 80)
         {
-            sLog.outError("Bot %d must be level 70 to create an arena team", (uint64)captain);
+            sLog.outError("Bot %d must be level 80 to create an arena team", (uint64)captain);
             continue;
         }
 
