@@ -3767,6 +3767,7 @@ void PlayerbotFactory::EnchantEquipment()
             }
         }
     }
+    InitGems();
 }
 
 void PlayerbotFactory::ApplyEnchantTemplate()
