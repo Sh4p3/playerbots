@@ -909,6 +909,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
     uint32 arenaTeamNumber = 0;
     std::map<uint32, uint32> teamsNumber;
     std::map<uint32, uint32> maxTeamsNumber;
+    std::vector<ArenaType> arenaTypes = { ARENA_TYPE_2v2, ARENA_TYPE_3v3, ARENA_TYPE_5v5 };  // All arena types
     maxTeamsNumber[ARENA_TYPE_2v2] = (uint32)(sPlayerbotAIConfig.randomBotArenaTeamCount * 0.4f);
     maxTeamsNumber[ARENA_TYPE_3v3] = (uint32)(sPlayerbotAIConfig.randomBotArenaTeamCount * 0.3f);
     maxTeamsNumber[ARENA_TYPE_5v5] = (uint32)(sPlayerbotAIConfig.randomBotArenaTeamCount * 0.3f);
@@ -926,18 +927,16 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         Player* player = sObjectMgr.GetPlayer(captain);
         if (player)
         {
-            if (player->GetLevel() < 80) {
+            if (player->GetLevel() < 80) 
+            {
                 if (arenateam)
                 {
-                    teamsNumber[arenateam->GetType()]--; 
+                    teamsNumber[arenateam->GetType()]--;
                     sPlayerbotAIConfig.randomBotArenaTeams.erase(arenateam->GetId());
                     arenateam->Disband(NULL);
                 }
                 continue;
             }
-
-            std::vector<ArenaType> arenaTypes = { ARENA_TYPE_2v2, ARENA_TYPE_3v3, ARENA_TYPE_5v5 };  // All arena types
-
             for (ArenaType type : arenaTypes)
             {
                 uint8 slot = ArenaTeam::GetSlotByType(type);
@@ -951,31 +950,13 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
     }
 
     uint32 attempts = 0;
+    std::set<ArenaType> exhaustedTypes;
     for (; arenaTeamNumber < sPlayerbotAIConfig.randomBotArenaTeamCount; ++arenaTeamNumber)
     {
         if (attempts > sPlayerbotAIConfig.randomBotArenaTeamCount)
             break;
 
-        ArenaType randomType = ARENA_TYPE_2v2;
-        switch (urand(0, 2))
-        {
-        case 0:
-            randomType = ARENA_TYPE_2v2;
-            break;
-        case 1:
-            randomType = ARENA_TYPE_3v3;
-            break;
-        case 2:
-            randomType = ARENA_TYPE_5v5;
-            break;
-        }
-
-        std::string arenaTeamName = CreateRandomArenaTeamName();
-        if (arenaTeamName.empty())
-        {
-            sLog.outError("No name for random arena teams available");
-            break;
-        }
+        ArenaType randomType = arenaTypes[urand(0, arenaTypes.size() - 1)];
 
         if (availableCaptains.empty())
         {
@@ -998,6 +979,20 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
             continue;
         }
 
+        if (exhaustedTypes.count(randomType) > 0) continue;
+        
+        std::string arenaTeamName = CreateRandomArenaTeamName(randomType);
+        if (arenaTeamName.empty())
+        {
+            exhaustedTypes.insert(randomType);
+            if (exhaustedTypes.size() == arenaTypes.size())
+            {
+                sLog.outError("No name for random arena teams available");
+                break;
+            }
+            continue;
+        }
+
         auto results = CharacterDatabase.PQuery("SELECT `type` FROM ai_playerbot_arena_team_names WHERE name = '%s'", arenaTeamName.c_str());
         if (!results)
         {
@@ -1009,19 +1004,19 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         uint8 slot = fields[0].GetUInt32();
 
         std::string arenaTypeName;
-        ArenaType type = ARENA_TYPE_2v2;
+        ArenaType type = arenaTypes[0];
         switch (slot)
         {
         case 2:
-            type = ARENA_TYPE_2v2;
+            type = arenaTypes[0];
             arenaTypeName = "2v2";
             break;
         case 3:
-            type = ARENA_TYPE_3v3;
+            type = arenaTypes[1];
             arenaTypeName = "3v3";
             break;
         case 5:
-            type = ARENA_TYPE_5v5;
+            type = arenaTypes[2];
             arenaTypeName = "5v5";
             break;
         }
@@ -1034,8 +1029,10 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         if (teamsNumber[type] >= maxTeamsNumber[type])
             continue;
 
-        if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(type)))
+        if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(type))) {
+            CheckCaptainAvailability(player, availableCaptains, captain, arenaTypes);
             continue;
+        }
 
         ArenaTeam* arenateam = new ArenaTeam();
         if (!arenateam->Create(player->GetObjectGuid(), type, arenaTeamName))
@@ -1070,8 +1067,12 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
             Player* member = sObjectMgr.GetPlayer(possibleMember);
             if (!member)
                 continue;
-            if (member->GetArenaTeamId(arenateam->GetSlot()))
+            if (member->GetArenaTeamId(arenateam->GetSlot())) 
+            {
+                CheckCaptainAvailability(member, availableCaptains, possibleMember, arenaTypes);
                 continue;
+            }
+                
             if (member->GetTeam() != player->GetTeam())
                 continue;
 
@@ -1102,7 +1103,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
     sLog.outString("%d random bot arena teams available", arenaTeamNumber);
 }
 
-std::string RandomPlayerbotFactory::CreateRandomArenaTeamName()
+std::string RandomPlayerbotFactory::CreateRandomArenaTeamName(ArenaType randomType)
 {
     auto result = CharacterDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_arena_team_names");
     if (!result)
@@ -1117,10 +1118,10 @@ std::string RandomPlayerbotFactory::CreateRandomArenaTeamName()
     uint32 id = urand(0, maxId);
     result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_arena_team_names n "
         "LEFT OUTER JOIN arena_team e ON e.name = n.name "
-        "WHERE e.arenateamid IS NULL AND n.name_id >= '%u' LIMIT 1", id);
+        "WHERE e.arenateamid IS NULL AND n.name_id >= '%u' and n.type = '%u' LIMIT 1", id, static_cast<uint32>(randomType));
     if (!result)
     {
-        sLog.outError("No more names left for random arena teams");
+        sLog.outError("No more names left for random arena teams of this type");
         return "";
     }
 
@@ -1128,5 +1129,26 @@ std::string RandomPlayerbotFactory::CreateRandomArenaTeamName()
     std::string aname = fields[0].GetString();
     return aname;
 }
+
+void RandomPlayerbotFactory::CheckCaptainAvailability(Player* player, std::vector<ObjectGuid>& availableCaptains, ObjectGuid captain, const std::vector<ArenaType>& arenaTypes) {
+    bool allSlotsFilled = true;
+
+    for (ArenaType type : arenaTypes) {
+        uint8 slot = ArenaTeam::GetSlotByType(type);
+
+        if (!player->GetArenaTeamId(slot)) {
+            allSlotsFilled = false;
+            break;
+        }
+    }
+
+    if (allSlotsFilled) {
+        auto it = std::find(availableCaptains.begin(), availableCaptains.end(), captain);
+        if (it != availableCaptains.end()) {
+            availableCaptains.erase(it);
+        }
+    }
+}
+
 #endif
 
