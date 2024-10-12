@@ -328,7 +328,7 @@ void PlayerbotFactory::Randomize(bool incremental, bool syncWithMaster)
         sLog.outDetail("Initializing guilds & ArenaTeams");
         InitGuild();
 #ifndef MANGOSBOT_ZERO
-        if (bot->GetLevel() >= 70)
+        if (bot->GetLevel() >= 80)
             InitArenaTeam();
 #endif
         if (pmo) pmo->finish();
