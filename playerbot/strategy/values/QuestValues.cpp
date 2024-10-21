@@ -33,7 +33,7 @@ entryQuestRelationMap EntryQuestRelationMapValue::Calculate()
 	for (auto& questItr : questMap)
 	{
 		uint32 questId = questItr.first;
-		Quest* quest = questItr.second;
+		Quest* quest = questItr.second.get();
 
 		for (uint32 objective = 0; objective < QUEST_OBJECTIVES_COUNT; objective++)
 		{

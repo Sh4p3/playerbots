@@ -2094,7 +2094,7 @@ void TravelMgr::LoadQuestTravelTable()
 
         uint32 mapId = sMapStore.LookupEntry(i)->MapID;
 
-        if (WorldPosition(mapId, 0, 0).getMap(i))
+        if (WorldPosition(mapId, 0, 0).getMapEntry())
             continue;
 
         WorldPosition::unloadMapAndVMaps(mapId);
