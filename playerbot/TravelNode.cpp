@@ -284,9 +284,6 @@ TravelNodePath* TravelNode::buildPath(TravelNode* endNode, Unit* bot, bool postP
     path = endPos.getPathFromPath(path, bot);     
     bool canPath = endPos.isPathTo(path);         
 
-    if (canPath && path.size() == 2 && this->getDistance(endNode) > 5.0f) //Very small path probably bad pathfinder or flying. Stop using it.
-        canPath = false;
-
     //Cheat a little for walk -> portal/transport.
     if (!canPath && !isTransport() && !getAreaTriggerId() && (endNode->getAreaTriggerId() || endNode->isTransport()))
     {
@@ -313,6 +310,32 @@ TravelNodePath* TravelNode::buildPath(TravelNode* endNode, Unit* bot, bool postP
             std::reverse(backPath.begin(), backPath.end());
             path = backPath;
             canPath = true;
+        }
+    }
+
+    if (canPath && path.size() == 2 && this->getDistance(endNode) > 5.0f) //Very small path probably bad pathfinder or flying. Stop using it.
+        canPath = false;
+
+    if (canPath && path.size() > 2) //Do not allow the path to slope too much at the end (pathfinder cheating)
+    {
+        WorldPosition firstPos = path.front();
+        WorldPosition secondPos = path[1];
+
+        float vDist = fabs(firstPos.getZ() - secondPos.getZ());
+        float hDist = firstPos.fDist(secondPos);
+
+        if (vDist > 10 && (hDist == 0 || vDist / hDist > 2))
+            canPath = false;
+        else
+        {
+            WorldPosition firstPos = path.back();
+            WorldPosition secondPos = path[path.size() - 2];
+
+            float vDist = fabs(firstPos.getZ() - secondPos.getZ());
+            float hDist = firstPos.fDist(secondPos);
+
+            if (vDist > 10 && (hDist == 0 || vDist / hDist > 2))
+                canPath = false;
         }
     }
 
@@ -2444,12 +2467,23 @@ void TravelNodeMap::generateHelperNodes(uint32 mapId)
         return;
 
     {
+        uint32 step = 0, rStep = 0, lastNStep = 0, maxStep = 0;
+
+        for (auto& pos : places_to_reach)
+        {
+            step++;
+            rStep += step;
+        }
+
+        maxStep = rStep;
+
+        step = 0;
+        rStep = 0;
+
         m_nMapMtx.lock();
-        BarGoLink bar(places_to_reach.size());
+        BarGoLink bar(maxStep);
         bar.SetOutputState(false);
         m_nMapMtx.unlock();
-
-        uint32 step = 0, lastNStep = 0;
 
         for (auto& pos : places_to_reach)
         {
@@ -2516,7 +2550,8 @@ void TravelNodeMap::generateHelperNodes(uint32 mapId)
 
             m_nMapMtx.lock();
             step++;
-            uint32 curNStep = (step * 50) / places_to_reach.size();
+            rStep += step;
+            uint32 curNStep = (rStep * 50) / maxStep;
             if (curNStep != lastNStep)
             {
                 printf("\r");
@@ -2533,7 +2568,9 @@ void TravelNodeMap::generateHelperNodes(uint32 mapId)
             }
 
             bar.SetOutputState(true);
-            bar.step();
+            for (uint32 i = 0; i < step; i++)                
+                bar.step();
+        
             m_nMapMtx.unlock();
         }
 
@@ -2950,7 +2987,7 @@ void TravelNodeMap::saveNodeStore(bool force)
     std::unordered_map<TravelNode*, uint32> saveNodes;
     std::vector<TravelNode*> anodes = sTravelNodeMap.getNodes();
 
-    std::sort(anodes.begin(), anodes.end(), [](TravelNode* i, TravelNode* j) {return i->getName() < j->getName(); });
+    std::sort(anodes.begin(), anodes.end(), [](TravelNode* i, TravelNode* j) {return i->getName() + std::to_string(i->getMapId()) + std::to_string(i->getX()) < j->getName() + std::to_string(j->getMapId()) + std::to_string(j->getX()); });
 
     WorldDatabase.BeginTransaction();
 
@@ -2989,7 +3026,7 @@ void TravelNodeMap::saveNodeStore(bool force)
             for (auto& link : *node->getLinks())
                 links.push_back(std::make_pair(link.first, link.second));
 
-            std::sort(links.begin(), links.end(), [](std::pair<TravelNode*, TravelNodePath*> i, std::pair<TravelNode*, TravelNodePath*> j) {return i.first->getName() < j.first->getName(); });
+            std::sort(links.begin(), links.end(), [](std::pair<TravelNode*, TravelNodePath*> i, std::pair<TravelNode*, TravelNodePath*> j) {return i.first->getName() + std::to_string(i.first->getMapId()) + std::to_string(i.first->getX()) < j.first->getName() + std::to_string(j.first->getMapId()) + std::to_string(j.first->getX()); });
 
             for (auto& link : links)
             {
