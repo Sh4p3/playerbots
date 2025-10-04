@@ -82,6 +82,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
             case 28606: //Havenshire Mare
             case 28607: //Havenshire Cotl
             case 28891: //Scarlet Miner
+            case 28819: //Scarlet Miner
             case 28769: //Shadowy tormentor
             case 28768: //Dark Rider of Archeus
                 continue;
@@ -100,6 +101,20 @@ Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
                     continue;
                 if (AI_VALUE2(bool, "need quest objective", "12701"))
                     continue;
+                if (AI_VALUE2(bool, "need quest objective", "12727"))
+                    continue;
+                if (AI_VALUE2(bool, "need quest objective", "12754"))
+                    continue;                
+                break;
+            case 29102: //HearthglenCrusader
+            case 29103: //Tirisfal Crusader
+            case 29104: //Scarlet Ballista
+                if (AI_VALUE2(bool, "need quest objective", "12779"))
+                {
+                    if (AI_VALUE2(bool, "trigger active", "in vehicle") && bot->IsWithinDistInMap(unit, sPlayerbotAIConfig.sightDistance))
+                        return unit;
+                    continue;
+                }
                 break;
             case 28834: //Scarlet Fleet Defender
             case 28850: //Scarlet Land Canon
@@ -143,7 +158,8 @@ Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
         }
 
         Creature* creature = dynamic_cast<Creature*>(unit);
-        if (creature && creature->GetCreatureInfo() && creature->GetCreatureInfo()->Rank > CREATURE_ELITE_NORMAL && !AI_VALUE(bool, "can fight elite"))
+        if (creature && creature->GetCreatureInfo() && creature->GetCreatureInfo()->Rank > CREATURE_ELITE_NORMAL && !AI_VALUE(bool, "can fight elite") &&
+            !AI_VALUE2(bool, "trigger active", "in vehicle"))
         {
             if (ai->HasStrategy("debug grind", BotState::BOT_STATE_NON_COMBAT))
                 ai->TellPlayer(GetMaster(), chat->formatWorldobject(unit) + " ignored (can not fight elites currently).");

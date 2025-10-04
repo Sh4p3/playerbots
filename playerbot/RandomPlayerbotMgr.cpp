@@ -3351,11 +3351,14 @@ void RandomPlayerbotMgr::HandleCommand(uint32 type, const std::string& text, Pla
 
 void RandomPlayerbotMgr::OnPlayerLogout(Player* player)
 {
-     DisablePlayerBot(player->GetGUIDLow());
+    bool hadPlayerBot = GetPlayerBot(player->GetGUIDLow());
 
-     ForEachPlayerbot([&](Player* bot)
-     {
+    DisablePlayerBot(player->GetGUIDLow());
 
+    if (!hadPlayerBot && player->GetPlayerbotAI() && player->GetPlayerbotAI()->IsRealPlayer() && player->GetGroup() && sPlayerbotAIConfig.IsFreeAltBot(player))
+        player->GetSession()->SetOffline(); //Prevent groupkick
+
+    ForEachPlayerbot([&](Player* bot) {
         PlayerbotAI* ai = bot->GetPlayerbotAI();
         if (player == ai->GetMaster())
         {
