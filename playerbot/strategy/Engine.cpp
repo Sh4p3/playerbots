@@ -133,6 +133,8 @@ bool Engine::DoNextAction(Unit* unit, int depth, bool minimal, bool isStunned)
     ProcessTriggers(minimal);
     PushDefaultActions();
 
+    std::vector<Action*> modifiedActions;
+
     int iterations = 0;
     int iterationsPerTick = queue.Size() * (minimal ? (uint32)(sPlayerbotAIConfig.iterationsPerTick / 2) : sPlayerbotAIConfig.iterationsPerTick);
     do
@@ -196,20 +198,24 @@ bool Engine::DoNextAction(Unit* unit, int depth, bool minimal, bool isStunned)
 
                 if (isUseful)
                 {
-                    for (auto multiplier : multipliers)
+                    if (std::find(modifiedActions.begin(), modifiedActions.end(), action) == modifiedActions.end())
                     {
-                        relevance *= multiplier->GetValue(action);
-                        action->setRelevance(relevance);
-                        if (relevance == 0)
+                        for (auto* multiplier : multipliers)
                         {
-                            LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action->getName().c_str());
-                            break;
+                            relevance *= multiplier->GetValue(action);
+                            if (relevance <= 0.0f)
+                            {
+                                LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action->getName().c_str());
+                                break;
+                            }
                         }
+                        action->setRelevance(relevance);
                     }
 
                     ActionBasket* peekAction = queue.Peek();
                     if (relevance < oldRelevance && peekAction && peekAction->getRelevance() > relevance) //Relevance changed. Try again.
                     {
+                        modifiedActions.push_back(action);
                         PushAgain(actionNode, relevance, event);
                         continue;
                     }

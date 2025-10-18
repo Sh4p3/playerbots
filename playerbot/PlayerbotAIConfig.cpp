@@ -1148,7 +1148,7 @@ void PlayerbotAIConfig::LoadTalentSpecs()
 
                         TalentSpec linkSpec(&classSpecs[cls].baseSpec, specLink);
 
-                        if (!linkSpec.CheckTalents(level, &out))
+                        if (!linkSpec.CheckTalents(TalentSpec::LeveltoPoints(level), &out))
                         {
                             sLog.outErrorDb("Error with premade spec: %s", specLink.c_str());
                             sLog.outErrorDb("%s", out.str().c_str());
