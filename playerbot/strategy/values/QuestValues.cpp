@@ -104,6 +104,7 @@ EntryQuestRelationMap EntryQuestRelationMapValue::Calculate()
 	rMap[28819][12698] |= (uint8)TravelDestinationPurpose::QuestObjective1; //[Scarlet Miner][The Gift That Keeps On Giving]	
 
 	rMap[-190767][12701] |= (uint8)TravelDestinationPurpose::QuestObjective1; //[Inconspicuous mine car][Massacre At Light's Point]	
+	rMap[28833][12701] |= (uint8)TravelDestinationPurpose::QuestObjective1; //[Scarlet Cannon][Massacre At Light's Point]	
 
 	rMap[28941][12722] |= (uint8)TravelDestinationPurpose::QuestObjective2; //[Citizen of New Avalon][Lambs To The Slaughter]
     rMap[28942][12722] |= (uint8)TravelDestinationPurpose::QuestObjective2; //[Citizen of Havenshire][Lambs To The Slaughter]
@@ -600,6 +601,11 @@ bool NeedQuestObjectiveValue::Calculate()
 
 	QuestStatusData& questStatus = bot->getQuestStatusMap().at(questId);
 
+	if (getQualifier().find("reward") != std::string::npos)
+    {
+        return !questStatus.m_rewarded; //Still need the reward
+    }
+
 	if (questStatus.m_status != QUEST_STATUS_INCOMPLETE)
 		return false;
 
@@ -664,14 +670,15 @@ bool CanUseItemOn::Calculate()
             return guidP.IsCreature() && guidP.GetEntry() == 28819;                                                                 //Scarlet Miner
         case 39645:                                                                                                                 //Makeshift Cover
             return guidP.IsCreature() && guidP.GetEntry() == 28936;                                                                 //Scarlet Commander
-        case 39700:                                                                                                                 //Horn of the Frostbrood
-            /*
+            /*        case 39700:                                                                                                                 //Horn of the Frostbrood
+        
 			switch (AI_VALUE(TravelTarget*, "travel target")->GetEntry())
             case 29102: //HearthglenCrusader
             case 29103: //Tirisfal Crusader
             case 29104: //Scarlet Ballista
-			*/
+		
             return !AI_VALUE2(bool, "trigger active", "in vehicle") && AI_VALUE2(bool, "need quest objective", "12779"); //Mount up!
+		*/
     }
 
 	if (guidP.IsUnit())

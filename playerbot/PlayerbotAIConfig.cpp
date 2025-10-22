@@ -3,7 +3,6 @@
 #include "playerbot/playerbot.h"
 #include "RandomPlayerbotFactory.h"
 #include "Accounts/AccountMgr.h"
-#include "SystemConfig.h"
 #include "playerbot/PlayerbotFactory.h"
 #include "RandomItemMgr.h"
 #include "World/WorldState.h"
@@ -87,7 +86,7 @@ bool PlayerbotAIConfig::Initialize()
 {
     sLog.outString("Initializing AI Playerbot by ike3, based on the original Playerbot by blueboy");
 
-    if (!config.SetSource(SYSCONFDIR"aiplayerbot.conf", "PlayerBots_"))
+    if (!config.SetSource(_D_AIPLAYERBOT_CONFIG, "PlayerBots_"))
     {
         sLog.outString("AI Playerbot is Disabled. Unable to open configuration file aiplayerbot.conf");
         return false;
@@ -235,6 +234,7 @@ bool PlayerbotAIConfig::Initialize()
     LoadList<std::list<uint32> >(config.GetStringDefault("AiPlayerbot.AhOverVendorItemIds", ""), ahOverVendorItemIds);
     LoadList<std::list<uint32> >(config.GetStringDefault("AiPlayerbot.VendorOverAHItemIds", ""), vendorOverAHItemIds);
     botCheckAllAuctionListings = config.GetBoolDefault("AiPlayerbot.BotCheckAllAuctionListings", false);
+    botsSaveEpics = config.GetBoolDefault("AiPlayerbot.BotsSaveEpics", true);
     //
     randomBotJoinLfg = config.GetBoolDefault("AiPlayerbot.RandomBotJoinLfg", true);
     logRandomBotJoinLfg = config.GetBoolDefault("AiPlayerbot.LogRandomBotJoinLfg", false);
@@ -980,7 +980,8 @@ std::string PlayerbotAIConfig::GetTimestampStr()
     //       MM     minutes (2 digits 00-59)
     //       SS     seconds (2 digits 00-59)
     char buf[20];
-    snprintf(buf, 20, "%04d-%02d-%02d %02d:%02d:%02d", aTm->tm_year + 1900, aTm->tm_mon + 1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", aTm);
+
     return std::string(buf);
 }
 
