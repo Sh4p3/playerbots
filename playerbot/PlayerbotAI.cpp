@@ -2943,7 +2943,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::SayToGuild(std::string msg)
+bool PlayerbotAI::SayToGuild(std::string msg, bool likePlayer)
 {
     if (msg.empty())
     {
@@ -2959,7 +2959,8 @@ bool PlayerbotAI::SayToGuild(std::string msg)
             {
                 if (player.second->GetGuildId() == bot->GetGuildId())
                 {
-                    if (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) && sPlayerbotAIConfig.llmBotToBotChatChance)
+                    if (likePlayer || (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) &&
+                        sPlayerbotAIConfig.llmBotToBotChatChance))
                     {
                         WorldPacket packet_template(CMSG_MESSAGECHAT);
 
@@ -3227,18 +3228,19 @@ bool PlayerbotAI::SayToGuildRecruitment(std::string msg)
 #endif
 }
 
-bool PlayerbotAI::SayToParty(std::string msg)
+bool PlayerbotAI::SayToParty(std::string msg, bool likePlayer)
 {
     if (!bot->GetGroup())
     {
         return false;
     }
 
-    if (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) && sPlayerbotAIConfig.llmBotToBotChatChance)
+    if (likePlayer || (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) &&
+        sPlayerbotAIConfig.llmBotToBotChatChance))
     {
         for (auto reciever : GetPlayersInGroup())
         {
-            if (reciever->isRealPlayer())
+            if (likePlayer || reciever->isRealPlayer())
             {
                 WorldPacket packet_template(CMSG_MESSAGECHAT);
 
@@ -3285,7 +3287,7 @@ bool PlayerbotAI::SayToRaid(std::string msg)
     return true;
 }
 
-bool PlayerbotAI::Yell(std::string msg)
+bool PlayerbotAI::Yell(std::string msg, bool likePlayer)
 {
     uint32 lang = LANG_UNIVERSAL;
     if (bot->GetTeam() == ALLIANCE)
@@ -3297,9 +3299,10 @@ bool PlayerbotAI::Yell(std::string msg)
         lang = LANG_ORCISH;
     }
 
-    if (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) && sPlayerbotAIConfig.llmBotToBotChatChance)
+    if (likePlayer || (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) &&
+        sPlayerbotAIConfig.llmBotToBotChatChance))
     {
-        if (this->HasPlayerNearby(sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL)))
+        if (likePlayer || this->HasPlayerNearby(sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL)))
         {
             WorldPacket packet_template(CMSG_MESSAGECHAT);
 
@@ -3319,7 +3322,7 @@ bool PlayerbotAI::Yell(std::string msg)
     return true;
 }
 
-bool PlayerbotAI::Say(std::string msg)
+bool PlayerbotAI::Say(std::string msg, bool likePlayer)
 {
     uint32 lang = LANG_UNIVERSAL;
     if (bot->GetTeam() == ALLIANCE)
@@ -3331,9 +3334,10 @@ bool PlayerbotAI::Say(std::string msg)
         lang = LANG_ORCISH;
     }
 
-    if (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) && sPlayerbotAIConfig.llmBotToBotChatChance)
+    if (likePlayer || (sPlayerbotAIConfig.llmEnabled > 0 && (HasStrategy("ai chat", BotState::BOT_STATE_NON_COMBAT) || sPlayerbotAIConfig.llmEnabled == 3) &&
+        sPlayerbotAIConfig.llmBotToBotChatChance))
     {
-        if (this->HasPlayerNearby(sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY)))
+        if (likePlayer || this->HasPlayerNearby(sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY)))
         {
 
             WorldPacket packet_template(CMSG_MESSAGECHAT);
@@ -3354,7 +3358,7 @@ bool PlayerbotAI::Say(std::string msg)
     return true;
 }
 
-bool PlayerbotAI::Whisper(std::string msg, std::string receiverName)
+bool PlayerbotAI::Whisper(std::string msg, std::string receiverName, bool likePlayer)
 {
     ObjectGuid receiver = sObjectMgr.GetPlayerGuidByName(receiverName);
     Player* rPlayer = sObjectMgr.GetPlayer(receiver);
@@ -6037,6 +6041,25 @@ bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
     allowActive[activityType] = allowed;
     allowActiveCheckTimer[activityType] = time(NULL);
     return allowed;
+}
+
+bool PlayerbotAI::HasCheat(BotCheatMask mask) const
+{
+    if (((uint32)mask & (uint32)cheatMask) != 0)
+        return true;
+
+    if (sRandomPlayerbotMgr.IsRandomBot(bot))
+    {
+        if (((uint32)mask & sPlayerbotAIConfig.rndBotCheatMask) != 0)
+            return true;
+    }
+    else
+    {
+        if (((uint32)mask & sPlayerbotAIConfig.botCheatMask) != 0)
+            return true;
+    }
+
+    return false;
 }
 
 bool PlayerbotAI::IsOpposing(Player* player)

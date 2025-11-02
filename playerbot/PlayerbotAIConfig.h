@@ -218,6 +218,7 @@ public:
     bool boostFollow;
     bool turnInRpg;
     bool globalSoundEffects;
+    bool shareTargets;
     std::list<uint32> randomBotGuilds;
 	std::list<uint32> pvpProhibitedZoneIds;
     bool enableGreet;
@@ -363,8 +364,8 @@ public:
 
     std::unordered_map <std::string, std::pair<FILE*, bool>> logFiles;
 
-    std::list<std::string> botCheats;
     uint32 botCheatMask = 0;
+    uint32 rndBotCheatMask = 0;
 
     std::vector<std::string> BotCheatMaskName = { "taxi", "gold", "health", "mana", "power", "item", "cooldown", "repair", "movespeed", "attackspeed", "breath", "glyph", "quest", "maxMask" };
 
