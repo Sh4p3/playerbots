@@ -165,14 +165,13 @@ namespace ai
                 qualifierView = nameView.substr(pos + 2);
                 nameView = nameView.substr(0, pos);
             }
-            ActionCreator& creator = it->second;
 
             auto it = creators.find(std::string(nameView));
             if (it == creators.end())
                 return nullptr;
 
             T* object = it->second(ai);
-            if (object == nullptr)
+            if (!object)
                 return nullptr;
 
             if (!qualifierView.empty())
@@ -199,12 +198,15 @@ namespace ai
         NamedObjectContext(bool shared = false, bool supportsSiblings = false) :
             NamedObjectFactory<T>(), shared(shared), supportsSiblings(supportsSiblings) {}
 
-        T* Create(std::string name, PlayerbotAI* ai)
+        T* Create(const std::string& name, PlayerbotAI* ai)
         {
-            if (created.find(name) == created.end())
-                return created[name] = NamedObjectFactory<T>::Create(name, ai);
+            auto it = created.find(name);
+            if (it != created.end())
+                return it->second;
 
-            return created[name];
+            T* obj = NamedObjectFactory<T>::Create(name, ai);
+            created.emplace(name, obj);
+            return obj;
         }
 
         virtual ~NamedObjectContext()
