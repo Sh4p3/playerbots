@@ -62,7 +62,7 @@ private:
 
 UnholyDKStrategy::UnholyDKStrategy(PlayerbotAI* ai) : GenericDKStrategy(ai)
 {
-	actionNodeFactories.Add(new UnholyDKStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<UnholyDKStrategyActionNodeFactory>());
 }
 
 NextAction** UnholyDKStrategy::GetDefaultCombatActions()

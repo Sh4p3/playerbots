@@ -19,7 +19,7 @@ private:
 
 BeastMasteryHunterStrategy::BeastMasteryHunterStrategy(PlayerbotAI* ai) : HunterStrategy(ai)
 {
-    actionNodeFactories.Add(new BeastMasteryHunterStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<BeastMasteryHunterStrategyActionNodeFactory>());
 }
 
 #ifdef MANGOSBOT_ZERO // Vanilla

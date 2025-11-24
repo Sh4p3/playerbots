@@ -27,7 +27,7 @@ private:
 
 RestorationDruidStrategy::RestorationDruidStrategy(PlayerbotAI* ai) : DruidStrategy(ai)
 {
-    actionNodeFactories.Add(new RestorationDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<RestorationDruidStrategyActionNodeFactory>());
 }
 
 #ifdef MANGOSBOT_ZERO // Vanilla
