@@ -19,7 +19,7 @@ private:
 
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : MageStrategy(ai)
 {
-    actionNodeFactories.Add(new ArcaneMageStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<ArcaneMageStrategyActionNodeFactory>());
 }
 
 #ifdef MANGOSBOT_ZERO // Vanilla

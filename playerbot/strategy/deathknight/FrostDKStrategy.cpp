@@ -54,7 +54,7 @@ public:
 
 FrostDKStrategy::FrostDKStrategy(PlayerbotAI* ai) : GenericDKStrategy(ai)
 {
-	actionNodeFactories.Add(new FrostDKStrategyActionNodeFactory());
+	actionNodeFactories.Add(std::make_unique<FrostDKStrategyActionNodeFactory>());
 }
 
 NextAction** FrostDKStrategy::GetDefaultCombatActions()

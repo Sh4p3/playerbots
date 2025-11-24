@@ -675,6 +675,9 @@ namespace ai
                 return true;
             }
 
+            if (AI_VALUE2(std::list<Item*>, "inventory items", name).empty())
+                return false;
+
             return UseAction::Execute(event);
         }
 
@@ -747,6 +750,9 @@ namespace ai
 
                 return true;
             }
+
+            if (AI_VALUE2(std::list<Item*>, "inventory items", name).empty())
+                return false;
 
             return UseAction::Execute(event);
         }

@@ -28,7 +28,7 @@ private:
 
 ProtectionPaladinStrategy::ProtectionPaladinStrategy(PlayerbotAI* ai) : PaladinStrategy(ai)
 {
-    actionNodeFactories.Add(new ProtectionPaladinStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<ProtectionPaladinStrategyActionNodeFactory>());
 }
 
 #ifdef MANGOSBOT_ZERO // Vanilla
