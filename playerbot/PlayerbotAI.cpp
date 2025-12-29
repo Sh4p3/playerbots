@@ -917,7 +917,8 @@ void PlayerbotAI::OnCombatStarted()
         }
 
         // Stop follow movement on combat start
-        if (!HasStrategy("follow", BotState::BOT_STATE_COMBAT) && HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT))
+        if (!(HasStrategy("follow", BotState::BOT_STATE_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_COMBAT)) &&
+            (HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT)))
         {
             StopMoving();
         }
@@ -941,7 +942,8 @@ void PlayerbotAI::OnCombatEnded()
         aiObjectContext->GetValue<time_t>("combat start time")->Set(0);
 
         // Stop following on combat end
-        if (HasStrategy("follow", BotState::BOT_STATE_COMBAT) && !HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT))
+        if ((HasStrategy("follow", BotState::BOT_STATE_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_COMBAT)) &&
+            !(HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT)))
         {
             StopMoving();
         }
@@ -1040,7 +1042,8 @@ void PlayerbotAI::OnResurrected()
     if (IsStateActive(BotState::BOT_STATE_DEAD) && sServerFacade.IsAlive(bot))
     {
         // Stop following on resurrected
-        if (HasStrategy("follow", BotState::BOT_STATE_COMBAT) && !HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT))
+        if ((HasStrategy("follow", BotState::BOT_STATE_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_COMBAT)) &&
+            !(HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT) || HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT)))
         {
             StopMoving();
         }
@@ -2095,7 +2098,8 @@ void PlayerbotAI::DoNextAction(bool min)
 
             if (sRandomPlayerbotMgr.IsFreeBot(bot))
             {
-                ChangeStrategy("+follow", BotState::BOT_STATE_NON_COMBAT);
+                std::string defaultMovementStrategy = GetDefaultMovementStrategy();
+                ChangeStrategy("+" + defaultMovementStrategy, BotState::BOT_STATE_NON_COMBAT);
             }
 
             if (GetMaster() == GetGroupMaster())
@@ -6293,6 +6297,40 @@ std::string PlayerbotAI::BotStateToString(BotState state)
         case BotState::BOT_STATE_DEAD: return "Dead";
         case BotState::BOT_STATE_REACTION: return "Reaction";
         default: return "";
+    }
+}
+
+std::string PlayerbotAI::GetDefaultMovementStrategy()
+{
+    // Player master -> follow
+    if (HasActivePlayerMaster())
+        return "follow";
+
+    // Bot/no master -> wander
+    return "wander";
+}
+
+void PlayerbotAI::EnsureDefaultMovementStrategy(Player* requester)
+{
+    std::string movement = GetDefaultMovementStrategy();
+
+    for (BotState state : { BotState::BOT_STATE_REACTION, BotState::BOT_STATE_NON_COMBAT })
+    {
+        if (HasStrategy("stay", state))
+            ChangeStrategy("-stay", state);
+
+        if (!HasStrategy(movement, state))
+            ChangeStrategy("+" + movement, state);
+    }
+
+    if (requester)
+    {
+        TellPlayerNoFacing(
+            requester,
+            "Welcome back!",
+            PlayerbotSecurityLevel::PLAYERBOT_SECURITY_ALLOW_ALL,
+            false
+        );
     }
 }
 
