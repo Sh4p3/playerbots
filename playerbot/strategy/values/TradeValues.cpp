@@ -31,6 +31,9 @@ std::list<Item*> ItemsUsefulToGiveValue::Calculate()
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     Player* player = guidP.GetPlayer();
 
+    if (!ai->IsSafe(player))
+        return {};
+
     std::list<Item*> giveItems;
 
     if (ai->HasActivePlayerMaster() || !player->GetPlayerbotAI())
@@ -86,7 +89,7 @@ std::list<Item*> ItemsUsefulToEnchantValue::Calculate()
 
     std::list<Item*> enchantItems;
 
-    if (ai->HasActivePlayerMaster() || !player->GetPlayerbotAI())
+    if (ai->HasActivePlayerMaster() || !player->GetPlayerbotAI() || !ai->IsSafe(player))
         return enchantItems;
 
     std::vector<uint32> enchantSpells = AI_VALUE(std::vector<uint32>, "enchant spells");
