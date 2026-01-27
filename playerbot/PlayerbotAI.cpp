@@ -3508,6 +3508,9 @@ bool PlayerbotAI::TellPlayerNoFacing(Player* player, std::string text, Playerbot
                 this->Whisper(text, player->GetName());
                 return true;
             }
+
+            default:
+                return true;
         }
     }
 
