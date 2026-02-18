@@ -1719,7 +1719,7 @@ TravelPath TravelNodeMap::getFullPath(WorldPosition startPos, WorldPosition endP
         }
     }
 
-    if (unit)
+    if (unit && endPos.mapid == startPos.mapid)
         endPath = route.getNodes().back()->getPosition()->getPathTo(endPos, unit);
     else
         endPath = { *route.getNodes().back()->getPosition(),endPos };
