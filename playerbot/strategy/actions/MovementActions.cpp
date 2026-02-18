@@ -453,7 +453,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         float oldDist;
         if (ai->HasStrategy("debug move", BotState::BOT_STATE_NON_COMBAT))
             oldDist = WorldPosition().getPathLength(movePath.getPointPath());
-        if (!bot->GetTransport() && movePath.makeShortCut(startPosition, sPlayerbotAIConfig.reactDistance, bot))
+        if (!bot->GetTransport() && urand(0,1) && movePath.makeShortCut(startPosition, sPlayerbotAIConfig.reactDistance, bot))
             if (ai->HasStrategy("debug move", BotState::BOT_STATE_NON_COMBAT))
                 ai->TellPlayerNoFacing(GetMaster(), "Found a shortcut: old=" + std::to_string(uint32(oldDist)) + "y new=" + std::to_string(uint32(WorldPosition().getPathLength(movePath.getPointPath()))));
 
