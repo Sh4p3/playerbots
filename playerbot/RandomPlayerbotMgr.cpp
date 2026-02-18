@@ -3,6 +3,7 @@
 #include "playerbot/playerbot.h"
 #include "playerbot/PlayerbotAIConfig.h"
 #include "playerbot/PlayerbotFactory.h"
+#include "strategy/values/LastMovementValue.h"
 #include "Accounts/AccountMgr.h"
 #include "Globals/ObjectMgr.h"
 #include "Database/DatabaseEnv.h"
@@ -393,6 +394,10 @@ void RandomPlayerbotMgr::LogPlayerLocation()
         try
         {
             sPlayerbotAIConfig.openLog("player_location.csv", "w");
+
+            if (sPlayerbotAIConfig.hasLog("player_route.csv"))
+                sPlayerbotAIConfig.openLog("player_route.csv", "w");
+
             if (sPlayerbotAIConfig.randomBotAutologin)
             {
                 ForEachPlayerbot([&](Player* bot)
@@ -427,6 +432,56 @@ void RandomPlayerbotMgr::LogPlayerLocation()
 
                         if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
                             activeBots++;
+
+                        if (sPlayerbotAIConfig.hasLog("player_route.csv") && WorldPosition(bot))
+                        {
+                            LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+
+                            std::vector<PathNodePoint> fullPath = lastMove.lastPath.getPath();
+
+                            if (!fullPath.empty())
+                            {
+                                std::vector<std::pair<std::vector<WorldPosition>, bool>> splitPath;
+
+                                bool currentWalkable = fullPath[0].isWalkable();
+                                std::vector<WorldPosition> currentSegment;
+                                currentSegment.push_back(fullPath[0].point);
+
+                                for (size_t i = 1; i < fullPath.size(); i++)
+                                {
+                                    bool walkable = fullPath[i].isWalkable();
+
+                                    if (walkable != currentWalkable)
+                                    {
+                                        // End current segment, start new one beginning with the last point
+                                        splitPath.push_back({currentSegment, currentWalkable});
+                                        currentSegment.clear();
+                                        currentSegment.push_back(fullPath[i - 1].point); // shared junction point
+                                        currentWalkable = walkable;
+                                    }
+
+                                    currentSegment.push_back(fullPath[i].point);
+                                }
+
+                                splitPath.push_back({currentSegment, currentWalkable});
+
+
+                                for (auto& [segement, walkable] : splitPath)
+                                {
+                                    std::ostringstream out;
+                                    out << bot->GetName() << ",";
+                                    out << std::fixed << std::setprecision(1);
+
+                                    WorldPosition().printWKT(segement, out, 1, false);
+
+                                    out << bot->GetOrientation() << ",";
+                                    out << std::to_string(bot->getRace()) << ",";
+                                    out << std::to_string(bot->getClass()) << ",";
+                                    out << walkable ? "1" : "0";
+                                    sPlayerbotAIConfig.log("player_route.csv", out.str().c_str());
+                                }
+                            }
+                        }
                     }
                     else
                     {
