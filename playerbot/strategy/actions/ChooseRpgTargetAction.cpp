@@ -323,6 +323,11 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
 
                     if (dynamic_cast<RpgEnabled*>(action))
                         isRpg = true;
+
+                    RpgSubAction* subAction = dynamic_cast<RpgSubAction*>(action);
+
+                    if (subAction)
+                        rgpActionReason[guidP] = subAction->GetRpgActionName();
                 }
                 NextAction::destroy(nextActions);
 
@@ -330,7 +335,8 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
                 if (isRpg)
                 {
                     maxRelevance = triggerNode->getFirstRelevance();
-                    rgpActionReason[guidP] = triggerNode->getName();
+                    if (rgpActionReason[guidP].empty())
+                        rgpActionReason[guidP] = triggerNode->getName();
                 }
             }
         }

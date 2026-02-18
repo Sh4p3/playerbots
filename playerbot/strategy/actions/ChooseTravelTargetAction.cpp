@@ -225,7 +225,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(Player* bot, Player* requester
     if (out.str().empty())
         return;
 
-    ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_ALLOW_ALL, false);
+    ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
 
     std::string message = out.str().c_str();
 

@@ -168,6 +168,7 @@ namespace ai
             creators["tell target"] = [](PlayerbotAI* ai) { return new TellTargetAction(ai); };
             creators["summon"] = [](PlayerbotAI* ai) { return new SummonAction(ai); };
             creators["who"] = [](PlayerbotAI* ai) { return new WhoAction(ai); };
+            creators["where"] = [](PlayerbotAI* ai) { return new GoAction(ai, "where"); };
             creators["save mana"] = [](PlayerbotAI* ai) { return new SaveManaAction(ai); };
             creators["max dps chat shortcut"] = [](PlayerbotAI* ai) { return new MaxDpsChatShortcutAction(ai); };
             creators["tell possible attack targets"] = [](PlayerbotAI* ai) { return new TellPossibleAttackTargetsAction(ai); };

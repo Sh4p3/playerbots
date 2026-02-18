@@ -47,6 +47,8 @@ namespace ai
         virtual bool isUseful() override { return rpg->InRange(); }
 
         virtual bool Execute(Event& event) override { rpg->BeforeExecute();  bool doAction = ai->DoSpecificAction(ActionName(), ActionEvent(event), true); rpg->AfterExecute(doAction, true); DoDelay(); return doAction; }
+
+        virtual std::string GetRpgActionName() const { return "generic rpg action"; };
     protected:
         void DoDelay(){ SetDuration(ai->GetAIInternalUpdateDelay()); }
         virtual std::string ActionName() { return "none"; }

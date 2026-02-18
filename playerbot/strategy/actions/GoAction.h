@@ -8,10 +8,11 @@ namespace ai
 	class GoAction : public MovementAction, Qualified
 	{
 	public:
-		GoAction(PlayerbotAI* ai) : MovementAction(ai, "go"), Qualified() {}
+        GoAction(PlayerbotAI* ai, std::string name = "go") : MovementAction(ai, name), Qualified() {}
 		virtual bool Execute(Event& event) override;
         virtual bool isPossible() override { return true; }
         virtual bool isUseful() override { return true; }
+        virtual bool isUsefulWhenStunned() override { return true; }
 
 #ifdef GenerateBotHelp
         virtual std::string GetHelpName() { return "go"; } //Must equal iternal name
