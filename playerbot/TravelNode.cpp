@@ -1719,8 +1719,11 @@ TravelPath TravelNodeMap::getFullPath(WorldPosition startPos, WorldPosition endP
         }
     }
 
-    //endPath = route.getNodes().back()->getPosition()->getPathTo(endPos, bot);
-    endPath = { *route.getNodes().back()->getPosition(),endPos };
+    if (unit)
+        endPath = route.getNodes().back()->getPosition()->getPathTo(endPos, unit);
+    else
+        endPath = { *route.getNodes().back()->getPosition(),endPos };
+
     movePath = route.buildPath(beginPath, endPath);
 
     route.cleanTempNodes();
