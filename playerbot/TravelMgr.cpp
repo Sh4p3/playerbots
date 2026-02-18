@@ -514,12 +514,17 @@ std::string RpgTravelDestination::GetTitle() const
         break;
     }
 
+    /*
     out << " " << GetShortName();
 
     if (GetEntry() > 0)
         out << " npc ";
     else
         out << " object ";
+
+    */
+
+    out << " ";
 
     out << ChatHelper::formatWorldEntry(GetEntry());
 
@@ -827,10 +832,13 @@ std::string GatherTravelDestination::GetTitle() const {
         {
             case TravelDestinationPurpose::GatherSkinning:
                 out << "skin ";
+                break;
             case TravelDestinationPurpose::GatherMining:
                 out << "mine ";
+                break;
             case TravelDestinationPurpose::GatherHerbalism:
                 out << "gather from ";
+                break;
         }
 
         out << ChatHelper::formatWorldEntry(GetEntry());
