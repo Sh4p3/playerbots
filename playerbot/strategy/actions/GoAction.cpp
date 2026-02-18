@@ -213,7 +213,7 @@ inline void TellPosition(PlayerbotAI* ai, Player* requester)
         else if (!WorldPosition(bot).getAreaName().empty())
             out << "In " << WorldPosition(bot).getAreaName();
         else
-            out << "In " << bot->GetMap()->GetMapName();    
+            out << "In " << bot->GetMap()->GetMapName();
     }
 
     ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
@@ -257,7 +257,7 @@ inline bool TellStuck(PlayerbotAI* ai, Player* requester)
         if (bot->duel && bot->duel->startTime - time(0) > 5 * MINUTE)
         {
             out << "Stuck in a dual for ";
-            out << uint32((bot->duel->startTime - time(0))/ MINUTE);
+            out << uint32((bot->duel->startTime - time(0)) / MINUTE);
             out << " minutes";
             ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
 
@@ -272,7 +272,7 @@ inline bool TellStuck(PlayerbotAI* ai, Player* requester)
         out << "Stuck in the same place for ";
         out << uint32(timeSinceLastMove / MINUTE);
         out << " minutes";
-        ai->TellPlayerNoFacing(requester, out , PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
+        ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
 
         return true;
     }
@@ -288,6 +288,48 @@ inline bool TellStuck(PlayerbotAI* ai, Player* requester)
     }
 
     return false;
+}
+
+inline bool TellGrouped(PlayerbotAI* ai, Player* requester)
+{
+    Player* bot = ai->GetBot();
+    AiObjectContext* context = ai->GetAiObjectContext();
+
+    if (!bot->GetGroup())
+        return false;
+
+    std::ostringstream out;
+
+    if (bot->GetGroup()->IsLeader(bot->GetObjectGuid()))
+    {
+        out << "Leading a";
+        if (bot->GetGroup()->IsRaidGroup())
+            out << " raid";
+        out << " group of ";
+        out << bot->GetGroup()->GetMembersCount();
+
+        ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
+
+        return false;
+    }
+
+    if (ai->HasStrategy("free", BotState::BOT_STATE_NON_COMBAT))
+        return false;
+
+    if (ai->HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT) ||
+        ai->HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT))
+        out << "Following ";
+    else
+        out << "Grouped with ";
+
+    out << ai->GetGroupMaster()->GetName();
+    out << " at ";
+    out << uint32(WorldPosition(bot).distance(ai->GetGroupMaster()));
+    out << "y";
+
+    ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
+
+    return true;
 }
 
 inline void TellCombat(PlayerbotAI* ai, Player* requester)
@@ -448,7 +490,7 @@ bool GoAction::TellWhereToGo(std::string& param, Player* requester) const
 
     TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target");
 
-    if (travelTarget->IsActive())
+    if (!TellGrouped(ai, requester) && travelTarget->IsActive())
         ChooseTravelTargetAction::ReportTravelTarget(bot, requester, travelTarget, nullptr);
 
     TellStuck(ai, requester);
