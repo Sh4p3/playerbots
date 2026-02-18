@@ -171,10 +171,17 @@ void ChooseTravelTargetAction::ReportTravelTarget(Player* bot, Player* requester
         {
             out << "Currently";
 
-            if (newTarget->GetPosition() && !newTarget->GetPosition()->getAreaName().empty() && destination->DistanceTo(bot) < 100.0f)
-                out << " at " << newTarget->GetPosition()->getAreaName();
+            if (newTarget->GetPosition() && !newTarget->GetPosition()->getAreaName().empty())
+            {
+                if (destination->DistanceTo(bot) < 100.0f)
+                    out << " in ";
+                else
+                    out << " near ";
+
+                out << newTarget->GetPosition()->getAreaName();
+            }
             else
-                out << " working";
+                out << " traveling";
         }
         else
         {
