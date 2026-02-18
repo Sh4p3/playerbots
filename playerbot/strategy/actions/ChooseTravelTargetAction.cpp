@@ -171,7 +171,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(Player* bot, Player* requester
         {
             out << "Currently";
 
-            if (newTarget->GetPosition() && !newTarget->GetPosition()->getAreaName().empty())
+            if (newTarget->GetPosition() && !newTarget->GetPosition()->getAreaName().empty() && destination->DistanceTo(bot) < 100.0f)
                 out << " at " << newTarget->GetPosition()->getAreaName();
             else
                 out << " working";
@@ -212,7 +212,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(Player* bot, Player* requester
             else if (futureTravelPurpose == "petition")
                 out << " to hand in a petition";
             else
-                out << " to roleplay with";
+                out << " to roleplay";
         }
         else
         {
