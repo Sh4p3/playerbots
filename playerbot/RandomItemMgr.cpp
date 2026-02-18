@@ -3771,6 +3771,8 @@ uint32 RandomItemMgr::GetRandomFood(uint32 level, uint32 category)
 
 void RandomItemMgr::BuildTradeCache()
 {
+    tradeCache.clear(); 
+
     uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
     if (maxLevel > sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
         maxLevel = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
