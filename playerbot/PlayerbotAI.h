@@ -291,6 +291,7 @@ enum class ActivePiorityType : uint8
     NEARBY_PLAYER,
     PLAYER_FRIEND,
     PLAYER_GUILD,
+    NO_PATH,
     IN_ACTIVE_AREA,
     IN_ACTIVE_MAP,
     IN_INACTIVE_MAP,

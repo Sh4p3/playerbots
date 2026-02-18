@@ -795,6 +795,18 @@ void TravelNode::print(bool printFailed)
     }
 }
 
+bool TravelPath::cutTo(PathNodePoint point)
+{
+    auto it = std::find(fullPath.begin(), fullPath.end(), point);
+    if (it != fullPath.end())
+    {
+        fullPath.erase(fullPath.begin(), std::next(it));
+        return true;
+    }
+    
+    return false;
+}
+
 //Attempts to move ahead of the path.
 bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist, Unit* bot)
 {

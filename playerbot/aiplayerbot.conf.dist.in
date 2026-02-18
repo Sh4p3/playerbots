@@ -365,6 +365,9 @@ AiPlayerbot.AutoLearnDroppedSpells = 0
 # Default: 1 (enabled)
 # AiPlayerbot.AutoDoQuests = 1
 
+# Random Bots will also move to destinations when not seen by the player
+# AiPlayerbot.EnableMinimalMove = 1
+
 ##################################################################################
 #                                                                                #
 # All other parameters are optional but can be changed by uncommenting them here #
