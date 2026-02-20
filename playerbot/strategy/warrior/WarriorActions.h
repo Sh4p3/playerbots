@@ -103,7 +103,23 @@ namespace ai
             if (!target)
                 return false;
 
-            if (ai->IsTank(bot) && !target->IsPlayer())
+            const bool isTank = ai->IsTank(bot);
+
+            if (isTank)
+            {
+                uint32 bloodThirst = AI_VALUE2(uint32, "spell id", "bloodthirst");
+                uint32 mortalStrike = AI_VALUE2(uint32, "spell id", "mortal strike");
+                uint32 shieldSlam = AI_VALUE2(uint32, "spell id", "shield slam");
+
+                if ((bloodThirst && bot->IsSpellReady(bloodThirst)) ||
+                    (mortalStrike && bot->IsSpellReady(mortalStrike)) ||
+                    (shieldSlam && bot->IsSpellReady(shieldSlam)))
+                {
+                    return false;
+                }
+            }
+
+            if (isTank && !target->IsPlayer())
                 return true;
 
             return !ai->HasAura("sunder armor", target, true);
