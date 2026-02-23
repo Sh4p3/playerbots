@@ -2319,7 +2319,7 @@ void TravelNodeMap::generateTransportNodes()
                                     float totalTime = (p.second->TimeSeg - timeStart) / 1000.0f;
 
                                     TravelNodePath travelPath(0.1f, totalTime, (uint8)TravelNodePathType::transport, entry, true);
-                                    node->setPathTo(prevNode, travelPath);
+                                    prevNode->setPathTo(node, travelPath);
                                     ppath.clear();
                                     ppath.push_back(pos);
                                     timeStart = p.second->TimeSeg;
@@ -2369,7 +2369,7 @@ void TravelNodeMap::generateTransportNodes()
 
                                         TravelNodePath travelPath(0.1f, totalTime, (uint8)TravelNodePathType::transport, entry, true);
                                         travelPath.setPath(ppath);
-                                        node->setPathTo(prevNode, travelPath);
+                                        prevNode->setPathTo(node, travelPath);
                                         ppath.clear();
                                         ppath.push_back(pos);
                                         timeStart = p.second->TimeSeg;
@@ -2419,7 +2419,7 @@ void TravelNodeMap::generateTransportNodes()
                         {
                             TravelNodePath travelPath(0.1f, 0.0, (uint8)TravelNodePathType::transport, entry, true);
                             travelPath.setPathAndCost(ppath, moveSpeed);
-                            node->setPathTo(prevNode, travelPath);
+                            prevNode->setPathTo(node, travelPath);
                             ppath.clear();
                             ppath.push_back(pos);
                         }
@@ -2450,7 +2450,7 @@ void TravelNodeMap::generateTransportNodes()
                                 TravelNodePath travelPath(0.1f, 0.0, (uint8)TravelNodePathType::transport, entry, true);
                                 travelPath.setPathAndCost(ppath, moveSpeed);
 
-                                node->setPathTo(prevNode, travelPath);
+                                prevNode->setPathTo(node, travelPath);
                             }
                         }
                     }
