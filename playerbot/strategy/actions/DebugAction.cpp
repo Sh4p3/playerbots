@@ -741,20 +741,23 @@ bool DebugAction::HandleTransport(Event& event, Player* requester, const std::st
         GameObjectInfo const* data = sGOStorage.LookupEntry<GameObjectInfo>(trans->GetEntry());
         std::ostringstream out;
 
-        if (WorldPosition(bot).isOnTransport(trans))
-        {
-            out << "On transport ";
-        }
-        else
-        {
-            out << "Not on transport ";
-        }
-
         std::string transportName = trans->GetName();
         if (transportName.empty())
             transportName = data->name;
 
         out << transportName << " (" << trans->GetEntry() << ")";
+
+        if (bot->GetTransport() == trans)
+            out << "[inside]";
+
+        if (WorldPosition(bot).isOnTransport(trans))
+        {
+            out << "[location on]";
+        }
+        else
+        {
+            out << "[location not on]";
+        }
 
         out<< " dist:" << std::fixed << std::setprecision(2) << botPos.distance(trans) << " offset:" << (botPos -trans).print();
 

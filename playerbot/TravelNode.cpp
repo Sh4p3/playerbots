@@ -1196,13 +1196,15 @@ TravelPath TravelNodeRoute::buildPath(std::vector<WorldPosition> pathToStart, st
             }
             else if (nodePath->getPathType() == TravelNodePathType::transport) //Move onto transport
             {
-                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_TRANSPORT, nodePath->getPathObject()); //Departure point
-                travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_TRANSPORT, nodePath->getPathObject());     //Arrival point        
+                travelPath.addPath(nodePath->getPath(), PathNodeType::NODE_TRANSPORT, nodePath->getPathObject());
+                //travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_TRANSPORT, nodePath->getPathObject()); //Departure point
+                //travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_TRANSPORT, nodePath->getPathObject());     //Arrival point        
             }
             else if (nodePath->getPathType() == TravelNodePathType::flightPath) //Use the flightpath
             {
-                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_FLIGHTPATH, nodePath->getPathObject()); //Departure point
-                travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_FLIGHTPATH, nodePath->getPathObject());     //Arrival point        
+                travelPath.addPath(nodePath->getPath(), PathNodeType::NODE_FLIGHTPATH, nodePath->getPathObject());
+                //travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_FLIGHTPATH, nodePath->getPathObject()); //Departure point
+                //travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_FLIGHTPATH, nodePath->getPathObject());     //Arrival point        
             }
             else if (nodePath->getPathType() == TravelNodePathType::teleportSpell)
             {
