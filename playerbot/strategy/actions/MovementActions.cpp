@@ -368,7 +368,7 @@ bool MovementAction::MinimalMove(PlayerbotAI* ai)
     if (lastMove.nextTeleport > now)
         return false;
 
-    lastMove.nextTeleport = now + sPlayerbotAIConfig.passiveDelay; //For teleports/transports/ect 
+    lastMove.nextTeleport = now + sPlayerbotAIConfig.passiveDelay/1000; //For teleports/transports/ect 
 
     std::vector<PathNodePoint>& path = lastMove.lastPath.getPath();
 
