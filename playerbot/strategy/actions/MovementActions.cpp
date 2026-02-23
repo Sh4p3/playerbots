@@ -430,15 +430,15 @@ bool MovementAction::MinimalMove(PlayerbotAI* ai)
 
     for (auto it = std::next(nextStep); it != path.end(); ++it)
     {
-        time += (nextStep->point.distance(bot) / bot->GetSpeedInMotion()) * 1000.0;
+        time += (nextStep->point.distance(bot) / bot->GetSpeedInMotion()) * 1000;
 
         nextStep = it;
 
-        if (time > sPlayerbotAIConfig.passiveDelay)
+        if (!it->isWalkable() || time > sPlayerbotAIConfig.passiveDelay)
             break;
     }
 
-    lastMove.nextTeleport = now + (time / 1000.0f);
+    lastMove.nextTeleport = now + (time / 1000);
 
     lastMove.lastPath.cutTo(*nextStep, false);
 
