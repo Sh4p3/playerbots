@@ -424,7 +424,10 @@ bool MovementAction::MinimalMove(PlayerbotAI* ai)
     bot->TeleportTo(nextStep->point);
 
     if (std::next(nextStep) == path.end())
+    {
         lastMove.lastPath.clear();
+        return true;
+    }
 
     uint32 time = 0;
 
