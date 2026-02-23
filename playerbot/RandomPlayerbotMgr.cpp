@@ -465,11 +465,16 @@ void RandomPlayerbotMgr::LogPlayerLocation()
 
                                 splitPath.push_back({currentSegment, currentWalkable});
 
+                                uint32 segmentNr = 0;
+
                                 for (auto& [segement, walkable] : splitPath)
                                 {
+                                    segmentNr++;
                                     std::ostringstream out;
                                     out << bot->GetName() << ",";
                                     out << std::fixed << std::setprecision(1);
+
+                                    out << segmentNr << ",";
 
                                     WorldPosition().printWKT(segement, out, 1, false);
 
