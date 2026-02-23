@@ -3375,6 +3375,30 @@ void TravelNodeMap::loadNodeStore()
             sLog.outString();
             sLog.outErrorDb(">> Error loading travelNode paths.");
         }
+
+        //Hotfix inverses transport paths. No longer needed if using db data after (todo date when refreshing next nodes)
+
+        for (auto& node : getNodes())
+        {
+            for (auto& [endNode, path] : *node->getPaths())
+            {
+                if (path.getPathType() != TravelNodePathType::transport)
+                    continue;
+
+                if (path.getPath().empty())
+                    continue;
+
+                if (path.getPath().front() == *node->getPosition() || path.getPath().back() == *endNode->getPosition())
+                    continue;
+
+                if (path.getPath().front() != *endNode->getPosition() || path.getPath().back() != *node->getPosition())
+                    continue;
+                
+                auto newPath = path.getPath();
+                std::reverse(newPath.begin(), newPath.end());
+                path.setPath(newPath);
+            }
+        }
     }
 }
 
