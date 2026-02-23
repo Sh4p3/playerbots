@@ -6053,10 +6053,10 @@ std::pair<uint32, uint32> PlayerbotAI::GetPriorityBracket(ActivePiorityType type
     case ActivePiorityType::PLAYER_GUILD:
         return { 0,50 };
     case ActivePiorityType::NO_PATH:
-        return { 50, 100};
+        return { 50, 99};
     case ActivePiorityType::IN_ACTIVE_AREA:
     case ActivePiorityType::IN_EMPTY_SERVER:
-        return { 50,100 };
+        return { 50,100 }; //Note lower 100 means multiply by activity percentage.
     case ActivePiorityType::IN_ACTIVE_MAP:
         return { 70,100 };
     case ActivePiorityType::IN_INACTIVE_MAP:
