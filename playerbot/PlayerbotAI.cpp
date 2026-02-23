@@ -5989,6 +5989,14 @@ ActivePiorityType PlayerbotAI::GetPriorityType()
     if (isLFG)
         return ActivePiorityType::IN_LFG;
 
+    if (sPlayerbotAIConfig.enableMinimalMove)
+    {
+        AiObjectContext* context = GetAiObjectContext();
+        LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+        if (lastMove.lastPath.empty() && !urand(0, 5))
+            return ActivePiorityType::NO_PATH;
+    }
+
     //If has real players - slow down continents without player
     //This means we first disable bots in a different continent/area.
     if (sRandomPlayerbotMgr.GetPlayers().empty())
@@ -6008,14 +6016,6 @@ ActivePiorityType PlayerbotAI::GetPriorityType()
     // real guild always active if member+
     if (IsInRealGuild())
         return ActivePiorityType::PLAYER_GUILD;
-
-    if (sPlayerbotAIConfig.enableMinimalMove)
-    {
-        AiObjectContext* context = GetAiObjectContext();
-        LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
-        if (lastMove.lastPath.empty() && !urand(0, 5))
-            return ActivePiorityType::NO_PATH;
-    }
 
     if (bot->IsBeingTeleported() || !bot->IsInWorld() || !bot->GetMap()->HasRealPlayers())
         return ActivePiorityType::IN_INACTIVE_MAP;
