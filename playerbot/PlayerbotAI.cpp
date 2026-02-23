@@ -5954,7 +5954,17 @@ ActivePiorityType PlayerbotAI::GetPriorityType()
         return ActivePiorityType::IN_BATTLEGROUND;
 
     if (!WorldPosition(bot).isOverworld())
-        return ActivePiorityType::IN_INSTANCE;
+    {
+        if (!sPlayerbotAIConfig.enableMinimalMove)
+            return ActivePiorityType::IN_INSTANCE;
+        else
+        {
+            AiObjectContext* context = GetAiObjectContext();
+            LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+            if (lastMove.lastPath.empty())
+                return ActivePiorityType::IN_INSTANCE;
+        }
+    }
 
     if (HasPlayerNearby())
         return ActivePiorityType::VISIBLE_FOR_PLAYER;
