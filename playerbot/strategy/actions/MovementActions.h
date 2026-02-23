@@ -14,6 +14,7 @@ namespace ai
     public:
         MovementAction(PlayerbotAI* ai, std::string name) : Action(ai, name) {}
 
+        static bool MinimalMove(PlayerbotAI* ai);
     protected:
         bool ChaseTo(WorldObject *obj, float distance = 0.0f, float angle = 0.0f);
         bool MoveNear(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig.contactDistance);

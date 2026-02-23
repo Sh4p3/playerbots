@@ -1954,62 +1954,6 @@ void PlayerbotAI::ChangeEngine(BotState type)
     }
 }
 
-inline bool DoMinimalMove(PlayerbotAI* ai)
-{
-    if(!sPlayerbotAIConfig.enableMinimalMove)
-        return false;
-
-    auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, "minimalMove", ai);
-
-    AiObjectContext* context = ai->GetAiObjectContext();
-    Player* bot = ai->GetBot();
-    LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
-
-    if (lastMove.lastPath.empty())
-        return false;
-
-    time_t now = time(0);
-
-    if (lastMove.nextTeleport > now)
-        return false;
-
-    PathNodePoint nextStep = lastMove.lastPath.getPath().front();
-    bool doDelay = true;
-
-    if (!nextStep.isWalkable())
-    {
-        for (auto& step : lastMove.lastPath.getPath())
-        {
-            if (!step.isWalkable())
-                continue;
-
-            nextStep = step;
-            doDelay = true;
-            break;
-        }
-    }
-
-    if (!nextStep.isWalkable())
-        return false;
-
-    if (ai->HasPlayerNearby(nextStep.point, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL)))
-        return false;
-
-    uint32 time = 1;
-
-    if (doDelay)
-    {
-        time = nextStep.point.distance(bot) / bot->GetSpeedInMotion();
-    }
-
-    lastMove.nextTeleport = now + time; 
-
-    lastMove.lastPath.cutTo(nextStep);
-
-    bot->TeleportTo(nextStep.point);
-
-    return true;
-}
 
 void PlayerbotAI::DoNextAction(bool min)
 {
@@ -2039,9 +1983,7 @@ void PlayerbotAI::DoNextAction(bool min)
 
     if (minimal)
     {
-
-
-        if (!DoMinimalMove(this) && !bot->isAFK() && !bot->InBattleGround() && !HasRealPlayerMaster())
+        if (!MovementAction::MinimalMove(this) && !bot->isAFK() && !bot->InBattleGround() && !HasRealPlayerMaster())
             bot->ToggleAFK();
 
         SetAIInternalUpdateDelay(sPlayerbotAIConfig.passiveDelay);

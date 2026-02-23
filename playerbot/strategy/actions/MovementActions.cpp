@@ -285,6 +285,82 @@ bool MovementAction::FlyDirect(WorldPosition &startPosition, WorldPosition &endP
 #endif
 }
 
+
+bool MovementAction::MinimalMove(PlayerbotAI* ai)
+{
+    if (!sPlayerbotAIConfig.enableMinimalMove)
+        return false;
+
+    auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, "minimalMove", ai);
+
+    AiObjectContext* context = ai->GetAiObjectContext();
+    Player* bot = ai->GetBot();
+    LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+
+    if (bot->IsTaxiFlying())
+        return false;
+
+    if (lastMove.lastPath.empty())
+        return false;
+
+    time_t now = time(0);
+
+    if (lastMove.nextTeleport > now)
+        return false;
+
+    lastMove.nextTeleport = now + sPlayerbotAIConfig.passiveDelay; //For teleports/transports/ect 
+
+    std::vector<PathNodePoint>& path = lastMove.lastPath.getPath();
+
+    auto nextStep = path.begin();
+
+    bool doDelay = true;
+
+
+    //Skip over stuff we don't walk.
+    if (!nextStep->isWalkable())
+    {
+        auto it = std::find_if(std::next(nextStep), path.end(), [](const auto& step) {
+            return step.isWalkable();
+        });
+
+        if (it != path.end())
+        {
+            nextStep = it;
+            doDelay = true;
+        }
+    }
+
+    if (!nextStep->isWalkable())
+        return false;
+
+    if (ai->HasPlayerNearby(nextStep->point, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL)))
+        return true;
+
+    bot->TeleportTo(nextStep->point);
+
+    if (std::next(nextStep) == path.end())
+        lastMove.lastPath.clear();
+
+    uint32 time = 0;
+
+    for (auto it = std::next(nextStep); it != path.end(); ++it)
+    {
+        time += (nextStep->point.distance(bot) / bot->GetSpeedInMotion()) * 1000.0;
+
+        nextStep = it;
+
+        if (time > sPlayerbotAIConfig.passiveDelay)
+            break;
+    }
+
+    lastMove.nextTeleport = now + (time / 1000.0f);
+
+    lastMove.lastPath.cutTo(*nextStep, false);
+
+    return true;
+}
+
 bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, bool react, bool noPath, bool ignoreEnemyTargets)
 {
     WorldPosition endPosition(mapId, x, y, z, 0);
