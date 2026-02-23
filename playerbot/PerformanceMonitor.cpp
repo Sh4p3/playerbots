@@ -116,8 +116,14 @@ void PerformanceMonitor::PrintStats(bool perTick, bool fullStack, bool showMap)
                     
                     if (showMap)
                     {
-                        if (metric != PERF_MON_TOTAL || (newStack[0].find("PlayerbotAIBase::FullTick") == std::string::npos && (newStack[0].find("PlayerbotAI::UpdateAI") == std::string::npos || newStack[0].find(" I") != newStack[0].size() - 2)))
+                        if (metric != PERF_MON_TOTAL)
                             newStack[0] = newStack[0] + " " + std::to_string(mapId) + (instanceId ? " (" + std::to_string(instanceId) + ")" : "");
+                        else if (newStack[0].find(" I") != std::string::npos)
+                            newStack[0] = newStack[0] + " " + std::to_string(mapId) + (instanceId ? " (" + std::to_string(instanceId) + ")" : "");
+                        else if (newStack[0].find("PlayerbotAI::UpdateAI") == std::string::npos && newStack[0].find("PlayerbotAIBase::FullTick") == std::string::npos)
+                            newStack[0] = newStack[0] + " " + std::to_string(mapId) + (instanceId ? " (" + std::to_string(instanceId) + ")" : "");                           
+                        else
+                            newStack[0] = newStack[0];
                     }                    
 
                     PerformanceData& pd = data[metric][newStack];
