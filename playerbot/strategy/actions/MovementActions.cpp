@@ -285,6 +285,66 @@ bool MovementAction::FlyDirect(WorldPosition &startPosition, WorldPosition &endP
 #endif
 }
 
+bool MovementAction::UseTaxi(PlayerbotAI* ai, uint32 entry, bool needNpc)
+{
+    AiObjectContext* context = ai->GetAiObjectContext();
+    Player* bot = ai->GetBot();
+
+    TaxiPathEntry const* tEntry = sTaxiPathStore.LookupEntry(entry);
+
+    if (!tEntry)
+    {
+#ifdef MANGOSBOT_TWO
+        bot->OnTaxiFlightEject(true);
+        ai->Unmount();
+#endif
+        bool goClick = ai->HandleSpellClick(entry); //Source gryphon of ebonhold.
+        return goClick;
+    }
+
+    Creature* unit = nullptr;
+
+    if (needNpc)
+    {
+        std::list<ObjectGuid> npcs = AI_VALUE(std::list<ObjectGuid>, "nearest npcs");
+        for (std::list<ObjectGuid>::iterator i = npcs.begin(); i != npcs.end(); i++)
+        {
+            unit = bot->GetNPCIfCanInteractWith(*i, UNIT_NPC_FLAG_FLIGHTMASTER);
+            if (unit)
+                break;
+        }
+
+        if (!unit)
+        {
+            return false;
+        }
+
+        if (unit && !bot->m_taxi.IsTaximaskNodeKnown(tEntry->from))
+        {
+            bot->GetSession()->SendLearnNewTaxiNode(unit);
+
+            unit->SetFacingTo(unit->GetAngle(bot));
+        }
+    }
+
+    uint32 botMoney = bot->GetMoney();
+    if (ai->HasCheat(BotCheatMask::gold) || ai->HasCheat(BotCheatMask::taxi))
+    {
+        bot->SetMoney(botMoney + tEntry->price);
+    }
+
+    bot->OnTaxiFlightEject(true);
+
+    ai->Unmount();
+
+    bool goTaxi = bot->ActivateTaxiPathTo({tEntry->from, tEntry->to}, unit, 1);
+
+    if (!goTaxi)
+        bot->SetMoney(botMoney);
+
+    return goTaxi;
+}
+
 
 bool MovementAction::MinimalMove(PlayerbotAI* ai)
 {
@@ -315,6 +375,30 @@ bool MovementAction::MinimalMove(PlayerbotAI* ai)
     auto nextStep = path.begin();
 
     bool doDelay = true;
+
+    //Taxi handling: Start taxi and remove path until it ends.
+    if (nextStep->type == PathNodeType::NODE_FLIGHTPATH)
+    {
+        if (nextStep->point.sqDistance(bot) > INTERACTION_DISTANCE * INTERACTION_DISTANCE)
+        {
+            bot->TeleportTo(nextStep->point);
+
+            return true;
+        }
+
+        bool didTaxi = UseTaxi(ai, nextStep->entry, false);
+
+        for (auto& step : path)
+        {
+            if (step.type == PathNodeType::NODE_FLIGHTPATH && step.entry == nextStep->entry)
+                continue;
+
+            lastMove.lastPath.cutTo(step, false); //Remove path until next walk or taxi.
+            break;
+        }
+
+        return true;
+    }
 
 
     //Skip over stuff we don't walk.
@@ -529,6 +613,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         float oldDist;
         if (ai->HasStrategy("debug move", BotState::BOT_STATE_NON_COMBAT))
             oldDist = WorldPosition().getPathLength(movePath.getPointPath());
+
         if (!bot->GetTransport() && urand(0,1) && movePath.makeShortCut(startPosition, sPlayerbotAIConfig.reactDistance, bot))
             if (ai->HasStrategy("debug move", BotState::BOT_STATE_NON_COMBAT))
                 ai->TellPlayerNoFacing(GetMaster(), "Found a shortcut: old=" + std::to_string(uint32(oldDist)) + "y new=" + std::to_string(uint32(WorldPosition().getPathLength(movePath.getPointPath()))));
@@ -783,65 +868,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
         if (pathType == TravelNodePathType::flightPath && entry)
         {
-            TaxiPathEntry const* tEntry = sTaxiPathStore.LookupEntry(entry);
-
-            if (tEntry)
-            {
-                Creature* unit = nullptr;
-
-                std::list<ObjectGuid> npcs = AI_VALUE(std::list<ObjectGuid>, "nearest npcs");
-                for (std::list<ObjectGuid>::iterator i = npcs.begin(); i != npcs.end(); i++)
-                {
-                    unit = bot->GetNPCIfCanInteractWith(*i, UNIT_NPC_FLAG_FLIGHTMASTER);
-                    if (unit)
-                        break;
-                }
-
-                if (!unit)
-                {
-                    return false;
-                }
-
-                if (unit && !bot->m_taxi.IsTaximaskNodeKnown(tEntry->from))
-                {
-                    bot->GetSession()->SendLearnNewTaxiNode(unit);
-
-                    unit->SetFacingTo(unit->GetAngle(bot));
-                }
-
-                uint32 botMoney = bot->GetMoney();
-                if (ai->HasCheat(BotCheatMask::gold) || ai->HasCheat(BotCheatMask::taxi))
-                {
-                    bot->SetMoney(botMoney + tEntry->price);
-                }                
-                bot->OnTaxiFlightEject(true);
-                ai->Unmount();
-                bool goTaxi = bot->ActivateTaxiPathTo({ tEntry->from, tEntry->to }, unit, 1);
-#ifdef MANGOSBOT_TWO
-                /*
-                bot->ResolvePendingMount();
-                */
-#endif
-                if(!goTaxi)
-                    bot->SetMoney(botMoney);
-
-                return goTaxi;
-            }
-            else
-            {
-#ifdef MANGOSBOT_TWO                
-                bot->OnTaxiFlightEject(true);
-                ai->Unmount();
-#endif
-                bool goClick = ai->HandleSpellClick(entry); //Source gryphon of ebonhold.
-#ifdef MANGOSBOT_TWO
-                /*
-                bot->ResolvePendingMount();
-                */
-#endif
-
-                return goClick;
-            }
+            return UseTaxi(ai, entry, true);
         }
 
         if (pathType == TravelNodePathType::teleportSpell && entry)
