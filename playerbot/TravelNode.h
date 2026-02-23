@@ -266,7 +266,7 @@ namespace ai
 
         bool operator==(const PathNodePoint& p1) const { return point == p1.point && type == p1.type && entry == p1.entry; }
 
-        bool isWalkable() { return (uint8)type <= (uint8)PathNodeType::NODE_NODE; }
+        bool isWalkable() const { return (uint8)type <= (uint8)PathNodeType::NODE_NODE; }
     };
 
     //A complete list of points the bots has to walk to or teleport to.
@@ -284,10 +284,10 @@ namespace ai
         void clear() { fullPath.clear(); }
 
         bool empty() { return fullPath.empty(); }
-        bool cutTo(PathNodePoint point);
+        bool cutTo(PathNodePoint point, bool including);
 
 
-        std::vector<PathNodePoint> getPath() { return fullPath; }
+        std::vector<PathNodePoint>& getPath() { return fullPath; }
         WorldPosition getFront() { return fullPath.front().point; }
         WorldPosition getBack() { return fullPath.back().point; }
 
@@ -315,7 +315,7 @@ namespace ai
         float getTotalDistance();
 
         void setNodes(std::vector<TravelNode*> nodes1) { nodes = nodes1; }
-        std::vector<TravelNode*> getNodes() { return nodes; }
+        std::vector<TravelNode*>& getNodes() { return nodes; }
 
         void addTempNodes(std::vector<TravelNode*> nodes) { tempNodes.insert(tempNodes.end(), nodes.begin(), nodes.end()); }
         void cleanTempNodes() { for (auto node : tempNodes) delete node; }

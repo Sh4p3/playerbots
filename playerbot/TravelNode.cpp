@@ -795,12 +795,14 @@ void TravelNode::print(bool printFailed)
     }
 }
 
-bool TravelPath::cutTo(PathNodePoint point)
+bool TravelPath::cutTo(PathNodePoint point, bool including)
 {
     auto it = std::find(fullPath.begin(), fullPath.end(), point);
     if (it != fullPath.end())
     {
-        fullPath.erase(fullPath.begin(), std::next(it));
+        auto cutIt = including ? std::next(it) : it;
+
+        fullPath.erase(fullPath.begin(), cutIt);
         return true;
     }
     
@@ -969,6 +971,9 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
 
         float curDist = p->point.distance(startPos);
 
+        if (!p->isWalkable())
+            continue;
+
         if (curDist <= minDist || p == beg)
         {
             minDist = curDist;
@@ -1000,6 +1005,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     {
         pathType = TravelNodePathType::areaTrigger;
         entry = startP->entry;
+        cutTo(*startP, false);
         return startP->point;
     }
 
@@ -1008,6 +1014,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     {
         pathType = TravelNodePathType::staticPortal;
         entry = startP->entry;
+        cutTo(*startP, false);
         return startP->point;
     }
 
@@ -1016,6 +1023,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     {
         pathType = TravelNodePathType::teleportSpell;
         entry = startP->entry;
+        cutTo(*startP, false);
         return startP->point;
     }
 
@@ -1024,6 +1032,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     {
         pathType = TravelNodePathType::flightPath;
         entry = startP->entry;
+        cutTo(*startP, false);
         return startP->point;
     }
 
@@ -1036,6 +1045,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
         {
             if (p->type != PathNodeType::NODE_TRANSPORT)
             {
+                cutTo(*p, false);
                 return p->point;              //We want to move here.
             }
         }
@@ -1050,6 +1060,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
         {
             if (p->type != PathNodeType::NODE_TRANSPORT)
             {
+                cutTo(*p, false);
                 return p->point;              //We want to move here.
             }
         }
@@ -1076,6 +1087,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
             if (p->type != PathNodeType::NODE_TRANSPORT)
             {
                 telePosition = prevP->point;  //Boat needs to be here
+                cutTo(*p, false);
                 return p->point;              //We want to move here.
             }
             prevP = p;
@@ -1088,6 +1100,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
         pathType = TravelNodePathType::transport;
         entry = nextP->entry;
         telePosition = nextP->point; //Boat needs to be here.
+        cutTo(*startP, false);
         return startP->point;        //We want to stand somewhere here.
     } 
 
@@ -1099,6 +1112,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
         return WorldPosition();
     }
 
+    cutTo(*startP, false);
     return startP->point;
 }
 
