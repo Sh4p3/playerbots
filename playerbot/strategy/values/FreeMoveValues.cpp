@@ -67,6 +67,9 @@ float FreeMoveRangeValue::Calculate()
 
     if (!ai->HasActivePlayerMaster())
     {
+        if (ai->HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT))
+            return sPlayerbotAIConfig.wanderMaxDistance;
+
         if (followTarget->IsInCombat())
             return sPlayerbotAIConfig.reactDistance * 0.25f;
 
