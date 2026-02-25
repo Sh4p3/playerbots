@@ -2854,8 +2854,14 @@ void TravelNodeMap::generateTaxiPaths()
 
         std::vector<WorldPosition> ppath;
 
+        if (startNode->fDist(WorldPosition(nodes.front()->mapid, nodes.front()->x, nodes.front()->y, nodes.front()->z, 0.0)) > 0.1f)
+            ppath.push_back(*startNode->getPosition());
+
         for (auto& n : nodes)
             ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0));
+
+        if (endNode->fDist(ppath.back()) > 0.1f)
+            ppath.push_back(*endNode->getPosition());
 
         float totalTime = startPos.getPathLength(ppath) / (450 * 8.0f);
 
@@ -3396,6 +3402,34 @@ void TravelNodeMap::loadNodeStore()
                 
                 auto newPath = path.getPath();
                 std::reverse(newPath.begin(), newPath.end());
+                path.setPath(newPath);
+            }
+        }
+
+        //Hotfix taxipaths not starting at nodes. No longer needed if using db data after (todo date when refreshing next nodes)
+        for (auto& node : getNodes())
+        {
+            for (auto& [endNode, path] : *node->getPaths())
+            {
+                if (path.getPathType() != TravelNodePathType::flightPath)
+                    continue;
+
+                if (path.getPath().empty())
+                    continue;
+
+                if (path.getPath().front() == *node->getPosition() || path.getPath().back() == *endNode->getPosition())
+                    continue;
+
+                std::vector<WorldPosition> oldPath = path.getPath();
+                std::vector<WorldPosition> newPath;
+                
+
+                newPath.push_back(*node->getPosition());
+                    
+                newPath.insert(newPath.end(), oldPath.begin(), oldPath.end());
+
+                newPath.push_back(*endNode->getPosition());
+                
                 path.setPath(newPath);
             }
         }
