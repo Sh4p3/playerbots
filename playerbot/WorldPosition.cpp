@@ -886,7 +886,7 @@ std::vector<WorldPosition> WorldPosition::getPathStepFrom(const WorldPosition& s
                 retvec.push_back(end);
             else
             {
-                WorldPosition stepPoint = (end - lastPoint) / dist * 5.0f;
+                WorldPosition stepPoint = lastPoint + ((end - lastPoint) / dist * 5.0f);
                 retvec.push_back(stepPoint);
             }
 
