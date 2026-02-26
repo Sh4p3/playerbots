@@ -202,7 +202,7 @@ namespace ai
     {
     public:
         BlessingOfMightTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of might", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfMightTrigger : public BuffTrigger
@@ -230,7 +230,7 @@ namespace ai
     {
     public:
         BlessingOfWisdomTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of wisdom", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfWisdomTrigger : public BuffTrigger
@@ -258,7 +258,7 @@ namespace ai
     {
     public:
         BlessingOfKingsTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of kings", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfKingsTrigger : public BuffTrigger
@@ -287,7 +287,7 @@ namespace ai
     {
     public:
         BlessingOfLightTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of light", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfLightTrigger : public BuffTrigger
@@ -316,7 +316,7 @@ namespace ai
     {
     public:
         BlessingOfSalvationTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of salvation", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfSalvationTrigger : public BuffTrigger
@@ -344,7 +344,7 @@ namespace ai
     {
     public:
         BlessingOfSanctuaryTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "blessing of sanctuary", 4) {}
-        virtual bool IsActive() { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
+        virtual bool IsActive() override { return BuffTrigger::IsActive() && !ai->HasAura("greater " + spell, GetTarget()); }
     };
 
     class GreaterBlessingOfSanctuaryTrigger : public BuffTrigger
@@ -384,7 +384,7 @@ namespace ai
     {
     public:
         HammerOfJusticeOnEnemyTrigger(PlayerbotAI* ai) : SpellTrigger(ai, "hammer of justice") {}
-        virtual bool IsActive();
+        virtual bool IsActive() override;
     };
 
     class ArtOfWarTrigger : public HasAuraTrigger

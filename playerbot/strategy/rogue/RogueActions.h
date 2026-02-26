@@ -19,12 +19,12 @@ namespace ai
 
         virtual bool isPossible() { return true; }
 
-        virtual bool isUseful() 
+        virtual bool isUseful() override
         {
             return bot->HasSpell(36554) && bot->IsSpellReady(36554);
         }
 
-        virtual bool Execute(Event& event) 
+        virtual bool Execute(Event& event) override
         {
             return bot->CastSpell(GetTarget(), 36554, TRIGGERED_OLD_TRIGGERED);
         }
@@ -40,7 +40,7 @@ namespace ai
 	{
 	public:
 		CastSprintAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "sprint") {}
-        virtual std::string GetTargetName() { return "self target"; }
+        virtual std::string GetTargetName() override { return "self target"; }
 	};
 
     class CastStealthAction : public CastBuffSpellAction
@@ -48,7 +48,7 @@ namespace ai
     public:
         CastStealthAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "stealth") {}
         
-        virtual std::string GetTargetName() { return "self target"; }
+        virtual std::string GetTargetName() override { return "self target"; }
         
         virtual bool isUseful()
         {
@@ -233,7 +233,7 @@ namespace ai
             return context->GetValue<Unit*>("cc target", getName());
         }
 
-        virtual bool isUseful() { return true; }
+        virtual bool isUseful() override { return true; }
     };
 
     class CastGarroteAction : public CastMeleeSpellAction

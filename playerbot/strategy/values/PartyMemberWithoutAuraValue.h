@@ -12,7 +12,7 @@ namespace ai
             PartyMemberValue(ai, name), Qualified() {}
 
     protected:
-        virtual Unit* Calculate();
+        virtual Unit* Calculate() override;
     };
 
     class PartyMemberWithoutAuraValue : public PartyMemberValue, public Qualified
@@ -22,7 +22,7 @@ namespace ai
           PartyMemberValue(ai, name), Qualified() {}
 
     protected:
-        virtual Unit* Calculate();
+        virtual Unit* Calculate() override;
 	};
 
     class PartyMemberWithoutMyAuraValue : public PartyMemberValue, public Qualified
@@ -35,7 +35,7 @@ namespace ai
         bool lowestHp;
 
     protected:
-        virtual Unit* Calculate();
+        virtual Unit* Calculate() override;
     };
 
     class PartyTankWithoutAuraValue : public PartyMemberValue, public Qualified
@@ -45,6 +45,6 @@ namespace ai
             PartyMemberValue(ai, name), Qualified() {}
 
     protected:
-        virtual Unit* Calculate();
+        virtual Unit* Calculate() override;
     };
 }
