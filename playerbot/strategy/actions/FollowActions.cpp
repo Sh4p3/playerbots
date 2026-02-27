@@ -26,6 +26,8 @@ bool FollowAction::Execute(Event& event)
             }
         }
     }
+    else
+        moved = Follow(followTarget, 0, 0);
 
     return moved;
 }
