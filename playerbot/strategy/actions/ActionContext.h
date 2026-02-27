@@ -126,7 +126,6 @@ namespace ai
             creators["release loot"] = [](PlayerbotAI* ai) { return new ReleaseLootAction(ai); };
             creators["auto loot roll"] = [](PlayerbotAI* ai) { return new AutoLootRollAction(ai); };
             creators["follow"] = [](PlayerbotAI* ai) { return new FollowAction(ai); };
-            creators["wander far can move around"] = [](PlayerbotAI* ai) { return new WanderFarCanMoveAroundAction(ai); };
             creators["stop follow"] = [](PlayerbotAI* ai) { return new StopFollowAction(ai); };
             creators["flee to master"] = [](PlayerbotAI* ai) { return new FleeToMasterAction(ai); };
             creators["runaway"] = [](PlayerbotAI* ai) { return new RunAwayAction(ai); };

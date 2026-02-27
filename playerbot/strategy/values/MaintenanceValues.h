@@ -23,6 +23,15 @@ namespace ai
             if (AI_VALUE2(bool, "trigger active", "castnc"))
                 return false;
 
+            if (ai->HasStrategy("wander", BotState::BOT_STATE_NON_COMBAT))
+            {
+                float dist = AI_VALUE2(float, "distance", "master target");
+                bool wanderTooFar = (dist - ai->GetRange("wandermax")) > sPlayerbotAIConfig.wanderMaxDistance;
+
+                if (wanderTooFar)
+                    return false;
+            }
+
             return true;
         }
     };

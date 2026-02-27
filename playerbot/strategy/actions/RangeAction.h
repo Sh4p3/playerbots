@@ -13,12 +13,4 @@ namespace ai
     private:
         void PrintRange(std::string type, Player* requester);
     };
-
-    class WanderFarCanMoveAroundAction : public Action
-    {
-    public:
-        WanderFarCanMoveAroundAction(PlayerbotAI* ai) : Action(ai, "wander far can move around") {}
-        virtual bool Execute(Event& event) override;
-        virtual bool isUseful() override { return true; }
-    };
 }
