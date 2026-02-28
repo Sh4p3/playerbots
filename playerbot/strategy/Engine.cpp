@@ -154,8 +154,8 @@ bool Engine::DoNextAction(Unit* unit, int depth, bool minimal, bool isStunned)
             std::string actionName = (action ? action->getName() : "unknown");
             if (!event.getSource().empty())
                 actionName += " <" + event.getSource() + ">";
-
-            auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, actionName, &aiObjectContext->performanceStack);
+            
+            auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, actionName, ai);
 
             if (action)
                 action->setRelevance(relevance);
@@ -191,7 +191,7 @@ bool Engine::DoNextAction(Unit* unit, int depth, bool minimal, bool isStunned)
                 bool isUseful = false;
                 if (!isStunned || action->isUsefulWhenStunned())
                 {
-                    auto pmo2 = sPerformanceMonitor.start(PERF_MON_ACTION, "isUseful", &aiObjectContext->performanceStack);
+                    auto pmo2 = sPerformanceMonitor.start(PERF_MON_ACTION, "isUseful", ai);
                     isUseful = action->isUseful();
                     pmo2.reset();
                 }
@@ -230,13 +230,13 @@ bool Engine::DoNextAction(Unit* unit, int depth, bool minimal, bool isStunned)
                     }
                 }
 
-                    auto pmo3 = sPerformanceMonitor.start(PERF_MON_ACTION, "isPossible", &aiObjectContext->performanceStack);
+                    auto pmo3 = sPerformanceMonitor.start(PERF_MON_ACTION, "isPossible", ai);
                     bool isPossible = action->isPossible();
                     pmo3.reset();
 
                     if (isPossible && relevance)
                     {
-                        auto pmo4 = sPerformanceMonitor.start(PERF_MON_ACTION, "Execute", &aiObjectContext->performanceStack);
+                        auto pmo4 = sPerformanceMonitor.start(PERF_MON_ACTION, "Execute", ai);
                         actionExecuted = ListenAndExecute(action, event);
                         pmo4.reset();
 
@@ -414,24 +414,24 @@ ActionResult Engine::ExecuteAction(const std::string& name, Event& event)
     ActionNode* actionNode = CreateActionNode(name);
     if (actionNode)
     {
-        auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, name, &aiObjectContext->performanceStack);
+        auto pmo1 = sPerformanceMonitor.start(PERF_MON_ACTION, name, ai);
         Action* action = InitializeAction(actionNode);
         if (action)
         {
-            auto pmo2 = sPerformanceMonitor.start(PERF_MON_ACTION, "isUseful", &aiObjectContext->performanceStack);
+            auto pmo2 = sPerformanceMonitor.start(PERF_MON_ACTION, "isUseful", ai);
             bool isUseful = action->isUseful();
             pmo2.reset();
             
             if (isUseful)
             {
-                auto pmo3 = sPerformanceMonitor.start(PERF_MON_ACTION, "isPossible", &aiObjectContext->performanceStack);
+                auto pmo3 = sPerformanceMonitor.start(PERF_MON_ACTION, "isPossible", ai);
                 bool isPossible = action->isPossible();
                 pmo3.reset();
 
                 if (isPossible)
                 {
                     action->MakeVerbose(event.getOwner() != nullptr);
-                    auto pmo4 = sPerformanceMonitor.start(PERF_MON_ACTION, "Execute", &aiObjectContext->performanceStack);
+                    auto pmo4 = sPerformanceMonitor.start(PERF_MON_ACTION, "Execute", ai);
                     bool executionResult = ListenAndExecute(action, event);
                     pmo4.reset();
 
@@ -590,7 +590,7 @@ void Engine::ProcessTriggers(bool minimal)
         {
             if (minimal && node->getFirstRelevance() < 100)
                 continue;
-            auto pmo = sPerformanceMonitor.start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
+            auto pmo = sPerformanceMonitor.start(PERF_MON_TRIGGER, trigger->getName(), ai);
             Event event = trigger->Check();
 
 #ifdef PLAYERBOT_ELUNA 
