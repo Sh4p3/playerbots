@@ -1454,10 +1454,15 @@ public:
             (actionName == "choose rpg target") ||
             (actionName == "move to rpg target") ||
             (actionName == "travel") ||
-            (actionName == "move to start") ||
-            (actionName == "move to objective") ||
-            (actionName == "select objective") ||
-            (actionName == "check objective") ||
+            (actionName == "move to travel target") ||
+            (actionName == "choose travel target") ||
+            (actionName == "reset travel target") ||
+            (actionName == "bg move to start") ||
+            (actionName == "bg move to objective") ||
+            (actionName == "bg check objective") ||
+            (actionName == "bg check flag") ||
+            (actionName == "attack enemy flag carrier") ||
+            (actionName == "attack enemy flag carrier") ||
             (actionName == "arena tactics") ||
             (actionName == "move to center"))
         {
