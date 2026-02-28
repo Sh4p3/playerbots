@@ -18,6 +18,7 @@ public:
         creators["intimidation"] = &intimidation;
         creators["scatter shot"] = &scatter_shot;
         creators["feign death threat"] = &feign_death_threat;
+        creators["tame beast"] = &tame_beast;
     }
 
 private:
@@ -36,6 +37,8 @@ private:
     ACTION_NODE_A(scatter_shot, "scatter shot", "intimidation");
 
     ACTION_NODE_C(feign_death_threat, "feign death", "remove feign death");
+
+    ACTION_NODE_C(tame_beast, "tame beast", "call pet")
 };
 
 HunterStrategy::HunterStrategy(PlayerbotAI* ai) : ClassStrategy(ai)
@@ -81,6 +84,10 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "enemy is close",
         NextAction::array(0, new NextAction("raptor strike", ACTION_NORMAL + 1), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -94,6 +101,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "no ammo",
         NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
@@ -543,6 +554,10 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "enemy is close",
         NextAction::array(0, new NextAction("raptor strike", ACTION_NORMAL + 1), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));    
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -556,6 +571,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "no ammo",
         NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
@@ -999,6 +1018,10 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         "enemy is close",
         NextAction::array(0, new NextAction("wing clip", ACTION_NORMAL + 1),
                              new NextAction("disengage", ACTION_NORMAL), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1012,6 +1035,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "no ammo",
         NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "no pet",
+        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)

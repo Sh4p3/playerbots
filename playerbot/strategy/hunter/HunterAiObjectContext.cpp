@@ -236,7 +236,7 @@ namespace ai
                 creators["bestial wrath"] = [](PlayerbotAI* ai) { return new BestialWrathBoostTrigger(ai); };
                 creators["silencing shot interrupt"] = [](PlayerbotAI* ai) { return new SilencingShotInterruptTrigger(ai); };
                 creators["silencing shot on enemy healer"] = [](PlayerbotAI* ai) { return new SilencingShotInterruptHealerTrigger(ai); };
-                creators["no beast"] = [](PlayerbotAI* ai) { return new HunterNoPet(ai); };
+                creators["no pet"] = [](PlayerbotAI* ai) { return new HunterNoPet(ai); };
                 creators["stealthed nearby"] = [](PlayerbotAI* ai) { return new StealthedNearbyTrigger(ai); };
                 creators["readiness"] = [](PlayerbotAI* ai) { return new ReadinessBoostTrigger(ai); };
             }
@@ -342,3 +342,4 @@ HunterAiObjectContext::HunterAiObjectContext(PlayerbotAI* ai) : AiObjectContext(
     actionContexts.Add(new ai::hunter::AiObjectContextInternal());
     triggerContexts.Add(new ai::hunter::TriggerFactoryInternal());
 }
+
