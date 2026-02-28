@@ -242,7 +242,7 @@ bool SpiritHealerAction::Execute(Event& event)
     if (!grave)
     {
         //prevent doing weird stuff OR GOING TO 0,0,0
-        sLog.outBasic(
+        sLog.outDetail(
             "ERROR: no graveyard in SpiritHealerAction for bot #%d %s:%d <%s>, evacuating to prevent weird behavior",
             bot->GetGUIDLow(),
             bot->GetTeam() == ALLIANCE ? "A" : "H",
