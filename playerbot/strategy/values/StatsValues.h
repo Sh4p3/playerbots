@@ -86,7 +86,7 @@ namespace ai
             return ctx->GetValue<Unit*>(qualifier)->Get();
         }
 
-        virtual uint8 Calculate();
+        virtual uint8 Calculate() override;
     };
 
     class ManaValue : public Uint8CalculatedValue, public Qualified

@@ -23,7 +23,7 @@ namespace ai
     {
     public:
         RogueBoostBuffTrigger(PlayerbotAI* ai, std::string spellName) : BoostTrigger(ai, spellName, 200.0f) {}
-        virtual bool IsPossible() { return !ai->HasAura("stealth", bot); }
+        virtual bool IsActive() override { if (ai->HasAura("stealth", bot)) return false; return BoostTrigger::IsActive(); }
     };
 
     class RuptureTrigger : public NoDebuffAndComboPointsAvailableTrigger
@@ -93,44 +93,44 @@ namespace ai
         }
     };
 
-    class RogueUnstealthTrigger : public BuffTrigger
-    {
-    public:
-        RogueUnstealthTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "stealth", 2) {}
-
-        bool IsActive() override
-        {
-            if (ai->HasAura("stealth", bot))
-            {
-                if (bot->InBattleGround())
-                {
-                    if (bot->InArena())
-                        return false;
+    class RogueUnstealthTrigger : public BuffTrigger
+    {
+    public:
+        RogueUnstealthTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "stealth", 2) {}
+
+        bool IsActive() override
+        {
+            if (ai->HasAura("stealth", bot))
+            {
+                if (bot->InBattleGround())
+                {
+                    if (bot->InArena())
+                        return false;
                     
                     // Allow stealth only when moving or no immediate threats exist
                     return !AI_VALUE2(bool, "moving", "self target") &&
                         !AI_VALUE(bool, "has attackers") &&
-                        !AI_VALUE(bool, "has enemy player targets");
-                }
-                
-                if (!AI_VALUE(bool, "has attackers") && !AI_VALUE(bool, "has enemy player targets"))
-                {
-                    if (AI_VALUE2(bool, "moving", "self target"))
-                    {
-                        if (ai->GetMaster())
-                        {
-                            return sServerFacade.IsDistanceGreaterThan(AI_VALUE2(float, "distance", "master target"), 10.0f);
-                        }
-                        else
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
+                        !AI_VALUE(bool, "has enemy player targets");
+                }
+                
+                if (!AI_VALUE(bool, "has attackers") && !AI_VALUE(bool, "has enemy player targets"))
+                {
+                    if (AI_VALUE2(bool, "moving", "self target"))
+                    {
+                        if (ai->GetMaster())
+                        {
+                            return sServerFacade.IsDistanceGreaterThan(AI_VALUE2(float, "distance", "master target"), 10.0f);
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
     };
 
     class StealthTrigger : public Trigger 
@@ -139,53 +139,53 @@ namespace ai
         StealthTrigger(PlayerbotAI* ai) : Trigger(ai, "stealth") {}
 
         virtual bool IsActive() override
-        {
-            if (ai->HasAura("stealth", bot) || sServerFacade.IsInCombat(bot) || !sServerFacade.IsSpellReady(bot, 1784))
-            {
-                return false;
-            }
-
-            if (bot->InBattleGround() && bot->InArena())
-                return true;
-
-            Unit* target = AI_VALUE(Unit*, "enemy player target");
-            if (!target)
-            {
-                target = AI_VALUE(Unit*, "grind target");
-            }
-            if (!target)
-            {
-                target = AI_VALUE(Unit*, "dps target");
-            }
-            if (!target)
-            {
-                return false;
-            }
-
-            float distance = 30.0f;
-            if (target && !target->IsPlayer() && target->GetVictim())
-            {
-                distance -= 10;
+        {
+            if (ai->HasAura("stealth", bot) || sServerFacade.IsInCombat(bot) || !sServerFacade.IsSpellReady(bot, 1784))
+            {
+                return false;
+            }
+
+            if (bot->InBattleGround() && bot->InArena())
+                return true;
+
+            Unit* target = AI_VALUE(Unit*, "enemy player target");
+            if (!target)
+            {
+                target = AI_VALUE(Unit*, "grind target");
+            }
+            if (!target)
+            {
+                target = AI_VALUE(Unit*, "dps target");
+            }
+            if (!target)
+            {
+                return false;
+            }
+
+            float distance = 30.0f;
+            if (target && !target->IsPlayer() && target->GetVictim())
+            {
+                distance -= 10;
                 if (sServerFacade.isMoving(target))
                 {
                     distance -= 5;
-                }
-            }
-
-            if (bot->InBattleGround())
-            {
-                distance += 20;
-            }
-
-#ifndef MANGOSBOT_ZERO
-            if (bot->InArena())
-            {
-                distance += 20;
-            }
-#endif
-
-            return (target && sServerFacade.GetDistance2d(bot, target) < distance);
-        }
+                }
+            }
+
+            if (bot->InBattleGround())
+            {
+                distance += 20;
+            }
+
+#ifndef MANGOSBOT_ZERO
+            if (bot->InArena())
+            {
+                distance += 20;
+            }
+#endif
+
+            return (target && sServerFacade.GetDistance2d(bot, target) < distance);
+        }
     };
 
     class SapTrigger : public HasCcTargetTrigger
