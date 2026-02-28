@@ -293,20 +293,21 @@ inline bool TellStuck(PlayerbotAI* ai, Player* requester)
 inline bool TellGrouped(PlayerbotAI* ai, Player* requester)
 {
     Player* bot = ai->GetBot();
+    Group* group = bot->GetGroup();
     AiObjectContext* context = ai->GetAiObjectContext();
 
-    if (!bot->GetGroup())
+    if (!group)
         return false;
 
     std::ostringstream out;
 
-    if (bot->GetGroup()->IsLeader(bot->GetObjectGuid()))
+    if (group->IsLeader(bot->GetObjectGuid()))
     {
         out << "Leading a";
-        if (bot->GetGroup()->IsRaidGroup())
+        if (group->IsRaidGroup())
             out << " raid";
         out << " group of ";
-        out << bot->GetGroup()->GetMembersCount();
+        out << group->GetMembersCount();
 
         ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
 
@@ -322,9 +323,17 @@ inline bool TellGrouped(PlayerbotAI* ai, Player* requester)
     else
         out << "Grouped with ";
 
-    out << ai->GetGroupMaster()->GetName();
+    Player* groupMaster = ai->GetGroupMaster();
+    if (!groupMaster)
+    {
+        out << group->GetLeaderName() << " (offline)";
+        ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
+        return true;
+    }
+
+    out << groupMaster->GetName();
     out << " at ";
-    out << uint32(WorldPosition(bot).distance(ai->GetGroupMaster()));
+    out << uint32(WorldPosition(bot).distance(groupMaster));
     out << "y";
 
     ai->TellPlayerNoFacing(requester, out, PlayerbotSecurityLevel::PLAYERBOT_SECURITY_TALK, false);
