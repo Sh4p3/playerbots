@@ -213,6 +213,10 @@ void RestorationShamanRaidStrategy::InitDeadTriggers(std::list<TriggerNode*>& tr
 void RestorationShamanAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     ShamanAoeStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "fire totem aoe",
+        NextAction::array(0, new NextAction("magma totem", ACTION_HIGH), NULL)));
 }
 
 void RestorationShamanAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -688,6 +692,10 @@ void RestorationShamanRaidStrategy::InitDeadTriggers(std::list<TriggerNode*>& tr
 void RestorationShamanAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     ShamanAoeStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "fire totem aoe",
+        NextAction::array(0, new NextAction("magma totem", ACTION_HIGH), NULL)));
 }
 
 void RestorationShamanAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1185,6 +1193,10 @@ void RestorationShamanRaidStrategy::InitDeadTriggers(std::list<TriggerNode*>& tr
 void RestorationShamanAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     ShamanAoeStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "fire totem aoe",
+        NextAction::array(0, new NextAction("magma totem", ACTION_HIGH), NULL)));
 }
 
 void RestorationShamanAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
