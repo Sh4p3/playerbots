@@ -490,11 +490,21 @@ namespace ai
 		CastDivineProtectionAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "divine protection") {}
 	};
 
-    class CastDivineProtectionOnPartyAction : public HealPartyMemberAction
+    class CastDivineProtectionOnPartyAction : public CastProtectSpellAction
     {
     public:
-        CastDivineProtectionOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "divine protection") {}
+        CastDivineProtectionOnPartyAction(PlayerbotAI* ai) : CastProtectSpellAction(ai, "blessing of protection") {}
         virtual std::string getName() override { return "divine protection on party"; }
+        bool isUseful() override
+        {
+            Unit* target = GetTarget();
+            if (target && target->IsPlayer() && !ai->IsTank((Player*)target))
+            {
+                return CastProtectSpellAction::isUseful();
+            }
+
+            return false;
+        }
     };
 
 	class CastDivineShieldAction: public CastBuffSpellAction
@@ -650,6 +660,7 @@ namespace ai
     {
     public:
 		CastBlessingOfFreedomOnPartyAction(PlayerbotAI* ai) : CastSpellAction(ai, "hand of freedom") {}
+        std::string getName() override { return "blessing of freedom on party"; }
         bool isUseful() override { return CastSpellAction::isUseful() && !ai->HasAura(GetSpellName(), GetTarget()); }
         std::string GetReachActionName() override { return "reach spell"; }
         std::string GetTargetName() override { return "party member to remove roots"; }

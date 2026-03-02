@@ -366,7 +366,7 @@ namespace ai
     class WaterWalkingOnPartyTrigger : public BuffOnPartyTrigger 
     {
     public:
-        WaterWalkingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water walking on party", 7) {}
+        WaterWalkingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water walking", 7) {}
 
         virtual bool IsActive() override
         {
@@ -377,7 +377,7 @@ namespace ai
     class WaterBreathingOnPartyTrigger : public BuffOnPartyTrigger 
     {
     public:
-        WaterBreathingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water breathing on party", 2) {}
+        WaterBreathingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water breathing", 2) {}
 
         virtual bool IsActive() override
         {
