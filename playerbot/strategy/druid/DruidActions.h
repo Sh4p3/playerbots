@@ -598,11 +598,16 @@ namespace ai
         std::string GetTargetName() override { return "party tank without lifebloom"; }
     };
 
+    class CastWildGrowthAction : public CastAoeHealSpellAction
+    {
+    public:
+        explicit CastWildGrowthAction(PlayerbotAI* ai) : CastAoeHealSpellAction(ai, "wild growth") {}
+    };
+
     SPELL_ACTION(CastForceOfNatureAction, "force of nature");
     SNARE_ACTION(CastCycloneAction, "cyclone");
     SNARE_ACTION(CastTyphoonAction, "typhoon");
     SPELL_ACTION(CastSavageRoarAction, "savage roar");
-    BUFF_ACTION(CastWildGrowthAction, "wild growth");
     HEAL_ACTION(CastNourishAction, "nourish");
     BUFF_ACTION(CastSwiftmendAction, "swiftmend");
 
