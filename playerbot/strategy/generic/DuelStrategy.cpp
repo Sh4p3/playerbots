@@ -21,3 +21,10 @@ void DuelStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     InitNonCombatTriggers(triggers);
 }
+
+void DuelStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
+{
+    triggers.push_back(new TriggerNode(
+        "duel requested",
+        NextAction::array(0, new NextAction("accept duel", relevance), NULL)));
+}

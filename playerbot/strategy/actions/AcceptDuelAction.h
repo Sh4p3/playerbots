@@ -19,6 +19,15 @@ namespace ai
             ObjectGuid playerGuid;
             p >> playerGuid;
 
+            const bool hasPendingDuelRequest = bot->duel &&
+                bot->duel->initiator &&
+                bot->duel->initiator->GetObjectGuid() == playerGuid &&
+                bot->duel->startTime == 0 &&
+                bot->duel->startTimer == 0;
+
+            if (!hasPendingDuelRequest)
+                return false;
+
             // do not auto duel with low hp or below certain level
             if (bot->GetLevel() < sPlayerbotAIConfig.botAcceptDuelMinimumLevel
                 || ((!ai->HasRealPlayerMaster() || (ai->GetMaster() && ai->GetMaster()->GetObjectGuid() != playerGuid)) && AI_VALUE2(uint8, "health", "self target") < 90))

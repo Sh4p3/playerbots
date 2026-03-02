@@ -1262,7 +1262,7 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
 
 void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine, int specTab)
 {
-    reactionEngine->addStrategies("react", "chat", "avoid aoe", "potions", NULL);
+    reactionEngine->addStrategies("react", "chat", "avoid aoe", "potions", "duel", NULL);
 
     const int tab = specTab != -1 ? specTab : GetPlayerSpecTab(player);
     switch (player->getClass())

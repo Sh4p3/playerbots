@@ -224,7 +224,7 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
 #endif
 
     botOutgoingPacketHandlers.AddHandler(SMSG_CAST_RESULT, "cast failed");
-    botOutgoingPacketHandlers.AddHandler(SMSG_DUEL_REQUESTED, "duel requested");
+    botOutgoingPacketHandlers.AddHandler(SMSG_DUEL_REQUESTED, "duel requested", true);
     botOutgoingPacketHandlers.AddHandler(SMSG_INVENTORY_CHANGE_FAILURE, "inventory change failure");
 
     masterOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
@@ -584,6 +584,8 @@ bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned)
     bool reactionFound;
     std::string mapString = WorldPosition(bot).isInstance() ? "I" : std::to_string(bot->GetMapId());
     auto pmo = sPerformanceMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIReaction " + mapString, nullptr, bot->GetMapId(), bot->GetInstanceId());
+    ExternalEventHelper helper(aiObjectContext);
+    botOutgoingPacketHandlers.Handle(helper);
     const bool reactionInProgress = reactionEngine->Update(elapsed, minimal, isStunned, reactionFound);
     pmo.reset();
 
