@@ -162,3 +162,28 @@ Unit* PartyTankWithoutAuraValue::Calculate()
     TankWithoutAuraPredicate predicate(ai, qualifier);
     return FindPartyMember(predicate);
 }
+
+Unit* PreferredSingleBuffTargetValue::Calculate()
+{
+    if (Unit* tank = context->GetValue<Unit*>("party tank without aura", qualifier)->Get())
+        return tank;
+
+    if (ai->HasStrategy("focus heal targets", BotState::BOT_STATE_COMBAT))
+    {
+        const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+        for (const ObjectGuid& focusHealTarget : focusHealTargets)
+        {
+            Player* player = dynamic_cast<Player*>(ai->GetUnit(focusHealTarget));
+            if (!player || player == bot)
+                continue;
+
+            if (!player->IsInGroup(bot) || !ai->IsSafe(player) || !Check(player))
+                continue;
+
+            if (!ai->HasAura(qualifier, player))
+                return player;
+        }
+    }
+
+    return context->GetValue<Unit*>("friendly unit without aura", qualifier + "-0")->Get();
+}

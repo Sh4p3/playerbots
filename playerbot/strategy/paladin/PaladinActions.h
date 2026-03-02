@@ -54,8 +54,27 @@ namespace ai
 	// buffs
 	BUFF_ACTION(CastDivineFavorAction, "divine favor");
 	BUFF_ACTION(CastDivinePleaAction, "divine plea");
-	BUFF_PARTY_ACTION(CastBeaconOfLightAction, "beacon of light");
-	BUFF_PARTY_ACTION(CastSacredShieldAction, "sacred shield");
+    class CastBeaconOfLightAction : public CastBuffSpellAction
+    {
+    public:
+        CastBeaconOfLightAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "beacon of light") {}
+        std::string getName() override { return "beacon of light"; }
+
+    protected:
+        std::string GetTargetName() override { return "preferred single buff target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
+    };
+
+    class CastSacredShieldAction : public CastBuffSpellAction
+    {
+    public:
+        CastSacredShieldAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "sacred shield") {}
+        std::string getName() override { return "sacred shield"; }
+
+    protected:
+        std::string GetTargetName() override { return "preferred single buff target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
+    };
 	BUFF_ACTION(CastDivineSacrificeAction, "divine sacrifice");
     BUFF_ACTION(CastAuraMasteryAction, "aura mastery");
 

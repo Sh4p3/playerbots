@@ -47,4 +47,14 @@ namespace ai
     protected:
         virtual Unit* Calculate() override;
     };
+
+    class PreferredSingleBuffTargetValue : public PartyMemberValue, public Qualified
+    {
+    public:
+        PreferredSingleBuffTargetValue(PlayerbotAI* ai, std::string name = "preferred single buff target", float range = 30.0f) :
+            PartyMemberValue(ai, name), Qualified() {}
+
+    protected:
+        virtual Unit* Calculate() override;
+    };
 }

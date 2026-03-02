@@ -466,6 +466,19 @@ namespace ai
     CAN_CAST_TRIGGER(ShieldOfRighteousnessTrigger, "shield of righteousness");
     CAN_CAST_TRIGGER(DivineStormTrigger, "divine storm");
     BUFF_TRIGGER(DivinePleaTrigger, "divine plea");
-    BUFF_PARTY_TRIGGER(SacredShieldTrigger, "sacred shield");
-    BUFF_PARTY_TRIGGER(BeaconOfLightTrigger, "beacon of light");
+    class SacredShieldTrigger : public BuffOnPartyTrigger
+    {
+    public:
+        SacredShieldTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "sacred shield") {}
+        std::string getName() override { return "sacred shield"; }
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("preferred single buff target", "sacred shield"); }
+    };
+
+    class BeaconOfLightTrigger : public BuffOnPartyTrigger
+    {
+    public:
+        BeaconOfLightTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "beacon of light") {}
+        std::string getName() override { return "beacon of light"; }
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("preferred single buff target", "beacon of light"); }
+    };
 }
