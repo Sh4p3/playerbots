@@ -53,7 +53,7 @@ namespace ai
     HEAL_PARTY_ACTION(CastPrayerOfMendingAction, "prayer of mending");
     HEAL_PARTY_ACTION(CastBindingHealAction, "binding heal");
     
-    BUFF_ACTION(CastPrayerOfHealingAction, "prayer of healing");
+    AOE_HEAL_ACTION(CastPrayerOfHealingAction, "prayer of healing");
     AOE_HEAL_ACTION(CastLightwellAction, "lightwell");
     AOE_HEAL_ACTION(CastCircleOfHealingAction, "circle of healing");
 
