@@ -2463,9 +2463,9 @@ bool BGTactics::wsgPaths()
             else if (bot->GetPositionX() > 1351.9f) //to the alliance entrance
             {
                 if (bot->GetPositionY() > 1500.f)
-                    MoveTo(bg->GetMapId(), 1125.778076f, bot->GetPositionY(), 315.698883f);
+                    MoveTo(bg->GetMapId(), 1351.759155f, bot->GetPositionY(), 323.673737f);
                 else
-                    MoveTo(bg->GetMapId(), 1125.778076f, 1452.059937f, 315.698883f);
+                    MoveTo(bg->GetMapId(), 1351.759155f, 1462.368042f, 323.673737f);
                 return  true;
             }
             if (bot->GetPositionX() > 1240.f) //move to a more random location in the middle part
