@@ -12,17 +12,39 @@ namespace ai
 
         bool Calculate() override
         {
-            std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
+            const Group* botGroup = bot->GetGroup();
+            const std::list<ObjectGuid>& units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
             for (const ObjectGuid& guid : units)
             {
                 Unit* unit = ai->GetUnit(guid);
                 if (!unit || unit->GetTypeId() != TYPEID_UNIT)
                     continue;
 
-                if (static_cast<Creature*>(unit)->IsTotem()) 
-                {
+                Creature* totem = static_cast<Creature*>(unit);
+                if (!totem->IsTotem())
+                    continue;
+
+                Unit* totemOwner = totem->GetCreator(totem);
+                if (!totemOwner)
+                    continue;
+
+                if (totemOwner == bot)
                     return true;
+
+                if (!botGroup || !totemOwner->IsPlayer())
+                    continue;
+
+                const Player* totemPlayerOwner = static_cast<Player*>(totemOwner);
+#ifdef MANGOSBOT_TWO
+                if (totemPlayerOwner->GetGroup() == botGroup)
+                    return true;
+#else
+                if (totemPlayerOwner->GetGroup() == botGroup)
+                {
+                    if (!botGroup->IsRaidGroup() || botGroup->SameSubGroup(totemPlayerOwner, bot))
+                        return true;
                 }
+#endif
             }
 
             return false;

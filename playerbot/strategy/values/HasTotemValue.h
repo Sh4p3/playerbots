@@ -13,7 +13,8 @@ namespace ai
         bool Calculate() override
         {
             const float spellRange = ai->GetRange("spell");
-            std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
+            const Group* botGroup = bot->GetGroup();
+            const std::list<ObjectGuid>& units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
             for (const ObjectGuid& guid : units)
             {
                 Unit* unit = ai->GetUnit(guid);
@@ -35,7 +36,6 @@ namespace ai
 
                 if (totemOwner == bot) return true; // Found our own totem in range
 
-                const Group* botGroup = bot->GetGroup();
                 if (!botGroup) continue;
 
                 if (totemOwner->IsPlayer())
