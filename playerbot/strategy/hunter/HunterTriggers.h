@@ -334,15 +334,12 @@ namespace ai
         virtual bool IsActive() override
         {
             if (AI_VALUE2(bool, "mounted", "self target"))
-            return false;
+                return false;
 
             if (bot->GetPetGuid())
-            return false;
+                return false;
 
-            if (ai->CanCastSpell("call pet", bot, 0))
-            return false;
-
-            return ai->CanCastSpell("tame beast", bot, 0);
+            return ai->CanCastSpell("call pet", bot, 0) || ai->CanCastSpell("tame beast", bot, 0);
         }
     };
 

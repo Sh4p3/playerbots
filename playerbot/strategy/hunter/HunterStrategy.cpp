@@ -14,6 +14,7 @@ public:
         creators["rapid fire"] = &rapid_fire;
         creators["aspect of the pack"] = &aspect_of_the_pack;
         creators["aspect of the dragonhawk"] = &aspect_of_the_dragonhawk;
+        creators["call pet"] = &call_pet;
         creators["wing clip"] = &wing_clip;
         creators["intimidation"] = &intimidation;
         creators["scatter shot"] = &scatter_shot;
@@ -29,6 +30,8 @@ private:
     ACTION_NODE_A(aspect_of_the_pack, "aspect of the pack", "aspect of the cheetah");
 
     ACTION_NODE_A(aspect_of_the_dragonhawk, "aspect of the dragonhawk", "aspect of the hawk");
+
+    ACTION_NODE_A(call_pet, "call pet", "tame beast");
 
     ACTION_NODE_A(wing_clip, "wing clip", "raptor strike");
 
@@ -87,7 +90,7 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -104,7 +107,7 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
@@ -557,7 +560,7 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));    
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));    
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -574,7 +577,7 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
@@ -1021,7 +1024,7 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1038,7 +1041,7 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("tame beast", ACTION_EMERGENCY), NULL)));
+        NextAction::array(0, new NextAction("call pet", ACTION_EMERGENCY), NULL)));
 }
 
 void HunterStrategy::InitReactionTriggers(std::list<TriggerNode*>& triggers)
