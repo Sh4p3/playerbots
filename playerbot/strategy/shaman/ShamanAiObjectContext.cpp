@@ -294,7 +294,7 @@ namespace ai
                 creators["totemic recall"] = [](PlayerbotAI* ai) { return new ReadyToRemoveTotemsTrigger(ai); };
                 creators["earth shield"] = [](PlayerbotAI* ai) { return new EarthShieldTrigger(ai); };
                 creators["earth shield on party tank"] = [](PlayerbotAI* ai) { return new PartyTankEarthShieldTrigger(ai); };
-                creators["earth shield on lowest hp"] = [](PlayerbotAI* ai) { return new LowestHpEarthShieldTrigger(ai); };
+                creators["earth shield on preferred target"] = [](PlayerbotAI* ai) { return new PreferredTargetEarthShieldTrigger(ai); };
                 creators["chain lightning"] = [](PlayerbotAI* ai) { return new ChainLightningTrigger(ai); };
                 creators["stormstrike"] = [](PlayerbotAI* ai) { return new StormstrikeTrigger(ai); };
                 creators["elemental mastery"] = [](PlayerbotAI* ai) { return new ElementalMasteryTrigger(ai); };
@@ -348,8 +348,6 @@ namespace ai
                 creators["healing wave on party"] = [](PlayerbotAI* ai) { return new CastHealingWaveOnPartyAction(ai); };
                 creators["lesser healing wave on party"] = [](PlayerbotAI* ai) { return new CastLesserHealingWaveOnPartyAction(ai); };
                 creators["earth shield"] = [](PlayerbotAI* ai) { return new CastEarthShieldAction(ai); };
-                creators["earth shield on party"] = [](PlayerbotAI* ai) { return new CastEarthShieldOnPartyAction(ai); };
-                creators["earth shield on lowest hp"] = [](PlayerbotAI* ai) { return new CastEarthShieldOnLowestHpAction(ai); };
                 creators["chain heal"] = [](PlayerbotAI* ai) { return new CastChainHealAction(ai); };
                 creators["riptide"] = [](PlayerbotAI* ai) { return new CastRiptideAction(ai); };
                 creators["riptide on party"] = [](PlayerbotAI* ai) { return new CastRiptideOnPartyAction(ai); };

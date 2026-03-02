@@ -508,11 +508,11 @@ namespace ai
         }
     };
 
-    class LowestHpEarthShieldTrigger : public BuffTrigger
+    class PreferredTargetEarthShieldTrigger : public BuffTrigger
     {
     public:
-        LowestHpEarthShieldTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "earth shield") {}
-        std::string getName() override { return "earth shield on lowest hp"; }
+        PreferredTargetEarthShieldTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "earth shield") {}
+        std::string getName() override { return "earth shield on preferred target"; }
         bool IsActive() override;
     };
 

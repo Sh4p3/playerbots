@@ -59,24 +59,6 @@ namespace ai
         std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
-    class CastEarthShieldOnPartyAction : public CastBuffSpellAction
-    {
-    public:
-        CastEarthShieldOnPartyAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "earth shield") {}
-        std::string getName() override { return "earth shield on party"; }
-
-    protected:
-        std::string GetTargetName() override { return "preferred single buff target"; }
-        std::string GetTargetQualifier() override { return GetSpellName(); }
-    };
-
-    class CastEarthShieldOnLowestHpAction : public BuffOnPartyAction
-    {
-    public:
-        CastEarthShieldOnLowestHpAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "earth shield") {}
-        virtual std::string GetTargetName() { return "party member without my aura lowest hp"; }
-    };
-
     class CastWaterShieldAction : public CastBuffSpellAction 
     {
     public:

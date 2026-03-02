@@ -57,28 +57,7 @@ bool MaelstromWeaponHealTrigger::IsActive()
     return AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.lowHealth && ai->HasAura("maelstrom weapon", bot, true);
 }
 
-Player* GetLowestHealthPlayer(Group* group)
-{
-    float lowestHealth = 100.0f;
-    Player* lowestHealthPlayer = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        if (Player* player = ref->getSource())
-        {
-            float health = player->GetHealthPercent();
-            if (health > 0.0f && health < lowestHealth)
-            {
-                lowestHealth = health;
-                lowestHealthPlayer = player;
-            }
-        }
-    }
-
-    return lowestHealthPlayer;
-}
-
-bool LowestHpEarthShieldTrigger::IsActive()
+bool PreferredTargetEarthShieldTrigger::IsActive()
 {
     Unit* target = context->GetValue<Unit*>("preferred single buff target", "earth shield")->Get();
     return target && target != bot && target->IsAlive() && !ai->HasAura("earth shield", target);
