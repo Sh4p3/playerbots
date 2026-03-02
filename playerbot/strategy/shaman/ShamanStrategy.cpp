@@ -1572,7 +1572,7 @@ void ShamanTotemBarAncestorsStrategy::InitCombatTriggers(std::list<TriggerNode*>
 void ShamanTotemBarSpiritsStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "call of the ancestors",
+        "call of the spirits",
         NextAction::array(0, new NextAction("call of the spirits", ACTION_HIGH), NULL)));
 }
 
