@@ -120,7 +120,7 @@ Unit* PartyMemberWithoutMyAuraValue::Calculate()
     }
 
     PlayerWithoutMyAuraPredicate predicate(ai, auras);
-    return FindPartyMember(predicate, false, ignoreTank, lowestHp);
+    return FindPartyMember(predicate, false, ignoreTank);
 }
 
 class TankWithoutAuraPredicate : public FindPlayerPredicate, public PlayerbotAIAware
