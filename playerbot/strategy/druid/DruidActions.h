@@ -609,7 +609,7 @@ namespace ai
     SNARE_ACTION(CastTyphoonAction, "typhoon");
     SPELL_ACTION(CastSavageRoarAction, "savage roar");
     HEAL_ACTION(CastNourishAction, "nourish");
-    BUFF_ACTION(CastSwiftmendAction, "swiftmend");
+    HEAL_ACTION(CastSwiftmendAction, "swiftmend");
 
     class UpdateDruidPveStrategiesAction : public UpdateStrategyDependenciesAction
     {
