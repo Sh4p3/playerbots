@@ -674,9 +674,15 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
             uint32 spellId = goInfo->spellcaster.spellId;
             const SpellEntry* pSpellInfo = sServerFacade.LookupSpellInfo(spellId);
+            if (!pSpellInfo)
+                return false;
 
             if (pSpellInfo->EffectTriggerSpell[0])
+            {
                 pSpellInfo = sServerFacade.LookupSpellInfo(pSpellInfo->EffectTriggerSpell[0]);
+                if (!pSpellInfo)
+                    return false;
+            }
 
             if (pSpellInfo->Effect[0] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[1] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[2] != SPELL_EFFECT_TELEPORT_UNITS)
                 return false;

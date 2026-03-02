@@ -28,7 +28,15 @@ bool TeleportAction::Execute(Event& event)
         if (!pSpellInfo)
             continue;
 
-        if (pSpellInfo->Effect[0] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[1] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[2] != SPELL_EFFECT_TELEPORT_UNITS)
+        const SpellEntry* teleportSpell = pSpellInfo;
+        if (teleportSpell->EffectTriggerSpell[0])
+        {
+            teleportSpell = sServerFacade.LookupSpellInfo(teleportSpell->EffectTriggerSpell[0]);
+            if (!teleportSpell)
+                continue;
+        }
+
+        if (teleportSpell->Effect[0] != SPELL_EFFECT_TELEPORT_UNITS && teleportSpell->Effect[1] != SPELL_EFFECT_TELEPORT_UNITS && teleportSpell->Effect[2] != SPELL_EFFECT_TELEPORT_UNITS)
             continue;
 
         if (!bot->GetGameObjectIfCanInteractWith(go->GetObjectGuid(), MAX_GAMEOBJECT_TYPE))
