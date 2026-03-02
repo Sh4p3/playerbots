@@ -845,18 +845,17 @@ bool LfgJoinAction::JoinLFG()
             continue;
 
         selected.push_back(dungeon->id);
-        list.insert(dungeon->id);
     }
 
     if (selected.empty())
         return false;
 
-    if (list.empty())
-        return false;
+    uint32 selectedDungeonId = selected[urand(0, selected.size() - 1)];
+    list.insert(selectedDungeonId);
 
-    bool many = list.size() > 1;
-    //LFGDungeonEntry const* dungeon = *list.begin();
-    LFGDungeonData const* dungeon = sLFGMgr.GetLFGDungeon(*list.begin());
+    LFGDungeonData const* dungeon = sLFGMgr.GetLFGDungeon(selectedDungeonId);
+    if (!dungeon)
+        return false;
 
     /*for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
     {
@@ -901,7 +900,7 @@ bool LfgJoinAction::JoinLFG()
         _roles = "DPS";
 
     //pState->SetType(LFG_TYPE_DUNGEON);
-    sLog.outDetail("Bot #%d %s:%d <%s>: queues LFG, Dungeon as %s (%s)", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), _roles.c_str(), many ? "several dungeons" : dungeon->name.c_str());
+    sLog.outDetail("Bot #%d %s:%d <%s>: queues LFG, Dungeon as %s (%s)", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), _roles.c_str(), dungeon->name.c_str());
 
     /*if (lfgState->IsSingleRole())
     {
