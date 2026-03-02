@@ -139,15 +139,16 @@ void PlayerbotFactory::Prepare()
     }
 
     bot->CombatStop(true);
-    /*if (sPlayerbotAIConfig.disableRandomLevels)
+    if (sPlayerbotAIConfig.disableRandomLevels)
     {
         if (bot->GetLevel() < sPlayerbotAIConfig.randombotStartingLevel)
         {
             bot->SetLevel(sPlayerbotAIConfig.randombotStartingLevel);
+            bot->SetUInt32Value(PLAYER_XP, 0);
+            bot->SetUInt32Value(PLAYER_NEXT_LEVEL_XP, sObjectMgr.GetXPForLevel(bot->GetLevel()));
         }
-    }*/
-
-    if (!sPlayerbotAIConfig.disableRandomLevels)
+    }
+    else
     {
         bot->SetLevel(level);
         //Reset xp and xp for next level.
@@ -170,11 +171,6 @@ void PlayerbotFactory::Randomize(bool incremental, bool syncWithMaster, bool par
 {
     sLog.outDetail("Preparing to %s randomize...", (incremental ? "incremental" : "full"));
     Prepare();
-
-    if (sPlayerbotAIConfig.disableRandomLevels)
-    {
-        return;
-    }
     bool isRealRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot);
     bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot) && bot->GetPlayerbotAI() && !bot->GetPlayerbotAI()->HasRealPlayerMaster() && !bot->GetPlayerbotAI()->IsInRealGuild();
 

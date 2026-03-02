@@ -41,7 +41,7 @@ void LogAnalysis::AnalysePid()
 
         Tokens tokens = StrSplit(line, ",");
 
-        if (tokens.size() < 7)
+        if (tokens.size() < 8)
             continue;
 
         if (tokens.size() > 50)//Multiple servers running
@@ -148,6 +148,9 @@ void LogAnalysis::AnalyseEvents()
 
         Tokens tokens = StrSplit(line, ",");
 
+        if (tokens.size() <= 2 || tokens[0] == "Timestamp")
+            continue;
+
         eventCount[tokens[2]]++;
     } while (in.good());
 
@@ -203,6 +206,9 @@ void LogAnalysis::AnalyseQuests()
             tokens[8] = tokens[10];
         }
 
+        if (tokens.size() < 9)
+            continue;
+
 
         for(auto& token : tokens)
             token.erase(std::remove(token.begin(), token.end(), '\"'), token.end());
@@ -212,7 +218,7 @@ void LogAnalysis::AnalyseQuests()
             questId[tokens[7]] = stoi(tokens[8]);
             questStartCount[tokens[7]]++;
         }
-        else if (tokens[2] == "QueryItemUsageAction" || tokens[3] == "QuestUpdateAddKillAction")
+        else if (tokens[2] == "QueryItemUsageAction" || tokens[2] == "QuestUpdateAddKillAction")
         {
             questId[tokens[7]] = questId[tokens[7]];
             questObjective[tokens[7]]++;

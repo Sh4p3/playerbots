@@ -2874,6 +2874,26 @@ void RandomPlayerbotMgr::UpdateGearSpells(Player* bot)
 
 void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
 {
+    if (sPlayerbotAIConfig.disableRandomLevels)
+    {
+        uint32 level = std::max(bot->GetLevel(), sPlayerbotAIConfig.randombotStartingLevel);
+        SetValue(bot, "level", level);
+
+        PlayerbotFactory factory(bot, level);
+        factory.Randomize(false, false);
+
+        uint32 randomTime = urand(sPlayerbotAIConfig.minRandomBotRandomizeTime, sPlayerbotAIConfig.maxRandomBotRandomizeTime);
+        SetEventValue(bot->GetGUIDLow(), "randomize", 1, randomTime);
+
+        bool hasPlayer = bot->GetPlayerbotAI()->HasRealPlayerMaster();
+        bot->GetPlayerbotAI()->Reset(!hasPlayer);
+
+        if (bot->GetGroup() && !bot->InBattleGround() && !hasPlayer)
+            bot->RemoveFromGroup();
+
+        return;
+    }
+
     uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
     if (maxLevel > sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
         maxLevel = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
@@ -2974,9 +2994,6 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
         bot->SpawnCorpseBones();
         bot->GetPlayerbotAI()->ResetStrategies();
     }
-
-    if (sPlayerbotAIConfig.disableRandomLevels)
-        return;
 
     if (bot->InBattleGround())
         return;

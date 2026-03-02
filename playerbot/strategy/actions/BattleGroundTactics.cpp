@@ -2323,7 +2323,7 @@ bool BGTactics::wsgPaths()
 
     if (pos.x > bot->GetPositionX()) //He's somewhere at the alliance side
     {
-        if (Preference < 4 && !atHordeGY) //preference < 4 = move through tunnel (< 6 becuse GY disabled)
+        if (Preference < 4 && !atHordeGY) // preference < 4 = move through tunnel
         {
             if (bot->GetPositionX() < 1006.f) //to the fasty
             {
@@ -2339,7 +2339,7 @@ bool BGTactics::wsgPaths()
                 return  true;
             }
         }
-        else if (Preference < 7 || (atHordeGY && urand(0, 2))) { // preference < 7 = move through graveyard (BUGGED)
+        else if (atHordeGY && urand(0, 2)) { // only use the graveyard route to recover if already there
             if (bot->GetPositionX() < 985.f) //to the gate at the upper tunnel
             {
                 MoveTo(bg->GetMapId(), 985.940125f, 1423.260254f, 345.418121f);
@@ -2477,7 +2477,7 @@ bool BGTactics::wsgPaths()
                 return  true;
             }
         }
-        else if (Preference < 7 || (atAllyGY && urand(0, 2))) // through the graveyard
+        else if (atAllyGY && urand(0, 2)) // only use the graveyard route to recover if already there
         {
             if (bot->GetPositionX() > 1510.2f) //To the first gate
             {
