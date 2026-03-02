@@ -509,7 +509,9 @@ bool CheckMountStateAction::Mount(Player* requester, bool limitSpeedToGroup)
             uint32 castDuration;
             if (ai->CastSpell(mount.GetSpellId(), bot, nullptr, true, &castDuration))
             {
-                sPlayerbotAIConfig.logEvent(ai, "CheckMountStateAction", sServerFacade.LookupSpellInfo(mount.GetSpellId())->SpellName[0], std::to_string(mount.GetSpeed(canFly)));
+                const SpellEntry* mountSpell = sServerFacade.LookupSpellInfo(mount.GetSpellId());
+                std::string mountSpellName = mountSpell ? mountSpell->SpellName[0] : std::to_string(mount.GetSpellId());
+                sPlayerbotAIConfig.logEvent(ai, "CheckMountStateAction", mountSpellName, std::to_string(mount.GetSpeed(canFly)));
                 SetDuration(castDuration);
                 didMount = true;
             }
