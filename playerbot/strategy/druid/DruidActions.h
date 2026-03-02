@@ -57,6 +57,12 @@ namespace ai
         CastNourishOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "nourish") {}
     };
 
+    class CastSwiftmendOnPartyAction : public HealPartyMemberAction
+    {
+    public:
+        CastSwiftmendOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "swiftmend") {}
+    };
+
 	class CastReviveAction : public ResurrectPartyMemberAction
 	{
 	public:

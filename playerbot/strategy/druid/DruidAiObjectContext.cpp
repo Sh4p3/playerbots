@@ -317,6 +317,7 @@ namespace ai
                 creators["rejuvenation on party"] = [](PlayerbotAI* ai) { return new CastRejuvenationOnPartyAction(ai); };
                 creators["healing touch on party"] = [](PlayerbotAI* ai) { return new CastHealingTouchOnPartyAction(ai); };
                 creators["nourish on party"] = [](PlayerbotAI* ai) { return new CastNourishOnPartyAction(ai); };
+                creators["swiftmend on party"] = [](PlayerbotAI* ai) { return new CastSwiftmendOnPartyAction(ai); };
                 creators["rebirth"] = [](PlayerbotAI* ai) { return new CastRebirthAction(ai); };
                 creators["revive"] = [](PlayerbotAI* ai) { return new CastReviveAction(ai); };
                 creators["barskin"] = [](PlayerbotAI* ai) { return new CastBarskinAction(ai); };

@@ -1126,7 +1126,7 @@ void RestorationDruidBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& 
 
     triggers.push_back(new TriggerNode(
         "party member critical health",
-        NextAction::array(0, new NextAction("swiftmend", ACTION_HIGH + 1), NULL)));
+        NextAction::array(0, new NextAction("swiftmend on party", ACTION_HIGH + 1), NULL)));
 }
 
 void RestorationDruidBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
