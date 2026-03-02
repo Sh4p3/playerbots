@@ -467,5 +467,5 @@ namespace ai
     CAN_CAST_TRIGGER(DivineStormTrigger, "divine storm");
     BUFF_TRIGGER(DivinePleaTrigger, "divine plea");
     BUFF_TRIGGER(SacredShieldTrigger, "sacred shield");
-    BUFF_TRIGGER(BeaconOfLightTrigger, "beacon of light");
+    BUFF_PARTY_TRIGGER(BeaconOfLightTrigger, "beacon of light");
 }
