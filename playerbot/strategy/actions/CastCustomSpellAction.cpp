@@ -558,6 +558,8 @@ bool CastRandomSpellAction::castSpell(uint32 spellId, WorldObject* wo, Player* r
     uint32 spellDuration = sPlayerbotAIConfig.globalCoolDown;
 
     SpellEntry const* pSpellInfo = sServerFacade.LookupSpellInfo(spellId);
+    if (!pSpellInfo)
+        return false;
 
     Item* spellItem = AI_VALUE2(Item*, "item for spell", spellId);
 
@@ -653,6 +655,8 @@ bool CraftRandomItemAction::Execute(Event& event)
             continue;
 
         const SpellEntry* pSpellInfo = sServerFacade.LookupSpellInfo(spellId);
+        if (!pSpellInfo)
+            continue;
 
         if (pSpellInfo->RequiresSpellFocus)
         {
