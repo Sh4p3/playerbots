@@ -98,13 +98,13 @@ bool HasAreaDebuffValue::Calculate()
     if (!checkTarget)
         return false;
 
-    std::list<ObjectGuid> nearestDynObjects = *context->GetValue<std::list<ObjectGuid> >("nearest dynamic objects no los");
+    const std::list<ObjectGuid>& nearestDynObjects = *context->GetValue<std::list<ObjectGuid> >("nearest dynamic objects no los");
     if (nearestDynObjects.empty())
         return false;
 
-    for (std::list<ObjectGuid>::iterator i = nearestDynObjects.begin(); i != nearestDynObjects.end(); ++i)
+    for (const ObjectGuid& guid : nearestDynObjects)
     {
-        DynamicObject* go = checkTarget->GetMap()->GetDynamicObject(*i);
+        DynamicObject* go = checkTarget->GetMap()->GetDynamicObject(guid);
         if (!go)
             continue;
 

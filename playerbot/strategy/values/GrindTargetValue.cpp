@@ -57,7 +57,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
         return unit;
     }
 
-    std::list<ObjectGuid> targets = *context->GetValue<std::list<ObjectGuid> >("possible targets");
+    const std::list<ObjectGuid>& targets = *context->GetValue<std::list<ObjectGuid> >("possible targets");
 
     if (targets.empty())
         return NULL;
@@ -67,9 +67,9 @@ Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
 
     std::unordered_map<uint32, bool> needForQuestMap;
 
-    for (std::list<ObjectGuid>::iterator tIter = targets.begin(); tIter != targets.end(); tIter++)
+    for (const ObjectGuid& targetGuid : targets)
     {
-        Unit* unit = ai->GetUnit(*tIter);
+        Unit* unit = ai->GetUnit(targetGuid);
         if (!unit)
             continue;
 
