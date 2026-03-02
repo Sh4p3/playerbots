@@ -508,8 +508,20 @@ namespace ai
         }
     };
 
-    BUFF_TRIGGER_A(LowestHpEarthShieldTrigger, "earth shield");
-    BUFF_TRIGGER_A(EarthShieldTrigger, "earth shield");
+    class LowestHpEarthShieldTrigger : public BuffTrigger
+    {
+    public:
+        LowestHpEarthShieldTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "earth shield") {}
+        std::string getName() override { return "earth shield on lowest hp"; }
+        bool IsActive() override;
+    };
+
+    class EarthShieldTrigger : public BuffTrigger
+    {
+    public:
+        EarthShieldTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "earth shield") {}
+        bool IsActive() override;
+    };
 
     CAN_CAST_TRIGGER(ChainLightningTrigger, "chain lightning");
 

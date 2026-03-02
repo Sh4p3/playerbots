@@ -80,18 +80,12 @@ Player* GetLowestHealthPlayer(Group* group)
 
 bool LowestHpEarthShieldTrigger::IsActive()
 {
-    Group* group = bot->GetGroup();
-    if (!group) return false;
-
-    Player* lowestHealthPlayer = GetLowestHealthPlayer(group);
-    return lowestHealthPlayer && bot != lowestHealthPlayer && !ai->HasAura("earth shield", lowestHealthPlayer, false, true);
+    Unit* target = context->GetValue<Unit*>("preferred single buff target", "earth shield")->Get();
+    return target && target != bot && target->IsAlive() && !ai->HasAura("earth shield", target);
 }
 
 bool EarthShieldTrigger::IsActive()
 {
-    Group* group = bot->GetGroup();
-    if (!group) return false;
-
-    Player* lowestHealthPlayer = GetLowestHealthPlayer(group);
-    return lowestHealthPlayer && bot == lowestHealthPlayer && !ai->HasAura("earth shield", lowestHealthPlayer, false, true);
+    Unit* target = context->GetValue<Unit*>("preferred single buff target", "earth shield")->Get();
+    return target && target == bot && target->IsAlive() && !ai->HasAura("earth shield", target);
 }

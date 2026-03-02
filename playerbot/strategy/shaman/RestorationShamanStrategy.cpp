@@ -1469,7 +1469,7 @@ void RestorationShamanBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& 
 
     triggers.push_back(new TriggerNode(
         "earth shield on lowest hp",
-        NextAction::array(0, new NextAction("earth shield on lowest hp", ACTION_CRITICAL_HEAL), NULL)));
+        NextAction::array(0, new NextAction("earth shield", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "shaman weapon",

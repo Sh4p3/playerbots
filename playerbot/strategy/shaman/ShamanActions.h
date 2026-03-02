@@ -52,12 +52,22 @@ namespace ai
     {
     public:
         CastEarthShieldAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "earth shield") {}
+        std::string getName() override { return "earth shield"; }
+
+    protected:
+        std::string GetTargetName() override { return "preferred single buff target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
-    class CastEarthShieldOnPartyAction : public BuffOnPartyAction
+    class CastEarthShieldOnPartyAction : public CastBuffSpellAction
     {
     public:
-        CastEarthShieldOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "earth shield") {}
+        CastEarthShieldOnPartyAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "earth shield") {}
+        std::string getName() override { return "earth shield on party"; }
+
+    protected:
+        std::string GetTargetName() override { return "preferred single buff target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
     class CastEarthShieldOnLowestHpAction : public BuffOnPartyAction
