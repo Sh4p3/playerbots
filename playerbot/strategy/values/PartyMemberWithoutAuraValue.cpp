@@ -163,9 +163,32 @@ Unit* PartyTankWithoutAuraValue::Calculate()
     return FindPartyMember(predicate);
 }
 
+class PreferredTankPredicate : public FindPlayerPredicate, public PlayerbotAIAware
+{
+public:
+    PreferredTankPredicate(PlayerbotAI* ai) : PlayerbotAIAware(ai), FindPlayerPredicate() {}
+
+    bool Check(Unit* unit) override
+    {
+        return unit && unit->IsPlayer() && ai->IsSafe(unit) && ai->IsTank((Player*)unit);
+    }
+};
+
+class PreferredBuffFallbackPredicate : public FindPlayerPredicate, public PlayerbotAIAware
+{
+public:
+    PreferredBuffFallbackPredicate(PlayerbotAI* ai) : PlayerbotAIAware(ai), FindPlayerPredicate() {}
+
+    bool Check(Unit* unit) override
+    {
+        return unit && unit->IsPlayer() && ai->IsSafe(unit);
+    }
+};
+
 Unit* PreferredSingleBuffTargetValue::Calculate()
 {
-    if (Unit* tank = context->GetValue<Unit*>("party tank without aura", qualifier)->Get())
+    PreferredTankPredicate tankPredicate(ai);
+    if (Unit* tank = FindPartyMember(tankPredicate, true))
         return tank;
 
     if (ai->HasStrategy("focus heal targets", BotState::BOT_STATE_COMBAT))
@@ -180,10 +203,10 @@ Unit* PreferredSingleBuffTargetValue::Calculate()
             if (!player->IsInGroup(bot) || !ai->IsSafe(player) || !Check(player))
                 continue;
 
-            if (!ai->HasAura(qualifier, player))
-                return player;
+            return player;
         }
     }
 
-    return context->GetValue<Unit*>("friendly unit without aura", qualifier + "-0")->Get();
+    PreferredBuffFallbackPredicate fallbackPredicate(ai);
+    return FindPartyMember(fallbackPredicate, true);
 }
