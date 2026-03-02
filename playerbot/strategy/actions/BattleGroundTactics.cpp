@@ -2541,7 +2541,7 @@ bool BGTactics::wsgPaths()
             return true;
             }
         }
-        if (Preference < 5) //horde ramp
+        if (Preference >= 5) //horde ramp
         {
             if (bot->GetPositionX() > 1099.f) //move to the horde ramp gate
             {
