@@ -13,6 +13,14 @@ bool CompareSpells(std::pair<uint32, std::string>& s1, std::pair<uint32, std::st
 {
     const SpellEntry* const si1 = sServerFacade.LookupSpellInfo(s1.first);
     const SpellEntry* const si2 = sServerFacade.LookupSpellInfo(s2.first);
+    if (!si1 || !si2)
+    {
+        if (si1 != si2)
+            return si1 != nullptr;
+
+        return s1.first > s2.first;
+    }
+
 #ifdef MANGOSBOT_ZERO
     int p1 = si1->School * 20000;
     int p2 = si2->School * 20000;
@@ -47,7 +55,7 @@ bool CompareSpells(std::pair<uint32, std::string>& s1, std::pair<uint32, std::st
 
     if (p1 == p2)
     {
-        return strcmp(si1->SpellName[0], si1->SpellName[1]) > 0;
+        return strcmp(si1->SpellName[0], si2->SpellName[0]) > 0;
     }
 
     return p1 > p2;
