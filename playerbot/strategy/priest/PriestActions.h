@@ -36,7 +36,12 @@ namespace ai
     BUFF_ACTION(CastInnerFocusAction, "inner focus");
     // disc 2.4.3 talents
     BUFF_ACTION(CastPainSuppressionAction, "pain suppression");
-    PROTECT_ACTION(CastPainSuppressionProtectAction, "pain suppression");
+    class CastPainSuppressionProtectAction : public CastProtectSpellAction
+    {
+    public:
+        CastPainSuppressionProtectAction(PlayerbotAI* ai) : CastProtectSpellAction(ai, "pain suppression") {}
+        std::string getName() override { return "pain suppression on party"; }
+    };
 
     // holy
     HEAL_ACTION(CastLesserHealAction, "lesser heal");

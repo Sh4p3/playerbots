@@ -670,6 +670,7 @@ namespace ai
     {
     public:
         CastBlessingOfProtectionOnPartyAction(PlayerbotAI* ai) : CastProtectSpellAction(ai, "blessing of protection") {}
+        std::string getName() override { return "blessing of protection on party"; }
         bool isUseful() override 
         { 
             Unit* target = GetTarget();
