@@ -340,7 +340,10 @@ bool AutoLearnSpellAction::LearnSpellFromSpell(uint32 spellId, std::ostringstrea
                 {
                     bot->learnSpell(learnedSpell, false);
                     SpellEntry const* spellInfo = sServerFacade.LookupSpellInfo(learnedSpell);
-                    *out << formatSpell(spellInfo) << ", ";
+                    if (spellInfo)
+                        *out << formatSpell(spellInfo) << ", ";
+                    else
+                        *out << learnedSpell << ", ";
                     learned = true;
                 }
             }
