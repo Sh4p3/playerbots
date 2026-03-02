@@ -9,19 +9,25 @@ using namespace ai;
 bool TeleportAction::Execute(Event& event)
 {
     Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
-    std::list<ObjectGuid> gos = *context->GetValue<std::list<ObjectGuid> >("nearest game objects no los");
-    for (std::list<ObjectGuid>::iterator i = gos.begin(); i != gos.end(); i++)
+    const std::list<ObjectGuid>& gos = *context->GetValue<std::list<ObjectGuid> >("nearest game objects no los");
+    for (const ObjectGuid& guid : gos)
     {
-        GameObject* go = ai->GetGameObject(*i);
+        GameObject* go = ai->GetGameObject(guid);
         if (!go)
             continue;
 
         GameObjectInfo const *goInfo = go->GetGOInfo();
+        if (!goInfo)
+            continue;
+
         if (goInfo->type != GAMEOBJECT_TYPE_SPELLCASTER)
             continue;
 
         uint32 spellId = goInfo->spellcaster.spellId;
         const SpellEntry* const pSpellInfo = sServerFacade.LookupSpellInfo(spellId);
+        if (!pSpellInfo)
+            continue;
+
         if (pSpellInfo->Effect[0] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[1] != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effect[2] != SPELL_EFFECT_TELEPORT_UNITS)
             continue;
 
@@ -34,7 +40,7 @@ bool TeleportAction::Execute(Event& event)
         ai->ChangeStrategy("-follow,+stay", BotState::BOT_STATE_NON_COMBAT);
 
         std::unique_ptr<WorldPacket> packet(new WorldPacket(CMSG_GAMEOBJ_USE));
-        *packet << *i;
+        *packet << guid;
         bot->GetSession()->QueuePacket(std::move(packet));
         return true;
     }

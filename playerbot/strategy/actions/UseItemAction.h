@@ -381,10 +381,10 @@ namespace ai
             if (!bot->InBattleGround() || bot->GetLevel() < 60 || !bot->IsInCombat())
                 return false;
 
-            std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs no los");
-            for (std::list<ObjectGuid>::iterator i = units.begin(); i != units.end(); i++)
+            const std::list<ObjectGuid>& units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs no los");
+            for (const ObjectGuid& guid : units)
             {
-                Unit* unit = ai->GetUnit(*i);
+                Unit* unit = ai->GetUnit(guid);
                 if (!unit)
                     continue;
 

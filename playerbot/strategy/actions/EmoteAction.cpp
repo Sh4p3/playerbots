@@ -133,11 +133,11 @@ Unit* EmoteActionBase::GetTarget()
 {
     Unit* target = NULL;
 
-    std::list<ObjectGuid> nfp = *context->GetValue<std::list<ObjectGuid> >("nearest friendly players");
+    const std::list<ObjectGuid>& nfp = *context->GetValue<std::list<ObjectGuid> >("nearest friendly players");
     std::vector<Unit*> targets;
-    for (std::list<ObjectGuid>::iterator i = nfp.begin(); i != nfp.end(); ++i)
+    for (const ObjectGuid& guid : nfp)
     {
-        Unit* unit = ai->GetUnit(*i);
+        Unit* unit = ai->GetUnit(guid);
         if (unit && sServerFacade.GetDistance2d(bot, unit) < sPlayerbotAIConfig.tooCloseDistance) targets.push_back(unit);
     }
 

@@ -689,10 +689,10 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                 ai->Unmount();
             }
 
-            std::list<ObjectGuid> gos = *context->GetValue<std::list<ObjectGuid> >("nearest game objects");
-            for (std::list<ObjectGuid>::iterator i = gos.begin(); i != gos.end(); i++)
+            const std::list<ObjectGuid>& gos = *context->GetValue<std::list<ObjectGuid> >("nearest game objects");
+            for (const ObjectGuid& guid : gos)
             {
-                GameObject* go = ai->GetGameObject(*i);
+                GameObject* go = ai->GetGameObject(guid);
                 if (!go)
                     continue;
 
@@ -703,7 +703,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                     continue;
 
                 std::unique_ptr<WorldPacket> packet(new WorldPacket(CMSG_GAMEOBJ_USE));
-                *packet << *i;
+                *packet << guid;
                 bot->GetSession()->QueuePacket(std::move(packet));
                 return true;
             }

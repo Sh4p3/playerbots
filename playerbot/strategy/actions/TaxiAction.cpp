@@ -23,10 +23,10 @@ bool TaxiAction::Execute(Event& event)
         return true;
     }
 
-    std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
-    for (std::list<ObjectGuid>::iterator i = units.begin(); i != units.end(); i++)
+    const std::list<ObjectGuid>& units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
+    for (const ObjectGuid& guid : units)
     {
-        Creature *npc = bot->GetNPCIfCanInteractWith(*i, UNIT_NPC_FLAG_FLIGHTMASTER);
+        Creature *npc = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
         if (!npc)
             continue;
 
