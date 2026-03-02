@@ -12,19 +12,20 @@ namespace ai
 
         bool Calculate() override
         {
+            const float spellRange = ai->GetRange("spell");
             std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
-            for (std::list<ObjectGuid>::iterator i = units.begin(); i != units.end(); i++)
+            for (const ObjectGuid& guid : units)
             {
-                Unit* unit = ai->GetUnit(*i);
-                if (!unit)
+                Unit* unit = ai->GetUnit(guid);
+                if (!unit || unit->GetTypeId() != TYPEID_UNIT)
                     continue;
 
-                Creature* totem = dynamic_cast<Creature*>(unit);
-                if (!totem || !totem->IsTotem())
+                Creature* totem = static_cast<Creature*>(unit);
+                if (!totem->IsTotem())
                     continue;
                 
                 const bool totemIsInRange = strstri(totem->GetName(), qualifier.c_str()) &&
-                    sServerFacade.GetDistance2d(bot, totem) <= ai->GetRange("spell");
+                    sServerFacade.GetDistance2d(bot, totem) <= spellRange;
                 
                 if (!totemIsInRange) continue;
 
@@ -37,8 +38,9 @@ namespace ai
                 const Group* botGroup = bot->GetGroup();
                 if (!botGroup) continue;
 
-                if (const Player* totemPlayerOwner = totemOwner->IsPlayer() ? dynamic_cast<Player*>(totemOwner) : nullptr)
+                if (totemOwner->IsPlayer())
                 {
+                    const Player* totemPlayerOwner = static_cast<Player*>(totemOwner);
 #ifdef MANGOSBOT_TWO
                     // Most totems are raid-wide in Wrath - Special handling should be added for the handful that aren't
                     if (totemPlayerOwner->GetGroup() == botGroup) return true;

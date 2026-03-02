@@ -132,8 +132,8 @@ void PerformanceMonitor::PrintStats(bool perTick, bool fullStack, bool showMap)
                     {
                         if (!pd.minTime || pd.minTime > performanceData.minTime)
                             pd.minTime = performanceData.minTime;
-                        if (!pd.maxTime || pd.maxTime < performanceData.minTime)
-                            pd.maxTime = performanceData.minTime;
+                        if (!pd.maxTime || pd.maxTime < performanceData.maxTime)
+                            pd.maxTime = performanceData.maxTime;
                         pd.totalTime += performanceData.totalTime;
                     }
                     pd.count += performanceData.count;

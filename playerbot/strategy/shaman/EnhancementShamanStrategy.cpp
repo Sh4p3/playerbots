@@ -1216,7 +1216,7 @@ void EnhancementShamanTotemsStrategy::InitCombatTriggers(std::list<TriggerNode*>
 
     triggers.push_back(new TriggerNode(
         "fire totem",
-        NextAction::array(0, new NextAction("magma totem", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("searing totem", ACTION_HIGH), NULL)));
 
     triggers.push_back(new TriggerNode(
         "fire totem",

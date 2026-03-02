@@ -13,14 +13,13 @@ namespace ai
         bool Calculate() override
         {
             std::list<ObjectGuid> units = *context->GetValue<std::list<ObjectGuid> >("nearest npcs");
-            for (std::list<ObjectGuid>::iterator i = units.begin(); i != units.end(); i++)
+            for (const ObjectGuid& guid : units)
             {
-                Unit* unit = ai->GetUnit(*i);
-                if (!unit)
+                Unit* unit = ai->GetUnit(guid);
+                if (!unit || unit->GetTypeId() != TYPEID_UNIT)
                     continue;
 
-                Creature* creature = dynamic_cast<Creature*>(unit);
-                if (creature && creature->IsTotem()) 
+                if (static_cast<Creature*>(unit)->IsTotem()) 
                 {
                     return true;
                 }
