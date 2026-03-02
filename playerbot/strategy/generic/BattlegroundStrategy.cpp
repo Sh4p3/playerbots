@@ -257,5 +257,11 @@ void ArenaStrategy::InitNonCombatTriggers(std::list<TriggerNode*> &triggers)
 
 void ArenaStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
-    //InitNonCombatTriggers(triggers);
+    triggers.push_back(new TriggerNode(
+        "arena waiting",
+        NextAction::array(0, new NextAction("arena tactics", 1.0f), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "arena active",
+        NextAction::array(0, new NextAction("arena tactics", 1.0f), NULL)));
 }

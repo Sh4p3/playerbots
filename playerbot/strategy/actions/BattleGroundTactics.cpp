@@ -5,6 +5,7 @@
 #include "BattleGround/BattleGround.h"
 #include "BattleGround/BattleGroundMgr.h"
 #include "BattleGroundTactics.h"
+#include <cmath>
 #include "float.h"
 #ifdef MANGOSBOT_TWO
 #include "Entities/Vehicle.h"
@@ -4890,26 +4891,16 @@ bool ArenaTactics::Execute(Event& event)
     }
     else
     {
-        float arenaCenterX, arenaCenterY, arenaCenterZ;
-        switch (bg->GetTypeId())
-        {
-        case BATTLEGROUND_RL:
-            arenaCenterX = 1285.359f;
-            arenaCenterY = 1667.680f;
-            arenaCenterZ = 40.0f;
-            break;
-        case BATTLEGROUND_NA:
-            arenaCenterX = 4054.149f;
-            arenaCenterY = 2895.25f;
-            arenaCenterZ = 15.1f;
-            break;
-        default:
-            arenaCenterX = x;
-            arenaCenterY = y;
-            arenaCenterZ = z;
-            break;
-        }
-        if (!bot->IsWithinDist3d(arenaCenterX, arenaCenterY, arenaCenterZ, 100.0f) || bot->GetPositionZ() < z - 1.0f)
+        Team enemyTeam = team == ALLIANCE ? HORDE : ALLIANCE;
+        float enemyStartX, enemyStartY, enemyStartZ, enemyStartO;
+        bg->GetTeamStartLoc(enemyTeam, enemyStartX, enemyStartY, enemyStartZ, enemyStartO);
+
+        float arenaCenterX = (x + enemyStartX) * 0.5f;
+        float arenaCenterY = (y + enemyStartY) * 0.5f;
+        float arenaCenterZ = (z + enemyStartZ) * 0.5f;
+        float minStartZ = z < enemyStartZ ? z : enemyStartZ;
+
+        if (!bot->IsWithinDist3d(arenaCenterX, arenaCenterY, arenaCenterZ, 100.0f) || bot->GetPositionZ() < minStartZ - 1.0f)
         {
             bot->TeleportTo(mapid, arenaCenterX, arenaCenterY, arenaCenterZ, O);
             return false;
@@ -4943,50 +4934,61 @@ bool ArenaTactics::moveToCenter(BattleGround* bg)
 #ifndef MANGOSBOT_ZERO
     bool botMoved = false;
     uint32 preference = context->GetValue<uint32>("bg role")->Get();
-    float randomOffsetX = frand(-2, 2);
-    float randomOffsetY = frand(-2, 2);
 
-    Team ennemyTeam = bot->GetTeam() == ALLIANCE ? HORDE : ALLIANCE;
-    float x, y, z, o = 0;
-    bg->GetTeamStartLoc(ennemyTeam, x, y, z, o);
+    Team team = bot->GetBGTeam();
+    if (team == 0)
+        team = bot->GetTeam();
 
-#if defined(MANGOS) || defined(CMANGOS)
-    auto moveToEnemyStart = [&]() {
-        return MoveTo(bg->GetMapId(), x + randomOffsetX, y + randomOffsetY, z, false, true);
-        };
+    Team enemyTeam = team == ALLIANCE ? HORDE : ALLIANCE;
+    float startX, startY, startZ, startO = 0.0f;
+    float enemyX, enemyY, enemyZ, enemyO = 0.0f;
+    bg->GetTeamStartLoc(team, startX, startY, startZ, startO);
+    bg->GetTeamStartLoc(enemyTeam, enemyX, enemyY, enemyZ, enemyO);
 
-    switch (bg->GetTypeId())
+    float directionX = enemyX - startX;
+    float directionY = enemyY - startY;
+    float pathLength = std::sqrt(directionX * directionX + directionY * directionY);
+    if (pathLength < 1.0f)
+        return MoveNear(bg->GetMapId(), enemyX, enemyY, enemyZ, 8.0f);
+
+    float advanceRatio = 0.45f;
+    if (preference <= 2)
+        advanceRatio = 0.35f;
+    else if (preference >= 7)
+        advanceRatio = 0.55f;
+
+    float sideX = -directionY / pathLength;
+    float sideY = directionX / pathLength;
+    float laneOffset = float(int(preference % 3) - 1) * 6.0f;
+
+    float stageX = startX + directionX * advanceRatio + sideX * laneOffset + frand(-1.5f, 1.5f);
+    float stageY = startY + directionY * advanceRatio + sideY * laneOffset + frand(-1.5f, 1.5f);
+    float stageZ = startZ + (enemyZ - startZ) * advanceRatio;
+
+    Player* nearestEnemy = nullptr;
+    float nearestEnemyDistance = FLT_MAX;
+
+    for (auto& guid : bg->GetBgMap()->GetPlayers())
     {
-    case BATTLEGROUND_BE:
-        // Blade's Edge Arena positions
-        if (bot->IsWithinDist3d(6185.0f, 236.0f, 6.0f, INTERACTION_DISTANCE) || bot->IsWithinDist3d(6240.0f, 262.0f, 2.0f, INTERACTION_DISTANCE))
-            botMoved = moveToEnemyStart();
-        else
-            botMoved = MoveTo(bg->GetMapId(), (preference >= 5 ? 6185.0f : 6240.0f) + randomOffsetX, (preference >= 5 ? 236.0f : 262.0f) + randomOffsetY, (preference >= 5 ? 6.0f : 2.0f), false, true);
-        break;
+        Player* player = guid.getSource();
+        if (!player || player == bot || !sServerFacade.IsAlive(player))
+            continue;
 
-    case BATTLEGROUND_RL:
-        // Ruins of Lordaeron Arena positions
-        if (bot->IsWithinDist3d(1320.0f, 1672.0f, 38.0f, INTERACTION_DISTANCE) || bot->IsWithinDist3d(1273.0f, 1666.0f, 36.0f, INTERACTION_DISTANCE))
-            botMoved = moveToEnemyStart();
-        else
-            botMoved = MoveTo(bg->GetMapId(), (preference < 5 ? 1320.0f : 1273.0f) + randomOffsetX, (preference < 5 ? 1672.0f : 1666.0f) + randomOffsetY, (preference < 5 ? 38.0f : 36.0f), false, true);
-        break;
+        if (player->GetBGTeam() == team)
+            continue;
 
-    case BATTLEGROUND_NA:
-        // Nagrand Arena positions
-        if (bot->IsWithinDist3d(4055.0f, 2921.0f, 15.1f, INTERACTION_DISTANCE))
-            botMoved = moveToEnemyStart();
-        else
-            botMoved = MoveTo(bg->GetMapId(), 4055.0f + frand(-5, 5), 2921.0f + frand(-5, 5), 15.1f, false, true);
-        break;
-
-    default:
-        // Fallback to enemy team start location
-        botMoved = moveToEnemyStart();
-        break;
+        float distance = sServerFacade.GetDistance2d(bot, player);
+        if (distance < nearestEnemyDistance)
+        {
+            nearestEnemyDistance = distance;
+            nearestEnemy = player;
+        }
     }
-#endif
+
+    if (nearestEnemy && nearestEnemyDistance < 45.0f)
+        botMoved = MoveNear(nearestEnemy, 8.0f);
+    else
+        botMoved = MoveNear(bg->GetMapId(), stageX, stageY, stageZ, 3.0f);
 
     // Randomly update preference (30% chance)
     if (urand(0, 100) > 70)
