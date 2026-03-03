@@ -9,6 +9,10 @@ using namespace ai;
 Unit* EnemyHealerTargetValue::Calculate()
 {
     std::string spell = qualifier;
+    float searchRange = ai->GetRange("spell");
+    float spellRange = 0.0f;
+    if (ai->GetSpellRange(spell, &spellRange) && spellRange > searchRange)
+        searchRange = spellRange;
 
     std::list<ObjectGuid> attackers = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
     Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
@@ -18,7 +22,7 @@ Unit* EnemyHealerTargetValue::Calculate()
         if (!unit || unit == target)
             continue;
 
-        if (sServerFacade.GetDistance2d(bot, unit) > ai->GetRange("spell"))
+        if (sServerFacade.GetDistance2d(bot, unit) > searchRange)
             continue;
 
         if (!ai->IsInterruptableSpellCasting(unit, spell, true))
