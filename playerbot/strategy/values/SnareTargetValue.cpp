@@ -21,16 +21,19 @@ Unit* SnareTargetValue::Calculate()
         Player* plr = dynamic_cast<Player*>(enemy);
         if (plr && !(plr->HasAuraType(SPELL_AURA_MOD_ROOT) || plr->HasAuraType(SPELL_AURA_MOD_STUN)))
         {
-            Unit* victim = plr->GetVictim();
-            const bool isHittingBot = victim && victim->GetObjectGuid() == bot->GetObjectGuid();
-            bool shouldSnare = !plr->IsStopped() || plr->IsNonMeleeSpellCasted(false) || isHittingBot;
+            if (spell.empty() || !ai->HasAura(spell, plr, false, true))
+            {
+                Unit* victim = plr->GetVictim();
+                const bool isHittingBot = victim && victim->GetObjectGuid() == bot->GetObjectGuid();
+                bool shouldSnare = !plr->IsStopped() || plr->IsNonMeleeSpellCasted(false) || isHittingBot;
 
-            // Melee bots do not need to waste a snare on a target already trading blows in place.
-            if (isHittingBot && !ai->IsRanged(bot) && !plr->IsNonMeleeSpellCasted(false))
-                shouldSnare = false;
+                // Melee bots do not need to waste a snare on a target already trading blows in place.
+                if (isHittingBot && !ai->IsRanged(bot) && !plr->IsNonMeleeSpellCasted(false))
+                    shouldSnare = false;
 
-            if (shouldSnare)
-                return enemy;
+                if (shouldSnare)
+                    return enemy;
+            }
         }
     }
 
@@ -39,6 +42,9 @@ Unit* SnareTargetValue::Calculate()
     {
         Unit* unit = ai->GetUnit(guid);
         if (!unit)
+            continue;
+
+        if (!spell.empty() && ai->HasAura(spell, unit, false, true))
             continue;
 
         if (sServerFacade.GetDistance2d(bot, unit) > searchRange)
