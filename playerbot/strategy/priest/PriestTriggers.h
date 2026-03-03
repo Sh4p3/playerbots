@@ -43,6 +43,7 @@ namespace ai
     {
     public:
         PowerWordFortitudeOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "power word: fortitude", 4) {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("friendly unit without aura", "power word: fortitude,prayer of fortitude"); }
         virtual bool IsActive() override { return BuffOnPartyTrigger::IsActive() && !ai->HasAura("prayer of fortitude", GetTarget()); }
     };
 
@@ -57,6 +58,7 @@ namespace ai
     {
     public:
         DivineSpiritOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "divine spirit", 4) {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("friendly unit without aura", "divine spirit,prayer of spirit"); }
         virtual bool IsActive() override { return BuffOnPartyTrigger::IsActive() && !ai->HasAura("prayer of spirit", GetTarget()); }
     };
 
@@ -71,6 +73,7 @@ namespace ai
     {
     public:
         ShadowProtectionOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "shadow protection", 4) {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("friendly unit without aura", "shadow protection,prayer of shadow protection"); }
         virtual bool IsActive() override { return BuffOnPartyTrigger::IsActive() && !ai->HasAura("prayer of shadow protection", GetTarget()); }
     };
 

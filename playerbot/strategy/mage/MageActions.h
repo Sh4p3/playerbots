@@ -90,6 +90,7 @@ namespace ai
     {
 	public:
 		CastArcaneIntellectOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "arcane intellect") {}
+        std::string GetTargetQualifier() override { return "arcane intellect,arcane brilliance"; }
 	};
 
     class CastArcaneBrillianceOnPartyAction : public GreaterBuffOnPartyAction

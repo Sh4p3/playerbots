@@ -7,6 +7,7 @@ namespace ai
     {
     public:
         MarkOfTheWildOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "mark of the wild", 4) {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("friendly unit without aura", "mark of the wild,gift of the wild"); }
         virtual bool IsActive() override { return BuffOnPartyTrigger::IsActive() && !ai->HasAura("gift of the wild", GetTarget()); }
     };
 

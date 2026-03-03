@@ -24,6 +24,7 @@ namespace ai
     {
     public:
         ArcaneIntellectOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "arcane intellect", 4) {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("friendly unit without aura", "arcane intellect,arcane brilliance"); }
         virtual bool IsActive() override { return BuffOnPartyTrigger::IsActive() && !ai->HasAura("arcane brilliance", GetTarget()); }
     };
 
