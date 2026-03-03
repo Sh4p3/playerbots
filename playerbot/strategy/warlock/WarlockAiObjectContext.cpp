@@ -243,7 +243,7 @@ namespace ai
                 creators["no felhunter"] = [](PlayerbotAI* ai) { return new NoFelhunterTrigger(ai); };
                 creators["no felguard"] = [](PlayerbotAI* ai) { return new NoFelguardTrigger(ai); };
                 creators["spell lock"] = [](PlayerbotAI* ai) { return new SpellLockTrigger(ai); };
-                creators["spell lock enemy healer"] = [](PlayerbotAI* ai) { return new SpellLockEnemyHealerTrigger(ai); };
+                creators["spell lock on enemy healer"] = [](PlayerbotAI* ai) { return new SpellLockEnemyHealerTrigger(ai); };
                 creators["seed of corruption on attacker"] = [](PlayerbotAI* ai) { return new SeedOfCorruptionOnAttackerTrigger(ai); };
                 creators["soulstone"] = [](PlayerbotAI* ai) { return new SoulstoneTrigger(ai); };
                 creators["shadow ward"] = [](PlayerbotAI* ai) { return new ShadowWardTrigger(ai); };

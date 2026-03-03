@@ -169,6 +169,7 @@ namespace ai
 				creators["dancing weapon"] = [](PlayerbotAI* ai) { return new CastDancingWeaponAction(ai); };
 				creators["dark command"] = [](PlayerbotAI* ai) { return new CastDarkCommandAction(ai); };
 				creators["mind freeze on enemy healer"] = [](PlayerbotAI* ai) { return new CastMindFreezeOnEnemyHealerAction(ai); };
+                creators["strangulate on enemy healer"] = [](PlayerbotAI* ai) { return new CastStrangulateOnEnemyHealerAction(ai); };
 
 				creators["runeforge"] = [](PlayerbotAI* ai) { return new RuneforgeAction(ai); };
             }
