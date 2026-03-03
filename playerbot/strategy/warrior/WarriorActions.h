@@ -43,8 +43,51 @@ namespace ai
     MELEE_ACTION(CastCleaveAction, "cleave");
     MELEE_ACTION(CastExecuteAction, "execute");
     REACH_ACTION(CastInterceptAction, "intercept", 8.0f);
-    ENEMY_HEALER_ACTION(CastInterceptOnEnemyHealerAction, "intercept");
-    SNARE_ACTION(CastInterceptOnSnareTargetAction, "intercept");
+    class CastInterceptOnEnemyHealerAction : public CastSpellAction
+    {
+    public:
+        CastInterceptOnEnemyHealerAction(PlayerbotAI* ai) : CastSpellAction(ai, "intercept"), distance(8.0f) {}
+
+        bool isUseful() override
+        {
+            if (!CastSpellAction::isUseful())
+                return false;
+
+            Unit* target = GetTarget();
+            return target && sServerFacade.IsDistanceGreaterThan(sServerFacade.GetDistance2d(bot, target), distance + sPlayerbotAIConfig.contactDistance);
+        }
+
+    protected:
+        std::string GetTargetName() override { return "enemy healer target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
+        std::string getName() override { return GetSpellName() + " on enemy healer"; }
+
+    private:
+        float distance;
+    };
+
+    class CastInterceptOnSnareTargetAction : public CastSpellAction
+    {
+    public:
+        CastInterceptOnSnareTargetAction(PlayerbotAI* ai) : CastSpellAction(ai, "intercept"), distance(8.0f) {}
+
+        bool isUseful() override
+        {
+            if (!CastSpellAction::isUseful())
+                return false;
+
+            Unit* target = GetTarget();
+            return target && sServerFacade.IsDistanceGreaterThan(sServerFacade.GetDistance2d(bot, target), distance + sPlayerbotAIConfig.contactDistance);
+        }
+
+    protected:
+        std::string GetTargetName() override { return "snare target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
+        std::string getName() override { return GetSpellName() + " on snare target"; }
+
+    private:
+        float distance;
+    };
     MELEE_ACTION(CastSlamAction, "slam");
     BUFF_ACTION(CastBerserkerRageAction, "berserker rage");
     MELEE_ACTION(CastWhirlwindAction, "whirlwind");
