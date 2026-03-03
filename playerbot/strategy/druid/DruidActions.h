@@ -89,7 +89,11 @@ namespace ai
         CastMarkOfTheWildOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "mark of the wild") {}
         std::string GetTargetQualifier() override { return "mark of the wild,gift of the wild"; }
     };
-	GREATER_BUFF_PARTY_ACTION(CastGiftOfTheWildOnPartyAction, "gift of the wild");
+    class CastGiftOfTheWildOnPartyAction : public GreaterBuffOnPartyAction
+    {
+    public:
+        CastGiftOfTheWildOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "gift of the wild", false, "mark of the wild") {}
+    };
 
 	class CastSurvivalInstinctsAction : public CastBuffSpellAction 
 	{

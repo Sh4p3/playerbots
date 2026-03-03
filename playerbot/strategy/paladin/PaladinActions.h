@@ -307,7 +307,7 @@ namespace ai
     class CastGreaterBlessingOfMightOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-		CastGreaterBlessingOfMightOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of might") {}
+		CastGreaterBlessingOfMightOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of might", false, "blessing of might") {}
     };
 
 	class CastBlessingOfWisdomAction : public CastBuffSpellAction
@@ -333,7 +333,7 @@ namespace ai
     class CastGreaterBlessingOfWisdomOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-        CastGreaterBlessingOfWisdomOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of wisdom") {}
+        CastGreaterBlessingOfWisdomOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of wisdom", false, "blessing of wisdom") {}
     };
 
 	class CastBlessingOfKingsAction : public CastBuffSpellAction
@@ -359,7 +359,7 @@ namespace ai
     class CastGreaterBlessingOfKingsOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-        CastGreaterBlessingOfKingsOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of kings") {}
+        CastGreaterBlessingOfKingsOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of kings", false, "blessing of kings") {}
     };
 
 	class CastBlessingOfSanctuaryAction : public CastBuffSpellAction
@@ -385,7 +385,7 @@ namespace ai
     class CastGreaterBlessingOfSanctuaryOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-        CastGreaterBlessingOfSanctuaryOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of sanctuary") {}
+        CastGreaterBlessingOfSanctuaryOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of sanctuary", false, "blessing of sanctuary") {}
     };
 
 #ifndef MANGOSBOT_TWO
@@ -412,7 +412,7 @@ namespace ai
     class CastGreaterBlessingOfLightOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-        CastGreaterBlessingOfLightOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of light") {}
+        CastGreaterBlessingOfLightOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of light", false, "blessing of light") {}
     };
 #endif
 
@@ -439,7 +439,7 @@ namespace ai
     class CastGreaterBlessingOfSalvationOnPartyAction : public GreaterBuffOnPartyAction
     {
     public:
-        CastGreaterBlessingOfSalvationOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of salvation", true) {}
+        CastGreaterBlessingOfSalvationOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "greater blessing of salvation", true, "blessing of salvation") {}
 
         bool isUseful() override
         {

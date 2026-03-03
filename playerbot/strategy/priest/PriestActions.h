@@ -11,7 +11,11 @@ namespace ai
         CastPowerWordFortitudeOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "power word: fortitude") {}
         std::string GetTargetQualifier() override { return "power word: fortitude,prayer of fortitude"; }
     };
-    GREATER_BUFF_PARTY_ACTION(CastPrayerOfFortitudeOnPartyAction, "prayer of fortitude");
+    class CastPrayerOfFortitudeOnPartyAction : public GreaterBuffOnPartyAction
+    {
+    public:
+        CastPrayerOfFortitudeOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "prayer of fortitude", false, "power word: fortitude") {}
+    };
     BUFF_ACTION(CastPowerWordShieldAction, "power word: shield");
     HEAL_PARTY_ACTION(CastPowerWordShieldOnPartyAction, "power word: shield");
     HEAL_ACTION(CastPenanceAction, "penance");
@@ -36,7 +40,11 @@ namespace ai
         CastDivineSpiritOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "divine spirit") {}
         std::string GetTargetQualifier() override { return "divine spirit,prayer of spirit"; }
     };
-    GREATER_BUFF_PARTY_ACTION(CastPrayerOfSpiritOnPartyAction, "prayer of spirit");
+    class CastPrayerOfSpiritOnPartyAction : public GreaterBuffOnPartyAction
+    {
+    public:
+        CastPrayerOfSpiritOnPartyAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "prayer of spirit", false, "divine spirit") {}
+    };
     //disc 2.4.3
     SPELL_ACTION(CastMassDispelAction, "mass dispel");
 
@@ -98,7 +106,11 @@ namespace ai
         CastShadowProtectionOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "shadow protection") {}
         std::string GetTargetQualifier() override { return "shadow protection,prayer of shadow protection"; }
     };
-    GREATER_BUFF_PARTY_ACTION(CastPrayerOfShadowProtectionAction, "prayer of shadow protection");
+    class CastPrayerOfShadowProtectionAction : public GreaterBuffOnPartyAction
+    {
+    public:
+        CastPrayerOfShadowProtectionAction(PlayerbotAI* ai) : GreaterBuffOnPartyAction(ai, "prayer of shadow protection", false, "shadow protection") {}
+    };
     // shadow 2.4.3
     BUFF_ACTION(CastShadowfiendAction, "shadowfiend");
     SPELL_ACTION(CastShadowWordDeathAction, "shadow word: death");
