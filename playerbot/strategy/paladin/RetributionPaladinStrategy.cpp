@@ -356,15 +356,15 @@ void RetributionPaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& t
 
     triggers.push_back(new TriggerNode(
         "repentance on enemy healer",
-        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT + 3), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance on snare target",
-        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance interrupt",
-        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void RetributionPaladinCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -847,15 +847,15 @@ void RetributionPaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& t
 
     triggers.push_back(new TriggerNode(
         "repentance on enemy healer",
-        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT + 3), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance on snare target",
-        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance interrupt",
-        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void RetributionPaladinCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1351,15 +1351,15 @@ void RetributionPaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& t
 
     triggers.push_back(new TriggerNode(
         "repentance on enemy healer",
-        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on enemy healer", ACTION_INTERRUPT + 3), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance on snare target",
-        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance on snare target", ACTION_INTERRUPT + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "repentance interrupt",
-        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("repentance", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void RetributionPaladinCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
