@@ -487,27 +487,6 @@ namespace ai
         PartyMemberCureDiseaseTrigger(PlayerbotAI* ai) : PartyMemberNeedCureTrigger(ai, "cure disease", DISPEL_DISEASE) {}
     };
 
-    class PartyTankEarthShieldTrigger : public BuffOnTankTrigger
-    {
-    public:
-        PartyTankEarthShieldTrigger(PlayerbotAI* ai) : BuffOnTankTrigger(ai, "earth shield") {}
-
-        virtual bool IsActive() override
-        {
-            Group* group = bot->GetGroup();
-            if (group)
-            {
-                for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-                {
-                    if (ai->HasAura("earth shield", ref->getSource(), false, true))
-                        return false;
-                }
-            }
-
-            return BuffOnTankTrigger::IsActive();
-        }
-    };
-
     class PreferredTargetEarthShieldTrigger : public BuffTrigger
     {
     public:

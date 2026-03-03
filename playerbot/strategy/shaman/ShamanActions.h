@@ -483,12 +483,6 @@ namespace ai
 #endif
     };
 
-    class CastEarthShieldOnPartyTankAction : public BuffOnTankAction
-    {
-    public:
-        CastEarthShieldOnPartyTankAction(PlayerbotAI* ai) : BuffOnTankAction(ai, "earth shield") {}
-    };
-
     BUFF_ACTION(CastElementalMasteryAction, "elemental mastery");
     BUFF_ACTION(CastFeralSpiritAction, "feral spirit");
     SPELL_ACTION(CastHexAction, "hex");

@@ -293,7 +293,6 @@ namespace ai
                 creators["call of the spirits"] = [](PlayerbotAI* ai) { return new TotemsAreNotSummonedTrigger(ai); };
                 creators["totemic recall"] = [](PlayerbotAI* ai) { return new ReadyToRemoveTotemsTrigger(ai); };
                 creators["earth shield"] = [](PlayerbotAI* ai) { return new EarthShieldTrigger(ai); };
-                creators["earth shield on party tank"] = [](PlayerbotAI* ai) { return new PartyTankEarthShieldTrigger(ai); };
                 creators["earth shield on preferred target"] = [](PlayerbotAI* ai) { return new PreferredTargetEarthShieldTrigger(ai); };
                 creators["chain lightning"] = [](PlayerbotAI* ai) { return new ChainLightningTrigger(ai); };
                 creators["stormstrike"] = [](PlayerbotAI* ai) { return new StormstrikeTrigger(ai); };
@@ -385,7 +384,6 @@ namespace ai
                 creators["update pve strats"] = [](PlayerbotAI* ai) { return new UpdateShamanPveStrategiesAction(ai); };
                 creators["update pvp strats"] = [](PlayerbotAI* ai) { return new UpdateShamanPvpStrategiesAction(ai); };
                 creators["update raid strats"] = [](PlayerbotAI* ai) { return new UpdateShamanRaidStrategiesAction(ai); };
-                creators["earth shield on party tank"] = [](PlayerbotAI* ai) { return new CastEarthShieldOnPartyTankAction(ai); };
                 creators["elemental mastery"] = [](PlayerbotAI* ai) { return new CastElementalMasteryAction(ai); };
                 creators["feral spirit"] = [](PlayerbotAI* ai) { return new CastFeralSpiritAction(ai); };
                 creators["shamanistic rage"] = [](PlayerbotAI* ai) { return new CastShamanisticRageAction(ai); };
