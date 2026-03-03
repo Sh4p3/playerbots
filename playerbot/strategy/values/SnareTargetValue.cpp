@@ -10,6 +10,10 @@ using namespace ai;
 Unit* SnareTargetValue::Calculate()
 {
     std::string spell = qualifier;
+    float searchRange = ai->GetRange("spell");
+    float spellRange = 0.0f;
+    if (ai->GetSpellRange(spell, &spellRange) && spellRange > searchRange)
+        searchRange = spellRange;
 
     Unit* enemy = AI_VALUE(Unit*, "enemy player target");
     if (enemy)
@@ -27,7 +31,7 @@ Unit* SnareTargetValue::Calculate()
         if (!unit)
             continue;
 
-        if (sServerFacade.GetDistance2d(bot, unit) > ai->GetRange("spell"))
+        if (sServerFacade.GetDistance2d(bot, unit) > searchRange)
             continue;
 
         // case real player or bot not moving

@@ -7,6 +7,11 @@ using namespace ai;
 
 Unit* AttackerWithoutAuraTargetValue::Calculate()
 {
+    float searchRange = ai->GetRange("spell");
+    float spellRange = 0.0f;
+    if (ai->GetSpellRange(qualifier, &spellRange) && spellRange > searchRange)
+        searchRange = spellRange;
+
     std::list<ObjectGuid> attackers = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
     Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     for (std::list<ObjectGuid>::iterator i = attackers.begin(); i != attackers.end(); ++i)
@@ -15,7 +20,7 @@ Unit* AttackerWithoutAuraTargetValue::Calculate()
         if (!unit || unit == target)
             continue;
 
-        if (bot->GetDistance(unit) > ai->GetRange("spell"))
+        if (bot->GetDistance(unit) > searchRange)
             continue;
 
         if (!ai->HasAura(qualifier, unit))
