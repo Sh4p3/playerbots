@@ -19,15 +19,25 @@ Unit* SnareTargetValue::Calculate()
     if (enemy)
     {
         Player* plr = dynamic_cast<Player*>(enemy);
-        if (plr && !(plr->HasAuraType(SPELL_AURA_MOD_ROOT) || plr->HasAuraType(SPELL_AURA_MOD_STUN)) && (!plr->IsStopped() || plr->IsNonMeleeSpellCasted(false) || (plr->GetVictim() && plr->GetVictim()->GetObjectGuid() == bot->GetObjectGuid())))
-            return enemy;
+        if (plr && !(plr->HasAuraType(SPELL_AURA_MOD_ROOT) || plr->HasAuraType(SPELL_AURA_MOD_STUN)))
+        {
+            Unit* victim = plr->GetVictim();
+            const bool isHittingBot = victim && victim->GetObjectGuid() == bot->GetObjectGuid();
+            bool shouldSnare = !plr->IsStopped() || plr->IsNonMeleeSpellCasted(false) || isHittingBot;
+
+            // Melee bots do not need to waste a snare on a target already trading blows in place.
+            if (isHittingBot && !ai->IsRanged(bot) && !plr->IsNonMeleeSpellCasted(false))
+                shouldSnare = false;
+
+            if (shouldSnare)
+                return enemy;
+        }
     }
 
-    std::list<ObjectGuid> attackers = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
-    Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-    for (std::list<ObjectGuid>::iterator i = attackers.begin(); i != attackers.end(); ++i)
+    const std::list<ObjectGuid>& attackers = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets");
+    for (const ObjectGuid& guid : attackers)
     {
-        Unit* unit = ai->GetUnit(*i);
+        Unit* unit = ai->GetUnit(guid);
         if (!unit)
             continue;
 
@@ -43,8 +53,8 @@ Unit* SnareTargetValue::Calculate()
                 bool shouldSnare = true;
 
                 // do not slow down if bot is melee and mob/bot attack each other
-                if (victim == bot || victim->IsPlayer())
-                    shouldSnare = true;
+                if (!ai->IsRanged(bot) && victim == bot && !unit->IsNonMeleeSpellCasted(false))
+                    shouldSnare = false;
 
                 if (unit->HasAuraType(SPELL_AURA_MOD_ROOT) || unit->HasAuraType(SPELL_AURA_MOD_STUN))
                     shouldSnare = false;

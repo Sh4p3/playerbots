@@ -12,11 +12,11 @@ Unit* AttackerWithoutAuraTargetValue::Calculate()
     if (ai->GetSpellRange(qualifier, &spellRange) && spellRange > searchRange)
         searchRange = spellRange;
 
-    std::list<ObjectGuid> attackers = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
+    const std::list<ObjectGuid>& attackers = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets");
     Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-    for (std::list<ObjectGuid>::iterator i = attackers.begin(); i != attackers.end(); ++i)
+    for (const ObjectGuid& guid : attackers)
     {
-        Unit* unit = ai->GetUnit(*i);
+        Unit* unit = ai->GetUnit(guid);
         if (!unit || unit == target)
             continue;
 

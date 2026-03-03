@@ -103,6 +103,8 @@ uint8 BalancePercentValue::Calculate()
     }
 
     std::list<ObjectGuid> v = context->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
+    Unit* enemy = AI_VALUE(Unit*, "enemy player target");
+    bool countedEnemyPlayer = false;
     for (std::list<ObjectGuid>::iterator i = v.begin(); i!=v.end(); i++)
     {
         Unit* unit = ai->GetUnit(*i);
@@ -112,6 +114,8 @@ uint8 BalancePercentValue::Calculate()
         if (unit->IsPlayer())
         {
             attackerLevel += unit->GetLevel() * 3;
+            if (enemy && unit->GetObjectGuid() == enemy->GetObjectGuid())
+                countedEnemyPlayer = true;
         }
         else
         {
@@ -151,8 +155,7 @@ uint8 BalancePercentValue::Calculate()
         }
     }
 
-    Unit* enemy = AI_VALUE(Unit*, "enemy player target");
-    if (enemy)
+    if (enemy && !countedEnemyPlayer)
         attackerLevel += enemy->GetLevel() * 3;
 
     if (!attackerLevel)
