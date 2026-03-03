@@ -246,7 +246,7 @@ void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "shield bash",
-        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash", ACTION_INTERRUPT), NULL)));
 }
 
 void WarriorCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -541,7 +541,7 @@ void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "shield bash",
-        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash", ACTION_INTERRUPT), NULL)));
 }
 
 void WarriorCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -832,7 +832,7 @@ void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "shield bash",
-        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash", ACTION_INTERRUPT), NULL)));
 }
 
 void WarriorCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
