@@ -27,18 +27,7 @@ namespace ai
     {
     public:
         ThornsOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "thorns", 4) {}
-
-        virtual bool IsActive() override
-        {
-            Unit* target = GetTarget();
-            if (target && BuffOnPartyTrigger::IsActive() && (!target->IsPlayer() || !ai->IsRanged((Player*)target)))
-            {
-                // Don't apply thorns if fire shield (conflict) is on the target
-                return !ai->HasAura("fire shield", target);
-            }
-
-            return false;
-        }
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("thorns target", "thorns"); }
     };
 
     class ThornsTrigger : public BuffTrigger

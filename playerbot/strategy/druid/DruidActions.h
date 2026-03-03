@@ -102,6 +102,8 @@ namespace ai
 	{
     public:
         CastThornsOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "thorns") {}
+        std::string GetTargetName() override { return "thorns target"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
 	class CastOmenOfClarityAction : public CastBuffSpellAction 

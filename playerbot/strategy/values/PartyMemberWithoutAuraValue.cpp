@@ -90,6 +90,33 @@ Unit* SwimmingFriendlyUnitWithoutAuraValue::Calculate()
     return FindPartyMember(predicate, false, ignoreTank);
 }
 
+class ThornsTargetPredicate : public PlayerWithoutAuraPredicate
+{
+public:
+    ThornsTargetPredicate(PlayerbotAI* ai, std::string aura) : PlayerWithoutAuraPredicate(ai, aura), ai(ai) {}
+
+public:
+    bool Check(Unit* unit) override
+    {
+        if (!PlayerWithoutAuraPredicate::Check(unit))
+            return false;
+
+        if (unit->IsPlayer() && ai->IsRanged(static_cast<Player*>(unit)))
+            return false;
+
+        return !ai->HasAura("fire shield", unit);
+    }
+
+private:
+    PlayerbotAI* ai;
+};
+
+Unit* ThornsTargetValue::Calculate()
+{
+    ThornsTargetPredicate predicate(ai, qualifier);
+    return FindPartyMember(predicate, false);
+}
+
 Unit* PartyMemberWithoutAuraValue::Calculate()
 {
     bool ignoreTank = false;

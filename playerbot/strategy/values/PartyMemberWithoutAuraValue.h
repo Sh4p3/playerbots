@@ -25,6 +25,16 @@ namespace ai
         virtual Unit* Calculate() override;
     };
 
+    class ThornsTargetValue : public PartyMemberValue, public Qualified
+    {
+    public:
+        ThornsTargetValue(PlayerbotAI* ai, std::string name = "thorns target", float range = sPlayerbotAIConfig.sightDistance) :
+            PartyMemberValue(ai, name), Qualified() {}
+
+    protected:
+        virtual Unit* Calculate() override;
+    };
+
     class PartyMemberWithoutAuraValue : public PartyMemberValue, public Qualified
 	{
 	public:
