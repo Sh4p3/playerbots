@@ -709,7 +709,7 @@ void SurvivalHunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "black arrow on snare target",
-        NextAction::array(0, new NextAction("black arrow", ACTION_HIGH + 1), NULL)));
+        NextAction::array(0, new NextAction("black arrow on snare target", ACTION_HIGH + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "explosive shot",
