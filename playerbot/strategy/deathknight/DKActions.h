@@ -253,10 +253,10 @@ namespace ai
 		CastStrangulateAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "strangulate") {}
 	};
 
-    class CastMindFreezeOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
+    class CastMindFreezeOnEnemyHealerAction : public CastMeleeSpellOnEnemyHealerAction
     {
     public:
-        CastMindFreezeOnEnemyHealerAction(PlayerbotAI* ai) : CastSpellOnEnemyHealerAction(ai, "mind freeze") {}
+        CastMindFreezeOnEnemyHealerAction(PlayerbotAI* ai) : CastMeleeSpellOnEnemyHealerAction(ai, "mind freeze") {}
     };
 
     class CastStrangulateOnEnemyHealerAction : public CastSpellOnEnemyHealerAction

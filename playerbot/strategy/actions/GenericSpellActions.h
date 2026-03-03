@@ -423,6 +423,18 @@ namespace ai
         virtual std::string getName() override { return GetSpellName() + " on enemy healer"; }
     };
 
+    class CastMeleeSpellOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
+    {
+    public:
+        CastMeleeSpellOnEnemyHealerAction(PlayerbotAI* ai, std::string spell) : CastSpellOnEnemyHealerAction(ai, spell)
+        {
+            range = ATTACK_DISTANCE;
+        }
+
+    protected:
+        std::string GetReachActionName() override { return "reach melee"; }
+    };
+
     class CastSnareSpellAction : public CastRangedDebuffSpellAction
     {
     public:

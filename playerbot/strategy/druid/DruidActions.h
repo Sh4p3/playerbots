@@ -577,10 +577,10 @@ namespace ai
         CastLacerateAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "lacerate") {}
     };
 
-    class CastBashOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
+    class CastBashOnEnemyHealerAction : public CastMeleeSpellOnEnemyHealerAction
     {
     public:
-        CastBashOnEnemyHealerAction(PlayerbotAI* ai) : CastSpellOnEnemyHealerAction(ai, "bash") {}
+        CastBashOnEnemyHealerAction(PlayerbotAI* ai) : CastMeleeSpellOnEnemyHealerAction(ai, "bash") {}
     };
 
     class CastFrenziedRegenerationAction : public CastBuffSpellAction

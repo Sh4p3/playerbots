@@ -49,7 +49,11 @@ namespace ai
     BUFF_ACTION(CastBerserkerRageAction, "berserker rage");
     MELEE_ACTION(CastWhirlwindAction, "whirlwind");
     MELEE_ACTION(CastPummelAction, "pummel");
-    ENEMY_HEALER_ACTION(CastPummelOnEnemyHealerAction, "pummel");
+    class CastPummelOnEnemyHealerAction : public CastMeleeSpellOnEnemyHealerAction
+    {
+    public:
+        CastPummelOnEnemyHealerAction(PlayerbotAI* ai) : CastMeleeSpellOnEnemyHealerAction(ai, "pummel") {}
+    };
     BUFF_ACTION(CastRecklessnessAction, "recklessness");
     // fury 2.4.3
     MELEE_ACTION(CastVictoryRushAction, "victory rush");
@@ -69,7 +73,11 @@ namespace ai
     SNARE_ACTION(CastTauntOnSnareTargetAction, "taunt");
     BUFF_ACTION(CastBloodrageAction, "bloodrage");
     MELEE_ACTION(CastShieldBashAction, "shield bash");
-    ENEMY_HEALER_ACTION(CastShieldBashOnEnemyHealerAction, "shield bash");
+    class CastShieldBashOnEnemyHealerAction : public CastMeleeSpellOnEnemyHealerAction
+    {
+    public:
+        CastShieldBashOnEnemyHealerAction(PlayerbotAI* ai) : CastMeleeSpellOnEnemyHealerAction(ai, "shield bash") {}
+    };
     MELEE_ACTION(CastRevengeAction, "revenge");
     BUFF_ACTION(CastShieldBlockAction, "shield block");
     MELEE_DEBUFF_ACTION_U(CastDisarmAction, "disarm", GetTarget() && GetTarget()->IsPlayer() ? !ai->IsRanged((Player*)GetTarget()) : CastMeleeDebuffSpellAction::isUseful());
