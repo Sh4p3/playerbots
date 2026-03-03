@@ -213,7 +213,7 @@ namespace ai
                 creators["killing spree"] = [](PlayerbotAI* ai) { return new RogueBoostBuffTrigger(ai, "killing spree"); };
                 creators["eviscerate"] = [](PlayerbotAI* ai) { return new EviscerateTrigger(ai); };
                 creators["blade flurry"] = [](PlayerbotAI* ai) { return new RogueBoostBuffTrigger(ai, "blade flurry"); };
-                //creators["tricks of the trade on tank"] = [](PlayerbotAI* ai) { return new TricksOfTheTradeOnTankTrigger(ai); };
+                creators["tricks of the trade"] = [](PlayerbotAI* ai) { return new TricksOfTheTradeOnTankTrigger(ai); };
                 creators["cloak of shadows"] = [](PlayerbotAI* ai) { return new CloakOfShadowsTrigger(ai); };
                 creators["fan of knives"] = [](PlayerbotAI* ai) { return new SpellCanBeCastedTrigger(ai, "fan of knives"); };
                 creators["riposte"] = [](PlayerbotAI* ai) { return new RiposteCastTrigger(ai); };

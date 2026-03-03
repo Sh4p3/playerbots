@@ -1159,6 +1159,10 @@ void RogueBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& trigg
 void RogueBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     BoostStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "tricks of the trade",
+        NextAction::array(0, new NextAction("tricks of the trade", ACTION_HIGH), NULL)));
 }
 
 void RogueBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
