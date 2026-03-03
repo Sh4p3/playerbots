@@ -2,6 +2,7 @@
 #include "playerbot/strategy/Action.h"
 #include "playerbot/PlayerbotAIConfig.h"
 #include "playerbot/PlayerbotAI.h"
+#include "playerbot/ServerFacade.h"
 
 namespace ai
 {
@@ -438,14 +439,33 @@ namespace ai
     class CastSnareSpellAction : public CastRangedDebuffSpellAction
     {
     public:
-        CastSnareSpellAction(PlayerbotAI* ai, std::string spell) : CastRangedDebuffSpellAction(ai, spell) {}
+        CastSnareSpellAction(PlayerbotAI* ai, std::string spell) : CastRangedDebuffSpellAction(ai, spell)
+        {
+            if (IsMeleeSnare())
+                range = ATTACK_DISTANCE;
+        }
         
     protected:
-        virtual std::string GetReachActionName() override { return "reach spell"; }
+        virtual std::string GetReachActionName() override { return IsMeleeSnare() ? "reach melee" : "reach spell"; }
         virtual std::string GetTargetName() override { return "snare target"; }
         virtual std::string GetTargetQualifier() override { return GetSpellName(); }
         virtual std::string getName() override { return GetSpellName() + " on snare target"; }
         virtual ActionThreatType getThreatType() override { return ActionThreatType::ACTION_THREAT_NONE; }
+
+    private:
+        bool IsMeleeSnare() const
+        {
+            const uint32 spellId = GetSpellID();
+            const SpellEntry* spellInfo = spellId ? sServerFacade.LookupSpellInfo(spellId) : nullptr;
+            if (!spellInfo)
+                return false;
+
+            const SpellRangeEntry* spellRangeEntry = sServerFacade.LookupSpellRangeEntry(spellInfo->rangeIndex);
+            if (!spellRangeEntry)
+                return false;
+
+            return spellInfo->rangeIndex == SPELL_RANGE_IDX_COMBAT || (spellRangeEntry->Flags & SPELL_RANGE_FLAG_MELEE);
+        }
     };
 
     class CastCrowdControlSpellAction : public CastRangedDebuffSpellAction
