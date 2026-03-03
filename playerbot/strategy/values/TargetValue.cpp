@@ -251,10 +251,13 @@ std::list<ObjectGuid> PreferredBoostTargetsValue::Get()
     if (!targets.empty())
         return targets;
 
-    const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
-    for (const ObjectGuid& targetGuid : focusHealTargets)
+    if (ai->HasStrategy("focus heal targets", BotState::BOT_STATE_COMBAT))
     {
-        AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+        const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+        for (const ObjectGuid& targetGuid : focusHealTargets)
+        {
+            AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+        }
     }
 
     AppendTarget(targets, ai, bot);
@@ -269,10 +272,13 @@ std::list<ObjectGuid> FearWardTargetsValue::Get()
 
     AppendTarget(targets, ai, AI_VALUE2(Unit*, "party tank without aura", "fear ward"));
 
-    const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
-    for (const ObjectGuid& targetGuid : focusHealTargets)
+    if (ai->HasStrategy("focus heal targets", BotState::BOT_STATE_COMBAT))
     {
-        AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+        const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+        for (const ObjectGuid& targetGuid : focusHealTargets)
+        {
+            AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+        }
     }
 
     AppendTarget(targets, ai, bot);
