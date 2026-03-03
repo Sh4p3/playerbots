@@ -372,7 +372,7 @@ void WarlockCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "fear pvp",
-        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 1), NULL)));
+        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 2), NULL)));
 }
 
 void WarlockCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -832,7 +832,7 @@ void WarlockCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "fear pvp",
-        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 1), NULL)));
+        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 2), NULL)));
 }
 
 void WarlockCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1295,7 +1295,7 @@ void WarlockCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "fear pvp",
-        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 1), NULL)));
+        NextAction::array(0, new NextAction("fear", ACTION_INTERRUPT + 2), NULL)));
 }
 
 void WarlockCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
