@@ -214,7 +214,6 @@ namespace ai
                 creators["serpent sting on attacker"] = [](PlayerbotAI* ai) { return new SerpentStingOnAttackerTrigger(ai); };
                 creators["viper sting on attacker"] = [](PlayerbotAI* ai) { return new ViperStingOnAttackerTrigger(ai); };
                 creators["pet not happy"] = [](PlayerbotAI* ai) { return new HunterPetNotHappy(ai); };
-                creators["concussive shot on snare target"] = [](PlayerbotAI* ai) { return new ConsussiveShotSnareTrigger(ai); };
                 creators["scare beast"] = [](PlayerbotAI* ai) { return new ScareBeastTrigger(ai); };
                 creators["low ammo"] = [](PlayerbotAI* ai) { return new HunterLowAmmoTrigger(ai); };
                 creators["no ammo"] = [](PlayerbotAI* ai) { return new HunterNoAmmoTrigger(ai); };
@@ -222,12 +221,10 @@ namespace ai
                 creators["switch to melee"] = [](PlayerbotAI* ai) { return new SwitchToMeleeTrigger(ai); };
                 creators["switch to ranged"] = [](PlayerbotAI* ai) { return new SwitchToRangedTrigger(ai); };
                 creators["feign death"] = [](PlayerbotAI* ai) { return new FeignDeathTrigger(ai); };
-                creators["scatter shot on snare target"] = [](PlayerbotAI* ai) { return new ScatterShotSnareTrigger(ai); };
                 creators["chimera shot"] = [](PlayerbotAI* ai) { return new ChimeraShotCanCastTrigger(ai); };
                 creators["explosive shot"] = [](PlayerbotAI* ai) { return new ExplosiveShotCanCastTrigger(ai); };
                 creators["multi-shot"] = [](PlayerbotAI* ai) { return new MultishotCanCastTrigger(ai); };
                 creators["steady shot"] = [](PlayerbotAI* ai) { return new SteadyShotCanCastTrigger(ai); };
-                creators["intimidation on snare target"] = [](PlayerbotAI* ai) { return new IntimidationSnareTrigger(ai); };
                 creators["counterattack"] = [](PlayerbotAI* ai) { return new CounterattackCanCastTrigger(ai); };
                 creators["wyvern sting"] = [](PlayerbotAI* ai) { return new WybernStingSnareTrigger(ai); };
                 creators["mongoose bite"] = [](PlayerbotAI* ai) { return new MongooseBiteCastTrigger(ai); };

@@ -188,14 +188,6 @@ namespace ai
     BEGIN_TRIGGER(HunterPetNotHappy, Trigger)
     END_TRIGGER()
 
-    class ConsussiveShotSnareTrigger : public SnareTargetTrigger
-    {
-    public:
-        ConsussiveShotSnareTrigger(PlayerbotAI* ai) : SnareTargetTrigger(ai, "concussive shot") {}
-    };
-
-    SNARE_TRIGGER(ScatterShotSnareTrigger, "scatter shot");
-
     class ScareBeastTrigger : public HasCcTargetTrigger
     {
     public:
@@ -276,7 +268,6 @@ namespace ai
     CAN_CAST_TRIGGER(MultishotCanCastTrigger, "multi-shot");
     CAN_CAST_TRIGGER(SteadyShotCanCastTrigger, "steady shot");
     BOOST_TRIGGER(KillCommandBoostTrigger, "kill command");
-    SNARE_TRIGGER(IntimidationSnareTrigger, "intimidation");
     CAN_CAST_TRIGGER(CounterattackCanCastTrigger, "counterattack");
     SNARE_TRIGGER(WybernStingSnareTrigger, "wyvern sting");
     CAN_CAST_TRIGGER(MongooseBiteCastTrigger, "mongoose bite");
