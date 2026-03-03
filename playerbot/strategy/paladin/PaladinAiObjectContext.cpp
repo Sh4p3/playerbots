@@ -394,7 +394,6 @@ namespace ai
                 creators["exorcism"] = [](PlayerbotAI* ai) { return new CastExorcismAction(ai); };
                 creators["divine shield"] = [](PlayerbotAI* ai) { return new CastDivineShieldAction(ai); };
                 creators["divine protection"] = [](PlayerbotAI* ai) { return new CastDivineProtectionAction(ai); };
-                creators["divine protection on party"] = [](PlayerbotAI* ai) { return new CastDivineProtectionOnPartyAction(ai); };
                 creators["hammer of justice"] = [](PlayerbotAI* ai) { return new CastHammerOfJusticeAction(ai); };
                 creators["flash of light on party"] = [](PlayerbotAI* ai) { return new CastFlashOfLightOnPartyAction(ai); };
                 creators["holy light"] = [](PlayerbotAI* ai) { return new CastHolyLightAction(ai); };

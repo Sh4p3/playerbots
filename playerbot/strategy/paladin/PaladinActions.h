@@ -509,23 +509,6 @@ namespace ai
 		CastDivineProtectionAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "divine protection") {}
 	};
 
-    class CastDivineProtectionOnPartyAction : public CastProtectSpellAction
-    {
-    public:
-        CastDivineProtectionOnPartyAction(PlayerbotAI* ai) : CastProtectSpellAction(ai, "blessing of protection") {}
-        virtual std::string getName() override { return "divine protection on party"; }
-        bool isUseful() override
-        {
-            Unit* target = GetTarget();
-            if (target && target->IsPlayer() && !ai->IsTank((Player*)target))
-            {
-                return CastProtectSpellAction::isUseful();
-            }
-
-            return false;
-        }
-    };
-
 	class CastDivineShieldAction: public CastBuffSpellAction
 	{
 	public:
