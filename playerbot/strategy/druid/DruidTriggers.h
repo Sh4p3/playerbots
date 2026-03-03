@@ -370,7 +370,7 @@ namespace ai
     class InnervateTrigger : public SpellTargetTrigger
     {
     public:
-        InnervateTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "innervate", "boost targets", true, true) {}
+        InnervateTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "innervate", "preferred boost targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
 
         bool IsTargetValid(Unit* target) override
@@ -378,9 +378,9 @@ namespace ai
             if (SpellTargetTrigger::IsTargetValid(target))
             {
                 const uint32 currentMana = target->GetPower(POWER_MANA);
-                if (currentMana > 0)
+                const uint32 maxMana = target->GetMaxPower(POWER_MANA);
+                if (currentMana > 0 && maxMana > 0)
                 {
-                    const uint32 maxMana = target->GetMaxPower(POWER_MANA);
                     const uint32 currentManaPct = static_cast<uint32>((static_cast<float>(currentMana) / maxMana) * 100);
                     return currentManaPct < sPlayerbotAIConfig.lowMana;
                 }

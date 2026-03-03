@@ -2,6 +2,7 @@
 #include "playerbot/playerbot.h"
 #include "TargetValue.h"
 
+#include <algorithm>
 #include "playerbot/ServerFacade.h"
 #include "RtiTargetValue.h"
 #include "Entities/Unit.h"
@@ -223,4 +224,57 @@ std::list<ObjectGuid> FriendlyManualTargetsValue::Get()
 std::list<ObjectGuid> FriendlyManualTargetsValue::LazyGet()
 {
     return Get();
+}
+
+static bool HasTarget(const std::list<ObjectGuid>& targets, const ObjectGuid& guid)
+{
+    return std::find(targets.begin(), targets.end(), guid) != targets.end();
+}
+
+static void AppendTarget(std::list<ObjectGuid>& targets, PlayerbotAI* ai, Unit* target)
+{
+    Player* bot = ai->GetBot();
+    if (!target || !ai->IsSafe(target))
+        return;
+
+    if (target != bot && !bot->IsInGroup(target))
+        return;
+
+    const ObjectGuid guid = target->GetObjectGuid();
+    if (!HasTarget(targets, guid))
+        targets.push_back(guid);
+}
+
+std::list<ObjectGuid> PreferredBoostTargetsValue::Get()
+{
+    std::list<ObjectGuid> targets = FriendlyManualTargetsValue::Get();
+    if (!targets.empty())
+        return targets;
+
+    const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+    for (const ObjectGuid& targetGuid : focusHealTargets)
+    {
+        AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+    }
+
+    AppendTarget(targets, ai, bot);
+    return targets;
+}
+
+std::list<ObjectGuid> FearWardTargetsValue::Get()
+{
+    std::list<ObjectGuid> targets = FriendlyManualTargetsValue::Get();
+    if (!targets.empty())
+        return targets;
+
+    AppendTarget(targets, ai, AI_VALUE2(Unit*, "party tank without aura", "fear ward"));
+
+    const std::list<ObjectGuid> focusHealTargets = AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+    for (const ObjectGuid& targetGuid : focusHealTargets)
+    {
+        AppendTarget(targets, ai, ai->GetUnit(targetGuid));
+    }
+
+    AppendTarget(targets, ai, bot);
+    return targets;
 }

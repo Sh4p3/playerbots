@@ -228,7 +228,7 @@ namespace ai
     class CastInnervateAction : public CastSpellTargetAction
     {
     public:
-        CastInnervateAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "innervate", "boost targets", true, true) {}
+        CastInnervateAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "innervate", "preferred boost targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
 
         bool IsTargetValid(Unit* target) override
@@ -236,10 +236,10 @@ namespace ai
             if (CastSpellTargetAction::IsTargetValid(target))
             {
                 const uint32 currentMana = target->GetPower(POWER_MANA);
-                if (currentMana > 0)
+                const uint32 maxMana = target->GetMaxPower(POWER_MANA);
+                if (currentMana > 0 && maxMana > 0)
                 {
-                    const uint32 maxMana = target->GetMaxPower(POWER_MANA);
-                    const uint32 currentManaPct = (uint32)(currentMana / maxMana) * 100;
+                    const uint32 currentManaPct = static_cast<uint32>((static_cast<float>(currentMana) / maxMana) * 100);
                     return currentManaPct < sPlayerbotAIConfig.lowMana;
                 }
             }

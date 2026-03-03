@@ -160,14 +160,14 @@ namespace ai
     class CastPowerInfusionAction : public CastSpellTargetAction
     {
     public:
-        CastPowerInfusionAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "power infusion", "boost targets", true, true) {}
+        CastPowerInfusionAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "power infusion", "preferred boost targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
     };
 
     class CastFearWardAction : public CastSpellTargetAction
     {
     public:
-        CastFearWardAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "fear ward", "buff targets", true, true) {}
+        CastFearWardAction(PlayerbotAI* ai) : CastSpellTargetAction(ai, "fear ward", "fear ward targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
     };
 }

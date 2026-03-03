@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include "playerbot/strategy//AiObject.h"
 #include "playerbot/strategy/Value.h"
 #include "playerbot/TravelMgr.h"
@@ -168,5 +169,21 @@ namespace ai
     {
     public:
         BuffTargetsValue(PlayerbotAI* ai) : FriendlyManualTargetsValue(ai) {}
+    };
+
+    class PreferredBoostTargetsValue : public FriendlyManualTargetsValue
+    {
+    public:
+        PreferredBoostTargetsValue(PlayerbotAI* ai) : FriendlyManualTargetsValue(ai) {}
+        std::list<ObjectGuid> Get() override;
+        std::list<ObjectGuid> LazyGet() override { return Get(); }
+    };
+
+    class FearWardTargetsValue : public FriendlyManualTargetsValue
+    {
+    public:
+        FearWardTargetsValue(PlayerbotAI* ai) : FriendlyManualTargetsValue(ai) {}
+        std::list<ObjectGuid> Get() override;
+        std::list<ObjectGuid> LazyGet() override { return Get(); }
     };
 }

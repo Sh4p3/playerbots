@@ -116,14 +116,14 @@ namespace ai
     class PowerInfusionTrigger : public SpellTargetTrigger
     {
     public:
-        PowerInfusionTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "power infusion", "boost targets", true, true) {}
+        PowerInfusionTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "power infusion", "preferred boost targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
     };
 
     class FearWardTrigger : public SpellTargetTrigger
     {
     public:
-        FearWardTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "fear ward", "buff targets", true, true) {}
+        FearWardTrigger(PlayerbotAI* ai) : SpellTargetTrigger(ai, "fear ward", "fear ward targets", true, true) {}
         std::string GetTargetName() override { return "self target"; }
     };
 }

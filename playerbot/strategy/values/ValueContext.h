@@ -301,6 +301,8 @@ namespace ai
             creators["boost targets"] = [](PlayerbotAI* ai) { return new BoostTargetsValue(ai); };
             creators["revive targets"] = [](PlayerbotAI* ai) { return new ReviveTargetsValue(ai); };
             creators["buff targets"] = [](PlayerbotAI* ai) { return new BuffTargetsValue(ai); };
+            creators["preferred boost targets"] = [](PlayerbotAI* ai) { return new PreferredBoostTargetsValue(ai); };
+            creators["fear ward targets"] = [](PlayerbotAI* ai) { return new FearWardTargetsValue(ai); };
 
             creators["bg type"] = [](PlayerbotAI* ai) { return new BgTypeValue(ai); };
             creators["rpg bg type"] = [](PlayerbotAI* ai) { return new RpgBgTypeValue(ai); };
