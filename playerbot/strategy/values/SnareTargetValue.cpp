@@ -16,7 +16,7 @@ Unit* SnareTargetValue::Calculate()
         searchRange = spellRange;
 
     Unit* enemy = AI_VALUE(Unit*, "enemy player target");
-    if (enemy)
+    if (enemy && sServerFacade.GetDistance2d(bot, enemy) <= searchRange)
     {
         Player* plr = dynamic_cast<Player*>(enemy);
         if (plr && !(plr->HasAuraType(SPELL_AURA_MOD_ROOT) || plr->HasAuraType(SPELL_AURA_MOD_STUN)))
