@@ -413,7 +413,7 @@ void MageCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "counterspell",
-        NextAction::array(0, new NextAction("counterspell", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void MageCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -836,7 +836,7 @@ void MageCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "counterspell",
-        NextAction::array(0, new NextAction("counterspell", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void MageCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1273,7 +1273,7 @@ void MageCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "counterspell",
-        NextAction::array(0, new NextAction("counterspell", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void MageCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

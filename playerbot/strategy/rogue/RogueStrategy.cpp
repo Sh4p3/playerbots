@@ -342,7 +342,7 @@ void RogueCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "kick",
-        NextAction::array(0, new NextAction("kick", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void RogueCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -784,7 +784,7 @@ void RogueCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "kick",
-        NextAction::array(0, new NextAction("kick", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void RogueCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1248,7 +1248,7 @@ void RogueCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "kick",
-        NextAction::array(0, new NextAction("kick", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 }
 
 void RogueCcPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
