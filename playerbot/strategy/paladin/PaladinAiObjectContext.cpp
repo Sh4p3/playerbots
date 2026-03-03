@@ -296,7 +296,6 @@ namespace ai
                 creators["repentance interrupt"] = [](PlayerbotAI* ai) { return new RepentanceInterruptTrigger(ai); };
                 creators["hammer of justice on enemy"] = [](PlayerbotAI* ai) { return new HammerOfJusticeOnEnemyTrigger(ai); };
                 creators["hand of sacrifice"] = [](PlayerbotAI* ai) { return new HandOfSacrificeTrigger(ai); };
-                creators["blessing of sacrifice"] = [](PlayerbotAI* ai) { return new BlessingOfSacrificeTrigger(ai); };
                 creators["crusader strike"] = [](PlayerbotAI* ai) { return new CrusaderStrikeTrigger(ai); };
                 creators["hammer of the righteous"] = [](PlayerbotAI* ai) { return new HammerOfTheRighteousTrigger(ai); };
                 creators["shield of righteousness"] = [](PlayerbotAI* ai) { return new ShieldOfRighteousnessTrigger(ai); };
@@ -420,7 +419,6 @@ namespace ai
                 creators["avenging wrath"] = [](PlayerbotAI* ai) { return new CastAvengingWrathAction(ai); };
                 creators["divine illumination"] = [](PlayerbotAI* ai) { return new CastDivineIlluminationAction(ai); };
                 creators["hand of sacrifice"] = [](PlayerbotAI* ai) { return new CastHandOfSacrificeAction(ai); };
-                creators["blessing of sacrifice"] = [](PlayerbotAI* ai) { return new CastBlessingOfSacrificeAction(ai); };
                 creators["beacon of light"] = [](PlayerbotAI* ai) { return new CastBeaconOfLightAction(ai); };
                 creators["sacred shield"] = [](PlayerbotAI* ai) { return new CastSacredShieldAction(ai); };
                 creators["divine plea"] = [](PlayerbotAI* ai) { return new CastDivinePleaAction(ai); };

@@ -646,16 +646,10 @@ namespace ai
         virtual Value<Unit*>* GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
     };
 
-	class CastHandOfSacrificeAction : public BuffOnPartyAction
+	class CastHandOfSacrificeAction : public CastProtectSpellAction
 	{
 	public:
-		CastHandOfSacrificeAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "hand of sacrifice") {}
-	};
-
-	class CastBlessingOfSacrificeAction : public BuffOnPartyAction
-	{
-	public:
-		CastBlessingOfSacrificeAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "blessing of sacrifice") {}
+		CastHandOfSacrificeAction(PlayerbotAI* ai) : CastProtectSpellAction(ai, "hand of sacrifice") {}
 	};
 
     class CastBlessingOfFreedomOnPartyAction : public CastSpellAction

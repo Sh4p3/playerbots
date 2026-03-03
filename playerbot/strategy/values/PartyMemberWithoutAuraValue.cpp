@@ -208,5 +208,8 @@ Unit* PreferredSingleBuffTargetValue::Calculate()
     }
 
     PreferredBuffFallbackPredicate fallbackPredicate(ai);
-    return FindPartyMember(fallbackPredicate, true);
+    if (Unit* fallback = FindPartyMember(fallbackPredicate, true))
+        return fallback;
+
+    return ai->IsSafe(bot) ? bot : nullptr;
 }

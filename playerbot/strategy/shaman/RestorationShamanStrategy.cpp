@@ -1485,6 +1485,10 @@ void RestorationShamanBuffStrategy::InitNonCombatTriggers(std::list<TriggerNode*
     ShamanBuffStrategy::InitNonCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "earth shield on preferred target",
+        NextAction::array(0, new NextAction("earth shield", ACTION_NORMAL), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "shaman weapon",
         NextAction::array(0, new NextAction("earthliving weapon", ACTION_NORMAL), NULL)));
 
@@ -1521,20 +1525,12 @@ void RestorationShamanBuffRaidStrategy::InitCombatTriggers(std::list<TriggerNode
 {
     RestorationShamanBuffStrategy::InitCombatTriggers(triggers);
     ShamanBuffRaidStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "earth shield on party tank",
-        NextAction::array(0, new NextAction("earth shield on party tank", ACTION_HIGH), NULL)));
 }
 
 void RestorationShamanBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     RestorationShamanBuffStrategy::InitNonCombatTriggers(triggers);
     ShamanBuffRaidStrategy::InitNonCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "earth shield on party tank",
-        NextAction::array(0, new NextAction("earth shield on party tank", ACTION_NORMAL), NULL)));
 }
 
 void RestorationShamanBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
