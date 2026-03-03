@@ -3,6 +3,8 @@
 
 namespace ai
 {
+    bool HasPossibleBlessingForTarget(Unit* target, PlayerbotAI* ai, bool greater);
+
 	// seals
 	BUFF_ACTION(CastSealOfRighteousnessAction, "seal of righteousness");
 	BUFF_ACTION(CastSealOfJusticeAction, "seal of justice");

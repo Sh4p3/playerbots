@@ -88,42 +88,25 @@ std::string CastBlessingAction::GetBlessingForTarget(Unit* target)
 
 Unit* CastBlessingOnPartyAction::GetTarget()
 {
-    std::vector<std::string> altBlessings;
-    std::vector<std::string> haveBlessings;
-    altBlessings.push_back("blessing of might");
-    altBlessings.push_back("blessing of wisdom");
-    altBlessings.push_back("blessing of kings");
-    altBlessings.push_back("blessing of sanctuary");
-    altBlessings.push_back("blessing of salvation");
-#ifndef MANGOSBOT_TWO
-    altBlessings.push_back("blessing of light");
-#endif
-
-    for (auto blessing : altBlessings)
-    {
-        if (AI_VALUE2(uint32, "spell id", blessing))
-        {
-            haveBlessings.push_back(blessing);
-            haveBlessings.push_back("greater " + blessing);
-        }
-    }
-
-    if (haveBlessings.empty())
-    {
+    Group* group = bot->GetGroup();
+    if (!group)
         return nullptr;
-    }
 
-    std::string blessList = "";
-    for (auto blessing : haveBlessings)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        blessList += blessing;
-        if (blessing != haveBlessings[haveBlessings.size() - 1])
-        {
-            blessList += ",";
-        }
+        Player* player = ref->getSource();
+        if (!player || player == bot || player->GetMapId() != bot->GetMapId())
+            continue;
+
+        if (HasPossibleBlessingForTarget(player, ai, greater))
+            return player;
+
+        Pet* pet = player->GetPet();
+        if (pet && pet->GetMapId() == bot->GetMapId() && HasPossibleBlessingForTarget(pet, ai, greater))
+            return pet;
     }
 
-    return AI_VALUE2(Unit*, "party member without my aura", blessList);
+    return nullptr;
 }
 
 bool CastBlessingOnPartyAction::isPossible()
@@ -253,6 +236,27 @@ std::vector<std::string> GetBlessingsForTarget(Unit* target, PlayerbotAI* ai)
 #else
     return { "blessing of might", "blessing of kings", "blessing of sanctuary" };
 #endif 
+}
+
+bool HasPossibleBlessingForTarget(Unit* target, PlayerbotAI* ai, bool greater)
+{
+    if (!target)
+        return false;
+
+    for (const std::string& blessing : GetBlessingsForTarget(target, ai))
+    {
+        const std::string greaterBlessing = "greater " + blessing;
+        if ((greater || !ai->HasAura(blessing, target)) && !ai->HasAura(greaterBlessing, target))
+        {
+            if ((greater && ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true)) ||
+                (!greater && ai->CanCastSpell(blessing, target, 0, nullptr, true)))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 std::vector<std::string> CastPveBlessingAction::GetPossibleBlessingsForTarget(Unit* target) const

@@ -114,90 +114,48 @@ bool GreaterBlessingTrigger::IsActive()
 
 bool BlessingOnPartyTrigger::IsActive()
 {
-    std::vector<std::string> altBlessings;
-    std::vector<std::string> haveBlessings;
-    altBlessings.push_back("blessing of might");
-    altBlessings.push_back("blessing of wisdom");
-    altBlessings.push_back("blessing of kings");
-    altBlessings.push_back("blessing of sanctuary");
-    altBlessings.push_back("blessing of salvation");
-#ifndef MANGOSBOT_TWO
-    altBlessings.push_back("blessing of light");
-#endif
-
-    for (auto blessing : altBlessings)
-    {
-        if (AI_VALUE2(uint32, "spell id", blessing))
-        {
-            haveBlessings.push_back(blessing);
-
-            const std::string greaterBlessing = "greater " + blessing;
-            if (AI_VALUE2(uint32, "spell id", greaterBlessing))
-            {
-                haveBlessings.push_back(greaterBlessing);
-            }
-        }
-    }
-
-    if (haveBlessings.empty())
-    {
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
-    }
 
-    std::string blessings = "";
-    for (auto blessing : haveBlessings)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        blessings += blessing;
-        if (blessing != haveBlessings[haveBlessings.size() - 1])
-        {
-            blessings += ",";
-        }
+        Player* player = ref->getSource();
+        if (!player || player == bot || player->GetMapId() != bot->GetMapId())
+            continue;
+
+        if (HasPossibleBlessingForTarget(player, ai, false))
+            return true;
+
+        Pet* pet = player->GetPet();
+        if (pet && pet->GetMapId() == bot->GetMapId() && HasPossibleBlessingForTarget(pet, ai, false))
+            return true;
     }
 
-    // Doesn't have any of my blessings
-    return AI_VALUE2(Unit*, "party member without my aura", blessings);
+    return false;
 }
 
 bool GreaterBlessingOnPartyTrigger::IsActive()
 {
-    std::vector<std::string> altBlessings;
-    std::vector<std::string> haveBlessings;
-    altBlessings.push_back("blessing of might");
-    altBlessings.push_back("blessing of wisdom");
-    altBlessings.push_back("blessing of kings");
-    altBlessings.push_back("blessing of sanctuary");
-    altBlessings.push_back("blessing of salvation");
-#ifndef MANGOSBOT_TWO
-    altBlessings.push_back("blessing of light");
-#endif
-
-    for (auto blessing : altBlessings)
-    {
-        const std::string greaterBlessing = "greater " + blessing;
-        if (AI_VALUE2(uint32, "spell id", greaterBlessing))
-        {
-            haveBlessings.push_back(greaterBlessing);
-        }
-    }
-
-    if (haveBlessings.empty())
-    {
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
-    }
 
-    std::string blessings = "";
-    for (auto blessing : haveBlessings)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        blessings += blessing;
-        if (blessing != haveBlessings[haveBlessings.size() - 1])
-        {
-            blessings += ",";
-        }
+        Player* player = ref->getSource();
+        if (!player || player == bot || player->GetMapId() != bot->GetMapId())
+            continue;
+
+        if (HasPossibleBlessingForTarget(player, ai, true))
+            return true;
+
+        Pet* pet = player->GetPet();
+        if (pet && pet->GetMapId() == bot->GetMapId() && HasPossibleBlessingForTarget(pet, ai, true))
+            return true;
     }
 
-    // Doesn't have any of my blessings
-    Unit* target = AI_VALUE2(Unit*, "party member without my aura", blessings);
-    return target && bot->IsInGroup(target);
+    return false;
 }
 
 bool NoPaladinAuraTrigger::IsActive()
