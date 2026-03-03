@@ -304,7 +304,7 @@ void ShadowPriestCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "silence on enemy healer",
-        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT + 2), NULL)));
 }
 
 void ShadowPriestCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -690,7 +690,7 @@ void ShadowPriestCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "silence on enemy healer",
-        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT + 2), NULL)));
 }
 
 void ShadowPriestCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1084,7 +1084,7 @@ void ShadowPriestCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "silence on enemy healer",
-        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "psychic horror",

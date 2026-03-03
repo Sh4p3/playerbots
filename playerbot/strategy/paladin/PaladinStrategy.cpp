@@ -322,7 +322,7 @@ void PaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on enemy healer",
-        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on snare target",
@@ -883,7 +883,7 @@ void PaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on enemy healer",
-        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on snare target",
@@ -1428,7 +1428,7 @@ void PaladinCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on enemy healer",
-        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hammer of justice on snare target",
