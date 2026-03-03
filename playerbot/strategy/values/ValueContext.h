@@ -137,6 +137,7 @@ namespace ai
             creators["nearest stealthed unit"] = [](PlayerbotAI* ai) { return new NearestStealthedSingleUnitValue(ai); };
             creators["log level"] = [](PlayerbotAI* ai) { return new LogLevelValue(ai); };
             creators["friendly unit without aura"] = [](PlayerbotAI* ai) { return new FriendlyUnitWithoutAuraValue(ai); };
+            creators["swimming friendly unit without aura"] = [](PlayerbotAI* ai) { return new SwimmingFriendlyUnitWithoutAuraValue(ai); };
             creators["party member without aura"] = [](PlayerbotAI* ai) { return new PartyMemberWithoutAuraValue(ai); };
             creators["party tank without aura"] = [](PlayerbotAI* ai) { return new PartyTankWithoutAuraValue(ai); };
             creators["preferred single buff target"] = [](PlayerbotAI* ai) { return new PreferredSingleBuffTargetValue(ai); };

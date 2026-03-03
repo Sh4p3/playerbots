@@ -62,6 +62,34 @@ Unit* FriendlyUnitWithoutAuraValue::Calculate()
     return FindPartyMember(predicate, false, ignoreTank);
 }
 
+class SwimmingUnitWithoutAuraPredicate : public PlayerWithoutAuraPredicate
+{
+public:
+    SwimmingUnitWithoutAuraPredicate(PlayerbotAI* ai, std::string aura) : PlayerWithoutAuraPredicate(ai, aura) {}
+
+public:
+    bool Check(Unit* unit) override
+    {
+        return PlayerWithoutAuraPredicate::Check(unit) && (sServerFacade.IsUnderwater(unit) || unit->IsInSwimmableWater());
+    }
+};
+
+Unit* SwimmingFriendlyUnitWithoutAuraValue::Calculate()
+{
+    bool ignoreTank = false;
+    std::string auras = qualifier;
+
+    size_t paramPos = qualifier.find("-");
+    if (paramPos != std::string::npos)
+    {
+        auras = qualifier.substr(0, paramPos);
+        ignoreTank = std::stoi(qualifier.substr(paramPos + 1, paramPos + 2));
+    }
+
+    SwimmingUnitWithoutAuraPredicate predicate(ai, auras);
+    return FindPartyMember(predicate, false, ignoreTank);
+}
+
 Unit* PartyMemberWithoutAuraValue::Calculate()
 {
     bool ignoreTank = false;

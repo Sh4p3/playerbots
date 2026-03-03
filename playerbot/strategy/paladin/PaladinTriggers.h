@@ -454,7 +454,13 @@ namespace ai
     };
 
     DEBUFF_TRIGGER_OWN(AvengerShieldTrigger, "avenger's shield");
-    BUFF_PARTY_TRIGGER_A(HandOfFreedomTrigger, "hand of freedom");
+    class HandOfFreedomTrigger : public BuffOnPartyTrigger
+    {
+    public:
+        HandOfFreedomTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "hand of freedom") {}
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("party member to remove roots"); }
+        bool IsActive() override;
+    };
     BOOST_TRIGGER(DivineIlluminationBoostTrigger, "divine illumination");
     CAN_CAST_TRIGGER(HammerOfTheRighteousTrigger, "hammer of the righteous");
     CAN_CAST_TRIGGER(ShieldOfRighteousnessTrigger, "shield of righteousness");

@@ -367,22 +367,14 @@ namespace ai
     {
     public:
         WaterWalkingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water walking", 7) {}
-
-        virtual bool IsActive() override
-        {
-            return BuffOnPartyTrigger::IsActive() && AI_VALUE2(bool, "swimming", "self target");
-        }
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("swimming friendly unit without aura", "water walking"); }
     };
 
     class WaterBreathingOnPartyTrigger : public BuffOnPartyTrigger 
     {
     public:
         WaterBreathingOnPartyTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "water breathing", 2) {}
-
-        virtual bool IsActive() override
-        {
-            return BuffOnPartyTrigger::IsActive() && AI_VALUE2(bool, "swimming", "self target");
-        }
+        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("swimming friendly unit without aura", "water breathing"); }
     };
 
     class CleanseSpiritPoisonTrigger : public NeedCureTrigger

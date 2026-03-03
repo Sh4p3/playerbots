@@ -15,6 +15,16 @@ namespace ai
         virtual Unit* Calculate() override;
     };
 
+    class SwimmingFriendlyUnitWithoutAuraValue : public PartyMemberValue, public Qualified
+    {
+    public:
+        SwimmingFriendlyUnitWithoutAuraValue(PlayerbotAI* ai, std::string name = "swimming friendly unit without aura", float range = sPlayerbotAIConfig.sightDistance) :
+            PartyMemberValue(ai, name), Qualified() {}
+
+    protected:
+        virtual Unit* Calculate() override;
+    };
+
     class PartyMemberWithoutAuraValue : public PartyMemberValue, public Qualified
 	{
 	public:

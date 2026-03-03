@@ -326,12 +326,16 @@ namespace ai
     {
     public:
         CastWaterBreathingOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "water breathing") {}
+        std::string GetTargetName() override { return "swimming friendly unit without aura"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
     class CastWaterWalkingOnPartyAction : public BuffOnPartyAction 
     {
     public:
         CastWaterWalkingOnPartyAction(PlayerbotAI* ai) : BuffOnPartyAction(ai, "water walking") {}
+        std::string GetTargetName() override { return "swimming friendly unit without aura"; }
+        std::string GetTargetQualifier() override { return GetSpellName(); }
     };
 
     class CastCleanseSpiritAction : public CastCureSpellAction 

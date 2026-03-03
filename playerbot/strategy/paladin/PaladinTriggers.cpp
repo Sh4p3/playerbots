@@ -288,5 +288,5 @@ bool HandOfFreedomTrigger::IsActive()
     if (!spellId)
         return false;
 
-    return BuffOnPartyTrigger::IsActive() && bot->IsSpellReady(spellId) && AI_VALUE(Unit*, "party member to remove roots");
+    return bot->IsSpellReady(spellId) && BuffOnPartyTrigger::IsActive();
 }
