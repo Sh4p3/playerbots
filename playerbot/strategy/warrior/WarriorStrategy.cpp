@@ -237,6 +237,10 @@ void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     CcPvpStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "intercept on enemy healer",
+        NextAction::array(0, new NextAction("intercept on enemy healer", ACTION_INTERRUPT + 1), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "enemy out of melee",
         NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 
@@ -528,6 +532,10 @@ void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     CcPvpStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "intercept on enemy healer",
+        NextAction::array(0, new NextAction("intercept on enemy healer", ACTION_INTERRUPT + 1), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "enemy out of melee",
         NextAction::array(0, new NextAction("throw grenade", ACTION_INTERRUPT), NULL)));
 
@@ -813,6 +821,10 @@ void WarriorCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 void WarriorCcPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     CcPvpStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "intercept on enemy healer",
+        NextAction::array(0, new NextAction("intercept on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "enemy out of melee",
