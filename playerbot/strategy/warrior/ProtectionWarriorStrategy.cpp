@@ -396,7 +396,7 @@ void ProtectionWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "shield bash on enemy healer",
-        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void ProtectionWarriorCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -792,7 +792,7 @@ void ProtectionWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "shield bash on enemy healer",
-        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void ProtectionWarriorCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1180,7 +1180,7 @@ void ProtectionWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "shield bash on enemy healer",
-        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("shield bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "shockwave on snare target",

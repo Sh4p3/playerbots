@@ -381,7 +381,7 @@ void TankFeralDruidCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigg
 
     triggers.push_back(new TriggerNode(
         "bash on enemy healer",
-        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void TankFeralDruidCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -827,7 +827,7 @@ void TankFeralDruidCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigg
 
     triggers.push_back(new TriggerNode(
         "bash on enemy healer",
-        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void TankFeralDruidCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1268,7 +1268,7 @@ void TankFeralDruidCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigg
 
     triggers.push_back(new TriggerNode(
         "bash on enemy healer",
-        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 }
 
 void TankFeralDruidCcStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

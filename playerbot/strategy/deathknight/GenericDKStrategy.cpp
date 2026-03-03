@@ -164,11 +164,11 @@ void GenericDKStrategy::InitCombatTriggers(std::list<TriggerNode*> &triggers)
 
 	triggers.push_back(new TriggerNode(
 		"mind freeze on enemy healer",
-		NextAction::array(0, new NextAction("mind freeze on enemy healer", ACTION_INTERRUPT + 1), NULL)));
+		NextAction::array(0, new NextAction("mind freeze on enemy healer", ACTION_INTERRUPT + 2), NULL)));
 
 	triggers.push_back(new TriggerNode(
 		"strangulate on enemy healer",
-		NextAction::array(0, new NextAction("strangulate on enemy healer", ACTION_INTERRUPT), NULL)));
+		NextAction::array(0, new NextAction("strangulate on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
 	triggers.push_back(new TriggerNode(
 		"strangulate",

@@ -333,7 +333,7 @@ void FuryWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "pummel on enemy healer",
-        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hamstring",
@@ -685,7 +685,7 @@ void FuryWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "pummel on enemy healer",
-        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hamstring",
@@ -1037,7 +1037,7 @@ void FuryWarriorCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "pummel on enemy healer",
-        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT), NULL)));
+        NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "hamstring",
