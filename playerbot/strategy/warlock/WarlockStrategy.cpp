@@ -342,7 +342,7 @@ void WarlockCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "death coil on enemy healer",
-        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 4), NULL)));
+        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 6), NULL)));
 
     triggers.push_back(new TriggerNode(
         "death coil on snare target",
@@ -802,7 +802,7 @@ void WarlockCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "death coil on enemy healer",
-        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 4), NULL)));
+        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 6), NULL)));
 
     triggers.push_back(new TriggerNode(
         "death coil on snare target",
@@ -1265,7 +1265,7 @@ void WarlockCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "death coil on enemy healer",
-        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 4), NULL)));
+        NextAction::array(0, new NextAction("death coil on enemy healer", ACTION_INTERRUPT + 6), NULL)));
 
     triggers.push_back(new TriggerNode(
         "death coil on snare target",

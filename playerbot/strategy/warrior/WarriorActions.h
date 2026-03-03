@@ -21,7 +21,6 @@ namespace ai
     MELEE_ACTION(CastHeroicStrikeAction, "heroic strike");
     REACH_ACTION(CastChargeAction, "charge", 8.0f);
     MELEE_DEBUFF_ACTION(CastRendAction, "rend");
-    MELEE_DEBUFF_ENEMY_ACTION(CastRendOnAttackerAction, "rend");
     MELEE_DEBUFF_ACTION_R(CastThunderClapAction, "thunder clap", 8.0f);
     SNARE_ACTION(CastThunderClapSnareAction, "thunder clap");
     SNARE_ACTION(CastHamstringAction, "hamstring");

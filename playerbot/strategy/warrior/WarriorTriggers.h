@@ -15,7 +15,6 @@ namespace ai
     DEBUFF_TRIGGER(DemoralizingShoutDebuffTrigger, "demoralizing shout");
     DEBUFF_TRIGGER_OWN(MortalStrikeDebuffTrigger, "mortal strike");
     CD_TRIGGER(MortalStrikeCanCastTrigger, "mortal strike");
-    DEBUFF_ENEMY_TRIGGER_OWN(RendDebuffOnAttackerTrigger, "rend");
     CAN_CAST_TRIGGER(DevastateAvailableTrigger, "devastate");
     CAN_CAST_TRIGGER(RevengeAvailableTrigger, "revenge");
     CAN_CAST_TRIGGER(OverpowerAvailableTrigger, "overpower");

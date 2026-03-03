@@ -82,12 +82,6 @@ namespace ai
 	BEGIN_RANGED_DEBUFF_ACTION(CastMarkOfBloodAction, "mark of blood")
 	END_SPELL_ACTION()
 
-	class CastMarkOfBloodOnAttackerAction : public CastRangedDebuffSpellOnAttackerAction
-	{
-	public:
-		CastMarkOfBloodOnAttackerAction(PlayerbotAI* ai) : CastRangedDebuffSpellOnAttackerAction(ai, "mark of blood") {}
-	};
-
 	class CastUnholyBlightAction : public CastBuffSpellAction
 	{
 	public:

@@ -132,7 +132,6 @@ namespace ai
                 creators["death wish"] = [](PlayerbotAI* ai) { return new DeathWishTrigger(ai); };
                 creators["battle shout"] = [](PlayerbotAI* ai) { return new BattleShoutTrigger(ai); };
                 creators["rend"] = [](PlayerbotAI* ai) { return new RendDebuffTrigger(ai); };
-                creators["rend on attacker"] = [](PlayerbotAI* ai) { return new RendDebuffOnAttackerTrigger(ai); };
                 creators["bloodrage"] = [](PlayerbotAI* ai) { return new BloodrageBuffTrigger(ai); };
                 creators["shield bash"] = [](PlayerbotAI* ai) { return new ShieldBashInterruptSpellTrigger(ai); };
                 creators["disarm"] = [](PlayerbotAI* ai) { return new DisarmDebuffTrigger(ai); };
@@ -191,7 +190,6 @@ namespace ai
                 creators["charge"] = [](PlayerbotAI* ai) { return new CastChargeAction(ai); };
                 creators["bloodthirst"] = [](PlayerbotAI* ai) { return new CastBloodthirstAction(ai); };
                 creators["rend"] = [](PlayerbotAI* ai) { return new CastRendAction(ai); };
-                creators["rend on attacker"] = [](PlayerbotAI* ai) { return new CastRendOnAttackerAction(ai); };
                 creators["mocking blow"] = [](PlayerbotAI* ai) { return new CastMockingBlowAction(ai); };
                 creators["death wish"] = [](PlayerbotAI* ai) { return new CastDeathWishAction(ai); };
                 creators["berserker rage"] = [](PlayerbotAI* ai) { return new CastBerserkerRageAction(ai); };
