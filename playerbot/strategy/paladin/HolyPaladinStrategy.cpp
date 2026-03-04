@@ -788,14 +788,6 @@ void HolyPaladinBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>&
 void HolyPaladinBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     PaladinBoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "divine illumination",
-        NextAction::array(0, new NextAction("divine illumination", ACTION_HIGH + 1), NULL)));
-
-    triggers.push_back(new TriggerNode(
-        "divine favor",
-        NextAction::array(0, new NextAction("divine favor", ACTION_HIGH), NULL)));
 }
 
 void HolyPaladinBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
