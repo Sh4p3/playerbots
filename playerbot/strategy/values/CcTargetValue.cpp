@@ -20,7 +20,6 @@ public:
     virtual void CheckAttacker(Unit* creature, ThreatManager* threatManager)
     {
         Player* bot = ai->GetBot();
-
         AiObjectContext* context = ai->GetAiObjectContext();
 
         if (!ai->CanCastSpell(spell, creature, true, nullptr, false, true))
@@ -43,8 +42,6 @@ public:
             return;
 
         Group* group = bot->GetGroup();
-        if (!group)
-            return;
 
         if (AI_VALUE(uint8,"aoe count") > 2)
         {
@@ -78,19 +75,22 @@ public:
         }
 
         float minDistance = ai->GetRange("spell");
-        Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
-        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+        if (group)
         {
-            Player *member = sObjectMgr.GetPlayer(itr->guid);
-            if(!member || !sServerFacade.IsAlive(member) || member == bot || bot->GetMapId() != member->GetMapId())
-                continue;
+            Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
+            for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+            {
+                Player *member = sObjectMgr.GetPlayer(itr->guid);
+                if(!member || !sServerFacade.IsAlive(member) || member == bot || bot->GetMapId() != member->GetMapId())
+                    continue;
 
-            if (!ai->IsTank(member))
-                continue;
+                if (!ai->IsTank(member))
+                    continue;
 
-            float distance = sServerFacade.GetDistance2d(member, creature);
-            if (distance < minDistance)
-                minDistance = distance;
+                float distance = sServerFacade.GetDistance2d(member, creature);
+                if (distance < minDistance)
+                    minDistance = distance;
+            }
         }
 
         if ((!result && !creature->IsPlayer()) || minDistance > maxDistance)
@@ -107,9 +107,9 @@ private:
 
 Unit* CcTargetValue::Calculate()
 {
-    std::list<ObjectGuid> possible = AI_VALUE(std::list<ObjectGuid>,"possible targets no los");
+    const std::list<ObjectGuid>& possible = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible targets no los");
 
-    for (std::list<ObjectGuid>::iterator i = possible.begin(); i != possible.end(); ++i)
+    for (std::list<ObjectGuid>::const_iterator i = possible.begin(); i != possible.end(); ++i)
     {
         ObjectGuid guid = *i;
         Unit* add = ai->GetUnit(guid);
