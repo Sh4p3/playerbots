@@ -4,35 +4,24 @@
 
 using namespace ai;
 
-class FindCurrentCcTargetStrategy : public FindTargetStrategy
-{
-public:
-    FindCurrentCcTargetStrategy(PlayerbotAI* ai, std::string spell) : FindTargetStrategy(ai)
-    {
-        this->spell = spell;
-    }
-
-public:
-    virtual void CheckAttacker(Unit* attacker, ThreatManager* threatManager) override
-    {
-        if (ai->HasMyAura(spell, attacker))
-        {
-            result = attacker;
-            return;
-        }
-
-        if (spell == "polymorph" &&
-            (ai->HasMyAura("polymorph: pig", attacker) || ai->HasMyAura("polymorph: turtle", attacker)))
-            result = attacker;
-    }
-
-private:
-    std::string spell;
-};
-
-
 Unit* CurrentCcTargetValue::Calculate()
 {
-    FindCurrentCcTargetStrategy strategy(ai, qualifier);
-    return FindTarget(&strategy);
+    const std::list<ObjectGuid>& possible = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible targets no los");
+    for (std::list<ObjectGuid>::const_iterator i = possible.begin(); i != possible.end(); ++i)
+    {
+        Unit* target = ai->GetUnit(*i);
+        if (!target)
+            continue;
+
+        if (ai->HasMyAura(qualifier, target))
+            return target;
+
+        if (qualifier == "polymorph" &&
+            (ai->HasMyAura("polymorph: pig", target) || ai->HasMyAura("polymorph: turtle", target)))
+        {
+            return target;
+        }
+    }
+
+    return NULL;
 }
