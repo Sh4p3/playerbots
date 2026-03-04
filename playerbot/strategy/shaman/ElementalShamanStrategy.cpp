@@ -22,7 +22,7 @@ public:
 private:
     ACTION_NODE_A(flametongue_weapon, "flametongue weapon", "windfury weapon");
 
-    ACTION_NODE_P(lava_burst, "lava burst", "elemental mastery");
+    ACTION_NODE_A(lava_burst, "lava burst", "lightning bolt");
 
     ACTION_NODE_A(totem_of_wrath, "totem of wrath", "searing totem");
 
@@ -946,7 +946,8 @@ void ElementalShamanStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigge
 
     triggers.push_back(new TriggerNode(
         "flame shock on target",
-        NextAction::array(0, new NextAction("lava burst", ACTION_HIGH + 2), NULL))); 
+        NextAction::array(0, new NextAction("elemental mastery", ACTION_HIGH + 3),
+            new NextAction("lava burst", ACTION_HIGH + 2), NULL))); 
     
     triggers.push_back(new TriggerNode(
         "flame shock",

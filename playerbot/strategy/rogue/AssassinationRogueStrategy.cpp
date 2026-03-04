@@ -38,7 +38,8 @@ void AssassinationRogueStrategy::InitCombatTriggers(std::list<TriggerNode*>& tri
 
     triggers.push_back(new TriggerNode(
         "eviscerate",
-        NextAction::array(0, new NextAction("eviscerate", ACTION_HIGH + 2), NULL)));
+        NextAction::array(0, new NextAction("cold blood", ACTION_HIGH + 3),
+            new NextAction("eviscerate", ACTION_HIGH + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "slice and dice",
@@ -429,7 +430,8 @@ void AssassinationRogueStrategy::InitCombatTriggers(std::list<TriggerNode*>& tri
 
     triggers.push_back(new TriggerNode(
         "eviscerate",
-        NextAction::array(0, new NextAction("eviscerate", ACTION_HIGH + 2), NULL)));
+        NextAction::array(0, new NextAction("cold blood", ACTION_HIGH + 3),
+            new NextAction("eviscerate", ACTION_HIGH + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "slice and dice",

@@ -142,7 +142,8 @@ void HolyPriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("circle of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL + 1),
+            new NextAction("circle of healing", ACTION_MEDIUM_HEAL), NULL)));
 }
 
 void HolyPriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -497,7 +498,8 @@ void HolyPriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("circle of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL),
+            new NextAction("circle of healing", ACTION_MEDIUM_HEAL - 1), NULL)));
 }
 
 void HolyPriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -908,7 +910,8 @@ void HolyPriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("circle of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL),
+            new NextAction("circle of healing", ACTION_MEDIUM_HEAL - 1), NULL)));
 }
 
 void HolyPriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

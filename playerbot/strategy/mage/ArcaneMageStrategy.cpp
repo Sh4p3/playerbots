@@ -14,13 +14,7 @@ public:
     }
 
 private:
-    static ActionNode* arcane_blast(PlayerbotAI* ai)
-    {
-        return new ActionNode("arcane blast",
-            /*P*/ NextAction::array(0, new NextAction("presence of mind"), NULL),
-            /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
-            /*C*/ NULL);
-    }
+    ACTION_NODE_A(arcane_blast, "arcane blast", "shoot");
 };
 
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : MageStrategy(ai)
@@ -382,6 +376,10 @@ void ArcaneMageStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     MageStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "presence of mind aura",
+        NextAction::array(0, new NextAction("arcane blast", ACTION_HIGH + 2), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "arcane blast",
         NextAction::array(0, new NextAction("arcane blast", ACTION_NORMAL), NULL)));
 }
@@ -726,6 +724,10 @@ NextAction** ArcaneMageStrategy::GetDefaultCombatActions()
 void ArcaneMageStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     MageStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "presence of mind aura",
+        NextAction::array(0, new NextAction("arcane blast", ACTION_HIGH + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "arcane blast",

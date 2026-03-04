@@ -139,7 +139,8 @@ void DisciplinePriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("prayer of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL + 1),
+            new NextAction("prayer of healing", ACTION_MEDIUM_HEAL), NULL)));
 }
 
 void DisciplinePriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -498,7 +499,8 @@ void DisciplinePriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("prayer of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL),
+            new NextAction("prayer of healing", ACTION_MEDIUM_HEAL - 1), NULL)));
 }
 
 void DisciplinePriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -943,7 +945,8 @@ void DisciplinePriestAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("prayer of healing", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("inner focus", ACTION_MEDIUM_HEAL),
+            new NextAction("prayer of healing", ACTION_MEDIUM_HEAL - 1), NULL)));
 }
 
 void DisciplinePriestAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
