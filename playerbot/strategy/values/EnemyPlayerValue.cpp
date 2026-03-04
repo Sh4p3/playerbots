@@ -113,11 +113,12 @@ Unit* EnemyPlayerValue::Calculate()
     }
 
     Unit* bestEnemyPlayer = nullptr;
-    std::list<ObjectGuid> enemyPlayers = AI_VALUE(std::list<ObjectGuid>, "enemy player targets");
+    const std::list<ObjectGuid>& enemyPlayers = *context->GetValue<std::list<ObjectGuid>>("enemy player targets");
     if (!enemyPlayers.empty())
     {
         const bool isMelee = !ai->IsRanged(bot);
         uint32 bestEnemyPlayerHealth = std::numeric_limits<uint32>::max();
+        uint8 bestEnemyPlayerHealthPct = std::numeric_limits<uint8>::max();
         float bestEnemyPlayerDistance = std::numeric_limits<float>::max();
       
         // Use the first enemy player as a base
@@ -126,6 +127,7 @@ Unit* EnemyPlayerValue::Calculate()
         {
             bestEnemyPlayerDistance = firstTarget->GetDistance(bot, false);
             bestEnemyPlayerHealth = firstTarget->GetHealth();
+            bestEnemyPlayerHealthPct = firstTarget->GetHealthPercent();
             bestEnemyPlayer = firstTarget;
         }
 
@@ -154,10 +156,13 @@ Unit* EnemyPlayerValue::Calculate()
                 }
                 else
                 {
-                    // Score best enemy player based on lowest health
+                    // Ranged bots should prioritize the softest kill target, not the target with the lowest max health pool.
+                    const uint8 enemyPlayerHealthPct = target->GetHealthPercent();
                     const uint32 enemyPlayerHealth = target->GetHealth();
-                    if (enemyPlayerHealth < bestEnemyPlayerHealth)
+                    if (enemyPlayerHealthPct < bestEnemyPlayerHealthPct ||
+                        (enemyPlayerHealthPct == bestEnemyPlayerHealthPct && enemyPlayerHealth < bestEnemyPlayerHealth))
                     {
+                        bestEnemyPlayerHealthPct = enemyPlayerHealthPct;
                         bestEnemyPlayerHealth = enemyPlayerHealth;
                         bestEnemyPlayer = target;
                     }
