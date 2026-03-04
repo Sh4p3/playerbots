@@ -14,7 +14,13 @@ public:
     }
 
 private:
-    ACTION_NODE_A(arcane_blast, "arcane blast", "shoot");
+    static ActionNode* arcane_blast(PlayerbotAI* ai)
+    {
+        return new ActionNode("arcane blast",
+            /*P*/ NextAction::array(0, new NextAction("presence of mind"), NULL),
+            /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
+            /*C*/ NULL);
+    }
 };
 
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : MageStrategy(ai)
