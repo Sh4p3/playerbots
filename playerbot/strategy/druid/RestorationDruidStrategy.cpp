@@ -842,13 +842,13 @@ void RestorationDruidStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigg
 
     triggers.push_back(new TriggerNode(
         "critical health",
-        NextAction::array(0, new NextAction("healing touch", ACTION_CRITICAL_HEAL + 1),
-                             new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL), NULL)));
+        NextAction::array(0, new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 1),
+                             new NextAction("healing touch", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "party member critical health",
-        NextAction::array(0, new NextAction("healing touch on party", ACTION_CRITICAL_HEAL + 1),
-                             new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL), NULL)));
+        NextAction::array(0, new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 1),
+                             new NextAction("healing touch on party", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "clearcasting",
