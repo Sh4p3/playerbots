@@ -14,11 +14,16 @@ public:
     {
         this->spell = spell;
         maxDistance = 0;
+        hasPreferredTarget = false;
+        hasLockedTarget = false;
     }
 
 public:
     virtual void CheckAttacker(Unit* creature, ThreatManager* threatManager)
     {
+        if (hasLockedTarget)
+            return;
+
         Player* bot = ai->GetBot();
         AiObjectContext* context = ai->GetAiObjectContext();
 
@@ -28,6 +33,7 @@ public:
         if (AI_VALUE(Unit*,"rti cc target") == creature)
         {
             result = creature;
+            hasLockedTarget = true;
             return;
         }
 
@@ -54,15 +60,12 @@ public:
             return;
 
         bool isPlayer = creature->IsPlayer();
+        bool isLooseAdd = false;
         if (!isPlayer)
         {
             int tankCount, dpsCount;
             GetPlayerCount(creature, &tankCount, &dpsCount);
-            if (!tankCount || !dpsCount)
-            {
-                result = creature;
-                return;
-            }
+            isLooseAdd = !tankCount || !dpsCount;
         }
 
         if (isPlayer)
@@ -93,6 +96,20 @@ public:
             }
         }
 
+        if (isLooseAdd)
+        {
+            if (!hasPreferredTarget || minDistance > maxDistance)
+            {
+                result = creature;
+                maxDistance = minDistance;
+                hasPreferredTarget = true;
+            }
+            return;
+        }
+
+        if (hasPreferredTarget)
+            return;
+
         if ((!result && !creature->IsPlayer()) || minDistance > maxDistance)
         {
             result = creature;
@@ -103,6 +120,8 @@ public:
 private:
     std::string spell;
     float maxDistance;
+    bool hasPreferredTarget;
+    bool hasLockedTarget;
 };
 
 Unit* CcTargetValue::Calculate()
