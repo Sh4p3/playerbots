@@ -16,26 +16,36 @@ Unit* EnemyHealerTargetValue::Calculate()
 
     const std::list<ObjectGuid>& attackers = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets");
     Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    Unit* bestTarget = NULL;
+    float bestDistance = std::numeric_limits<float>::max();
     for (const ObjectGuid& guid : attackers)
     {
         Unit* unit = ai->GetUnit(guid);
         if (!unit || unit == target)
             continue;
 
-        if (sServerFacade.GetDistance2d(bot, unit) > searchRange)
+        float distance = sServerFacade.GetDistance2d(bot, unit);
+        if (distance > searchRange)
             continue;
 
         if (!ai->IsInterruptableSpellCasting(unit, spell, true))
             continue;
 
-        Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && IsPositiveSpell(spell->m_spellInfo))
-            return unit;
+        bool positiveCast = false;
+        Spell* currentSpell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (currentSpell && IsPositiveSpell(currentSpell->m_spellInfo))
+            positiveCast = true;
 
-        spell = unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-        if (spell && IsPositiveSpell(spell->m_spellInfo))
-            return unit;
+        currentSpell = unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        if (currentSpell && IsPositiveSpell(currentSpell->m_spellInfo))
+            positiveCast = true;
+
+        if (positiveCast && distance < bestDistance)
+        {
+            bestDistance = distance;
+            bestTarget = unit;
+        }
     }
 
-    return NULL;
+    return bestTarget;
 }
