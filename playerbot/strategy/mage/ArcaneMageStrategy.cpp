@@ -882,14 +882,6 @@ void ArcaneMageAoeRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& t
 void ArcaneMageBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     MageBuffStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "arcane power",
-        NextAction::array(0, new NextAction("arcane power", ACTION_HIGH + 2), NULL)));
-
-    triggers.push_back(new TriggerNode(
-        "presence of mind",
-        NextAction::array(0, new NextAction("presence of mind", ACTION_HIGH + 1), NULL)));
 }
 
 void ArcaneMageBuffStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
