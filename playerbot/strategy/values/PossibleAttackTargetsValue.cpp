@@ -344,6 +344,15 @@ bool PossibleAddsValue::Calculate()
         if (find(attackers.begin(), attackers.end(), guid) != attackers.end()) continue;
 
         Unit* add = ai->GetUnit(guid);
+        if (!add)
+            continue;
+
+        if (!PossibleAttackTargetsValue::HasIgnoreCCRti(add, bot) &&
+            (PossibleAttackTargetsValue::HasBreakableCC(add, bot) || PossibleAttackTargetsValue::HasUnBreakableCC(add, bot)))
+        {
+            continue;
+        }
+
         if (add && !add->GetGuidValue(UNIT_FIELD_TARGET) && !sServerFacade.GetThreatManager(add).getCurrentVictim() && sServerFacade.IsHostileTo(add, bot))
         {
             for (std::list<ObjectGuid>::const_iterator j = attackers.begin(); j != attackers.end(); ++j)
