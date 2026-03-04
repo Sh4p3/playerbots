@@ -11,6 +11,7 @@ public:
     ElementalShamanStrategyActionNodeFactory()
     {
         creators["flametongue weapon"] = &flametongue_weapon;
+        creators["lava burst"] = &lava_burst;
         creators["totem of wrath"] = &totem_of_wrath;
         creators["searing totem"] = &searing_totem;
         creators["strength of earth totem"] = &strength_of_earth_totem;
@@ -20,6 +21,8 @@ public:
 
 private:
     ACTION_NODE_A(flametongue_weapon, "flametongue weapon", "windfury weapon");
+
+    ACTION_NODE_P(lava_burst, "lava burst", "elemental mastery");
 
     ACTION_NODE_A(totem_of_wrath, "totem of wrath", "searing totem");
 
@@ -1280,10 +1283,6 @@ void ElementalShamanBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& tr
     triggers.push_back(new TriggerNode(
         "water shield",
         NextAction::array(0, new NextAction("water shield", ACTION_HIGH), NULL)));
-
-    triggers.push_back(new TriggerNode(
-        "elemental mastery",
-        NextAction::array(0, new NextAction("elemental mastery", ACTION_HIGH), NULL)));
 }
 
 void ElementalShamanBuffStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

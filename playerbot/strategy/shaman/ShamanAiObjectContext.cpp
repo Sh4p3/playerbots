@@ -296,7 +296,6 @@ namespace ai
                 creators["earth shield on preferred target"] = [](PlayerbotAI* ai) { return new PreferredTargetEarthShieldTrigger(ai); };
                 creators["chain lightning"] = [](PlayerbotAI* ai) { return new ChainLightningTrigger(ai); };
                 creators["stormstrike"] = [](PlayerbotAI* ai) { return new StormstrikeTrigger(ai); };
-                creators["elemental mastery"] = [](PlayerbotAI* ai) { return new ElementalMasteryTrigger(ai); };
                 creators["feral spirit"] = [](PlayerbotAI* ai) { return new FeralSpiritTrigger(ai); };
                 creators["hex"] = [](PlayerbotAI* ai) { return new HexTrigger(ai); };
             }
