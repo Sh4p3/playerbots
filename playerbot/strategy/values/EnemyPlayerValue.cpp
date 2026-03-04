@@ -61,16 +61,13 @@ bool EnemyPlayersValue::IsValid(Unit* target, Player* player)
                 }
             }
 
-            /*
-            // Check if too far away (Do we need this?)
-            const float maxPvPDistance = GetMaxAttackDistance(player);
+            const float maxPvPDistance = EnemyPlayerValue::GetMaxAttackDistance(player);
             const bool inCannon = player->GetPlayerbotAI() && player->GetPlayerbotAI()->IsInVehicle(false, true);
-            uint32 const pvpDistance = (inCannon || player->GetHealth() > enemyPlayer->GetHealth()) ? maxPvPDistance : 20.0f;
+            float const pvpDistance = (inCannon || player->GetHealthPercent() > enemyPlayer->GetHealthPercent()) ? maxPvPDistance : 20.0f;
             if (!player->IsWithinDist(enemyPlayer, pvpDistance, false))
             {
                 return false;
             }
-            */
 
             return true;
         }
