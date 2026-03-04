@@ -434,9 +434,6 @@ void PriestBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         "power infusion",
         NextAction::array(0, new NextAction("power infusion", ACTION_HIGH), NULL)));
 
-    triggers.push_back(new TriggerNode(
-        "inner focus",
-        NextAction::array(0, new NextAction("inner focus", ACTION_HIGH), NULL)));
 }
 
 void PriestBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1007,9 +1004,6 @@ void PriestBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     BoostStrategy::InitCombatTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
-        "inner focus",
-        NextAction::array(0, new NextAction("inner focus", ACTION_HIGH), NULL)));
 }
 
 void PriestBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -1569,10 +1563,6 @@ void PriestBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& trig
 void PriestBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     BoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "inner focus",
-        NextAction::array(0, new NextAction("inner focus", ACTION_HIGH + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "power infusion",
