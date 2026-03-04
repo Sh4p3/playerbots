@@ -23,7 +23,7 @@ public:
 
         if (!PossibleAttackTargetsValue::IsValid(creature, bot))
         {
-            std::list<ObjectGuid> attackers = AI_VALUE(std::list<ObjectGuid>, "possible attack targets");
+            const std::list<ObjectGuid>& attackers = *context->GetValue<std::list<ObjectGuid>>("possible attack targets");
             if (std::find(attackers.begin(), attackers.end(), creature->GetObjectGuid()) == attackers.end())
                 return;
         }

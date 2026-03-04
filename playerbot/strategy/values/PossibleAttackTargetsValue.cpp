@@ -335,10 +335,10 @@ bool PossibleAttackTargetsValue::IsPossibleTarget(Unit* target, Player* player, 
 bool PossibleAddsValue::Calculate()
 {
     PlayerbotAI *ai = bot->GetPlayerbotAI();
-    std::list<ObjectGuid> possible = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible targets no los")->Get();
-    std::list<ObjectGuid> attackers = ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets")->Get();
+    const std::list<ObjectGuid>& possible = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible targets no los");
+    const std::list<ObjectGuid>& attackers = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets");
 
-    for (std::list<ObjectGuid>::iterator i = possible.begin(); i != possible.end(); ++i)
+    for (std::list<ObjectGuid>::const_iterator i = possible.begin(); i != possible.end(); ++i)
     {
         ObjectGuid guid = *i;
         if (find(attackers.begin(), attackers.end(), guid) != attackers.end()) continue;
@@ -346,7 +346,7 @@ bool PossibleAddsValue::Calculate()
         Unit* add = ai->GetUnit(guid);
         if (add && !add->GetGuidValue(UNIT_FIELD_TARGET) && !sServerFacade.GetThreatManager(add).getCurrentVictim() && sServerFacade.IsHostileTo(add, bot))
         {
-            for (std::list<ObjectGuid>::iterator j = attackers.begin(); j != attackers.end(); ++j)
+            for (std::list<ObjectGuid>::const_iterator j = attackers.begin(); j != attackers.end(); ++j)
             {
                 Unit* attacker = ai->GetUnit(*j);
                 if (!attacker) continue;
