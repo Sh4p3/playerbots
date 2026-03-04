@@ -15,13 +15,12 @@ Unit* EnemyHealerTargetValue::Calculate()
         searchRange = spellRange;
 
     const std::list<ObjectGuid>& attackers = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid>>("possible attack targets");
-    Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     Unit* bestTarget = NULL;
     float bestDistance = std::numeric_limits<float>::max();
     for (const ObjectGuid& guid : attackers)
     {
         Unit* unit = ai->GetUnit(guid);
-        if (!unit || unit == target)
+        if (!unit)
             continue;
 
         float distance = sServerFacade.GetDistance2d(bot, unit);
