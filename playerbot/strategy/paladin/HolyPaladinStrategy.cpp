@@ -531,14 +531,14 @@ void HolyPaladinStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "party member low health",
         NextAction::array(0, new NextAction("holy shock on party", ACTION_MEDIUM_HEAL + 6),
-                             new NextAction("holy light on party", ACTION_MEDIUM_HEAL + 5),
-                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 4), NULL)));
+                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 5),
+                             new NextAction("holy light on party", ACTION_MEDIUM_HEAL + 4), NULL)));
 
     triggers.push_back(new TriggerNode(
         "low health",
         NextAction::array(0, new NextAction("holy shock", ACTION_MEDIUM_HEAL + 3),
-                             new NextAction("holy light", ACTION_MEDIUM_HEAL + 2),
-                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 1), NULL)));
+                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 2),
+                             new NextAction("holy light", ACTION_MEDIUM_HEAL + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "critical health",
@@ -1044,9 +1044,9 @@ void HolyPaladinStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         "critical health",
         NextAction::array(0, new NextAction("divine shield", ACTION_EMERGENCY),
             new NextAction("holy shock", ACTION_CRITICAL_HEAL + 5),
-            new NextAction("holy light", ACTION_CRITICAL_HEAL + 4),
-            new NextAction("aura mastery", ACTION_CRITICAL_HEAL + 3),
-            new NextAction("divine favor", ACTION_CRITICAL_HEAL + 2),
+            new NextAction("divine favor", ACTION_CRITICAL_HEAL + 4),
+            new NextAction("holy light", ACTION_CRITICAL_HEAL + 3),
+            new NextAction("aura mastery", ACTION_CRITICAL_HEAL + 2),
             new NextAction("divine illumination", ACTION_CRITICAL_HEAL + 1), NULL)));
     
     triggers.push_back(new TriggerNode(
@@ -1061,9 +1061,9 @@ void HolyPaladinStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         "party member critical health",
         NextAction::array(0, new NextAction("divine sacrifice", ACTION_CRITICAL_HEAL + 6),
                              new NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 5),
-                             new NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4),
-                             new NextAction("aura mastery", ACTION_CRITICAL_HEAL + 3),
-                             new NextAction("divine favor", ACTION_CRITICAL_HEAL + 2),
+                             new NextAction("divine favor", ACTION_CRITICAL_HEAL + 4),
+                             new NextAction("holy light on party", ACTION_CRITICAL_HEAL + 3),
+                             new NextAction("aura mastery", ACTION_CRITICAL_HEAL + 2),
                              new NextAction("divine illumination", ACTION_CRITICAL_HEAL + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
@@ -1073,16 +1073,16 @@ void HolyPaladinStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "party member low health",
         NextAction::array(0, new NextAction("holy shock on party", ACTION_MEDIUM_HEAL + 4),
-                             new NextAction("holy light on party", ACTION_MEDIUM_HEAL + 3),
-                             new NextAction("aura mastery", ACTION_MEDIUM_HEAL + 2), 
-                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 1), NULL)));
+                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 3),
+                             new NextAction("holy light on party", ACTION_MEDIUM_HEAL + 2),
+                             new NextAction("aura mastery", ACTION_MEDIUM_HEAL + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "low health",
         NextAction::array(0, new NextAction("holy shock", ACTION_MEDIUM_HEAL + 4),
-                             new NextAction("holy light", ACTION_MEDIUM_HEAL + 3),
-                             new NextAction("aura mastery", ACTION_MEDIUM_HEAL + 2),
-                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 1), NULL)));
+                             new NextAction("divine favor", ACTION_MEDIUM_HEAL + 3),
+                             new NextAction("holy light", ACTION_MEDIUM_HEAL + 2),
+                             new NextAction("aura mastery", ACTION_MEDIUM_HEAL + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "medium health",
