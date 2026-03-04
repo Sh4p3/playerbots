@@ -25,7 +25,13 @@ private:
 
     ACTION_NODE_A(kidney_shot, "kidney shot", "gouge");
 
-    ACTION_NODE_A(eviscerate, "eviscerate", "rupture");
+    static ActionNode* eviscerate(PlayerbotAI* ai)
+    {
+        return new ActionNode("eviscerate",
+            /*P*/ NextAction::array(0, new NextAction("cold blood"), NULL),
+            /*A*/ NextAction::array(0, new NextAction("rupture"), NULL),
+            /*C*/ NULL);
+    }
 
     ACTION_NODE_A(slice_and_dice, "slice and dice", "eviscerate");
 
