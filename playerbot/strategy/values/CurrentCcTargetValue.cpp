@@ -15,7 +15,14 @@ public:
 public:
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatManager) override
     {
-        if (ai->HasAura(spell, attacker))
+        if (ai->HasMyAura(spell, attacker))
+        {
+            result = attacker;
+            return;
+        }
+
+        if (spell == "polymorph" &&
+            (ai->HasMyAura("polymorph: pig", attacker) || ai->HasMyAura("polymorph: turtle", attacker)))
             result = attacker;
     }
 
