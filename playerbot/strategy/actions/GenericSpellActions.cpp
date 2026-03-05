@@ -203,9 +203,13 @@ void CastSpellAction::SetSpellName(const std::string& name, std::string spellIDC
 
 Unit* CastSpellAction::GetTarget()
 {
-    std::string targetName = GetTargetName();
-    std::string targetNameQualifier = GetTargetQualifier();
-    return targetNameQualifier.empty() ? AI_VALUE(Unit*, targetName) : AI_VALUE2(Unit*, targetName, targetNameQualifier);
+    const std::string targetName = GetTargetName();
+    const std::string targetNameQualifier = GetTargetQualifier();
+
+    Value<Unit*>* targetValue = targetNameQualifier.empty() ?
+        context->GetValue<Unit*>(targetName) :
+        context->GetValue<Unit*>(targetName, targetNameQualifier);
+    return targetValue ? targetValue->Get() : nullptr;
 }
 
 bool CastPetSpellAction::isPossible()
