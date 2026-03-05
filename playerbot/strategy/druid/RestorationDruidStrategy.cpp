@@ -1064,7 +1064,7 @@ void RestorationDruidBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& t
 
     triggers.push_back(new TriggerNode(
         "tree form",
-        NextAction::array(0, new NextAction("tree form", ACTION_HIGH + 2), NULL)));
+        NextAction::array(0, new NextAction("tree form", ACTION_MOVE), NULL)));
 
     triggers.push_back(new TriggerNode(
         "innervate",

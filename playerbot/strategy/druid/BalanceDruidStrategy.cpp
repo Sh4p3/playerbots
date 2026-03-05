@@ -976,7 +976,7 @@ void BalanceDruidPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigge
 
     triggers.push_back(new TriggerNode(
         "starfall",
-        NextAction::array(0, new NextAction("starfall", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("starfall", ACTION_MOVE + 1), NULL)));
 }
 
 void BalanceDruidPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

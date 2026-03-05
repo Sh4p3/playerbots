@@ -975,11 +975,11 @@ void ShadowPriestBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigg
 
     triggers.push_back(new TriggerNode(
         "shadowform",
-        NextAction::array(0, new NextAction("shadowform", ACTION_HIGH + 2), NULL)));
+        NextAction::array(0, new NextAction("shadowform", ACTION_MOVE + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "medium mana",
-        NextAction::array(0, new NextAction("dispersion", ACTION_NORMAL), NULL)));
+        NextAction::array(0, new NextAction("dispersion", ACTION_MOVE + 1), NULL)));
 
 }
 
