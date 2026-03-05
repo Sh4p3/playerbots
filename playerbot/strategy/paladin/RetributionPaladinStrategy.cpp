@@ -1146,7 +1146,7 @@ void RetributionPaladinPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& 
 
     triggers.push_back(new TriggerNode(
         "target critical health",
-        NextAction::array(0, new NextAction("hammer of wrath", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("hammer of wrath", ACTION_HIGH + 2), NULL)));
 }
 
 void RetributionPaladinPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
