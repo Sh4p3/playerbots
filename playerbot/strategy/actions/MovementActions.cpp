@@ -2902,15 +2902,7 @@ bool JumpAction::Execute(ai::Event &event)
             }
         }
 
-        // set highest jump point to relocate
-        WorldPosition highestPoint = jumpLanding;
-        for (auto& point : path)
-        {
-            if (point.getZ() > highestPoint.getZ())
-                highestPoint = point;
-        }
-
-        return DoJump(jumpLanding, highestPoint, angle, sPlayerbotAIConfig.jumpVSpeed, jumpSpeed, timeToLand, distToLand, maxHeight, goodLanding, jumpInPlace, jumpBackward, showLanding);
+        return DoJump(jumpLanding, angle, sPlayerbotAIConfig.jumpVSpeed, jumpSpeed, timeToLand, distToLand, maxHeight, goodLanding, jumpInPlace, jumpBackward, showLanding);
     }
     return false;
 }
@@ -3084,17 +3076,12 @@ WorldPosition JumpAction::CalculateJumpParameters(const WorldPosition& src, Unit
             if (goodLanding)
             {
                 float groundZ = destination.getZ() + 0.5f;
-                float oldGroundZ = groundZ;
                 if (!destination.isInWater() && !ResolveJumpLandingZ(jumper, destination.getX(), destination.getY(), destination.getZ(), groundZ))
                 {
                     goodLanding = false;
                 }
                 // set to fall after land if not at the ground
-                if (goodLanding && fabs(groundZ - oldGroundZ) < JUMP_LANDING_EPS && fabs(oz - destination.getZ()) > 5.0f)
-                {
-                    goodLanding = false;
-                }
-                else if (goodLanding && groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
+                if (goodLanding && groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
                 {
                     goodLanding = false;
                 }
@@ -3333,25 +3320,15 @@ bool JumpAction::JumpTowards(const ai::WorldPosition &src, const ai::WorldPositi
     sLog.outDebug("%s: JumpTowards attempt! Jump speed: %f", bot->GetName(), jumpSpeed);
     if (jumpLanding && goodLanding)
     {
-        // set highest jump point to relocate
-        WorldPosition highestPoint = dest;
-        for (auto& point : path)
-        {
-            if (point.getZ() > highestPoint.getZ())
-                highestPoint = point;
-        }
-
-        return DoJump((preSetLanding ? dest : jumpLanding), highestPoint, angle, sPlayerbotAIConfig.jumpVSpeed, jumpSpeed, timeToLand, distToLand, maxHeight, goodLanding, jumpInPlace, jumpBackward, false);
+        return DoJump((preSetLanding ? dest : jumpLanding), angle, sPlayerbotAIConfig.jumpVSpeed, jumpSpeed, timeToLand, distToLand, maxHeight, goodLanding, jumpInPlace, jumpBackward, false);
     }
 
     sLog.outDetail("%s: Jump ForwardTo Fail!", jumper->GetName());
     return false;
 }
 
-bool JumpAction::DoJump(const WorldPosition &dest, const WorldPosition& highestPoint, float angle, float vSpeed, float hSpeed, float timeToLand, float distanceToLand, float maxHeight, bool goodLanding, bool jumpInPlace, bool jumpBackward, bool showOnly)
+bool JumpAction::DoJump(const WorldPosition &dest, float angle, float vSpeed, float hSpeed, float timeToLand, float distanceToLand, float maxHeight, bool goodLanding, bool jumpInPlace, bool jumpBackward, bool showOnly)
 {
-    (void)highestPoint;
-
     if (!dest)
         return false;
 
@@ -3363,12 +3340,7 @@ bool JumpAction::DoJump(const WorldPosition &dest, const WorldPosition& highestP
         float ox = dest.getX();
         float oy = dest.getY();
         float oz = dest.getZ() + 0.5f;
-        float oldZ = oz;
         if (!ResolveJumpLandingZ(bot, ox, oy, dest.getZ(), oz))
-        {
-            goodLanding = false;
-        }
-        else if (fabs(oz - oldZ) < JUMP_LANDING_EPS && fabs(bot->GetPositionZ() - dest.getZ()) > 5.0f)
         {
             goodLanding = false;
         }
