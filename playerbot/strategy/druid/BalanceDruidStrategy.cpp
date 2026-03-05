@@ -50,6 +50,7 @@ void BalanceDruidStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "critical health",
         NextAction::array(0, new NextAction("regrowth", ACTION_CRITICAL_HEAL + 1),
+                             new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL),
                              new NextAction("healing touch", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
@@ -288,10 +289,6 @@ void BalanceDruidBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>
 void BalanceDruidBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     DruidBoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "nature's swiftness",
-        NextAction::array(0, new NextAction("nature's swiftness", ACTION_HIGH), NULL)));
 }
 
 void BalanceDruidBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -459,6 +456,7 @@ void BalanceDruidStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "critical health",
         NextAction::array(0, new NextAction("regrowth", ACTION_CRITICAL_HEAL + 1),
+                             new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL),
                              new NextAction("healing touch", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
@@ -685,10 +683,6 @@ void BalanceDruidBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>
 void BalanceDruidBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     DruidBoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "nature's swiftness",
-        NextAction::array(0, new NextAction("nature's swiftness", ACTION_HIGH), NULL)));
 }
 
 void BalanceDruidBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -855,11 +849,13 @@ void BalanceDruidStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "critical health",
-        NextAction::array(0, new NextAction("regrowth", ACTION_CRITICAL_HEAL), NULL)));
+        NextAction::array(0, new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 1),
+            new NextAction("regrowth", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "party member critical health",
-        NextAction::array(0, new NextAction("regrowth on party", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("nature's swiftness", ACTION_HIGH + 1),
+            new NextAction("regrowth on party", ACTION_HIGH), NULL)));
 
     triggers.push_back(new TriggerNode(
         "low health",
@@ -1141,10 +1137,6 @@ void BalanceDruidBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>
 void BalanceDruidBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     DruidBoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "nature's swiftness",
-        NextAction::array(0, new NextAction("nature's swiftness", ACTION_HIGH), NULL)));
 }
 
 void BalanceDruidBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

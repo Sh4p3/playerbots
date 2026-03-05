@@ -1297,6 +1297,10 @@ void HolyPaladinBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigge
     PaladinBuffStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "beacon of light",
+        NextAction::array(0, new NextAction("beacon of light", ACTION_HIGH + 2), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "medium mana",
         NextAction::array(0, new NextAction("seal of wisdom", ACTION_HIGH + 1), NULL)));
 
@@ -1357,18 +1361,6 @@ void HolyPaladinBuffRaidStrategy::InitNonCombatTriggers(std::list<TriggerNode*>&
 void HolyPaladinBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 {
     PaladinBoostStrategy::InitCombatTriggers(triggers);
-
-    triggers.push_back(new TriggerNode(
-        "beacon of light",
-        NextAction::array(0, new NextAction("beacon of light", ACTION_MEDIUM_HEAL + 1), NULL)));
-    
-    triggers.push_back(new TriggerNode(
-        "divine illumination",
-        NextAction::array(0, new NextAction("divine illumination", ACTION_HIGH + 1), NULL)));
-
-    triggers.push_back(new TriggerNode(
-        "divine favor",
-        NextAction::array(0, new NextAction("divine favor", ACTION_HIGH), NULL)));
 }
 
 void HolyPaladinBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
