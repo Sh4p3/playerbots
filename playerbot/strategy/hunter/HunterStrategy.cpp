@@ -1011,7 +1011,7 @@ void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "target critical health",
-        NextAction::array(0, new NextAction("kill shot", ACTION_NORMAL + 7), NULL)));
+        NextAction::array(0, new NextAction("kill shot", ACTION_HIGH + 5), NULL)));
 
     triggers.push_back(new TriggerNode(
         "aimed shot",
