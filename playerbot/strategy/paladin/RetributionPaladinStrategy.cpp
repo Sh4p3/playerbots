@@ -1089,7 +1089,7 @@ void RetributionPaladinStrategy::InitCombatTriggers(std::list<TriggerNode*>& tri
 
     triggers.push_back(new TriggerNode(
         "target critical health",
-        NextAction::array(0, new NextAction("hammer of wrath", ACTION_NORMAL + 2), NULL)));
+        NextAction::array(0, new NextAction("hammer of wrath", ACTION_HIGH + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "consecration",
