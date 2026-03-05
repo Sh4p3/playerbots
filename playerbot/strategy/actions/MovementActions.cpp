@@ -1715,18 +1715,13 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
             if (player->InBattleGround() && player->GetBattleGroundId() != bot->GetBattleGroundId())
                 return false;
 
-            if (ai->IsSafe(player) && player->GetPlayerbotAI()) // Try to move to where the target bot is going if it is closer and aligned.
+            if (ai->IsSafe(player) && player->GetPlayerbotAI()) // Try to move to where the target bot is going.
             {
                 WorldPosition longMove = player->GetPlayerbotAI()->GetAiObjectContext()->GetValue<WorldPosition>("last long move")->Get();
 
                 if (longMove)
                 {
-                    float lDist = botPos.fDist(longMove);
-                    float ang = botPos.getAngleBetween(tarPos, longMove);
-                    if ((lDist * 1.5f < tDist && ang < M_PI_F / 2) || target->IsTaxiFlying())
-                    {
-                        return MoveTo(longMove.getMapId(), longMove.getX(), longMove.getY(), longMove.getZ());
-                    }
+                    return MoveTo(longMove.getMapId(), longMove.getX(), longMove.getY(), longMove.getZ());
                 }
             }
 

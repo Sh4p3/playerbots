@@ -8372,6 +8372,11 @@ void PlayerbotAI::StopMoving()
         return;
 
     bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_MASK_MOVING);
+    if (bot->GetTransport())
+        bot->m_movementInfo.AddMovementFlag(MOVEFLAG_ONTRANSPORT);
+    else
+        bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ONTRANSPORT);
+
     bot->InterruptMoving(true);
     MovementInfo mInfo = bot->m_movementInfo;
     float x, y, z;
