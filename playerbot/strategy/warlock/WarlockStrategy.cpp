@@ -1015,9 +1015,6 @@ void WarlockPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         "critical health",
         NextAction::array(0, new NextAction("drain life", ACTION_LIGHT_HEAL), NULL)));
 
-    triggers.push_back(new TriggerNode(
-        "target critical health",
-        NextAction::array(0, new NextAction("shadowburn", ACTION_HIGH), NULL)));
 }
 
 void WarlockPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
