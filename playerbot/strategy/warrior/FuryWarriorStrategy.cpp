@@ -113,6 +113,10 @@ void FuryWarriorPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 {
     FuryWarriorStrategy::InitCombatTriggers(triggers);
     WarriorPvpStrategy::InitCombatTriggers(triggers);
+
+    triggers.push_back(new TriggerNode(
+        "target critical health",
+        NextAction::array(0, new NextAction("execute", ACTION_HIGH + 1), NULL)));
 }
 
 void FuryWarriorPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

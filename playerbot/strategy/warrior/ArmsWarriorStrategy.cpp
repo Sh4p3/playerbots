@@ -824,6 +824,10 @@ void ArmsWarriorPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
     WarriorPvpStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "target critical health",
+        NextAction::array(0, new NextAction("execute", ACTION_HIGH + 1), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "medium rage available",
         NextAction::array(0, new NextAction("bladestorm", ACTION_NORMAL), NULL)));
 }
