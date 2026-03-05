@@ -80,8 +80,7 @@ void RestorationShamanStrategy::InitCombatTriggers(std::list<TriggerNode*> &trig
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("tidal force", ACTION_MEDIUM_HEAL + 1),
-            new NextAction("chain heal", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("chain heal", ACTION_MEDIUM_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "medium health",
@@ -1067,7 +1066,8 @@ void RestorationShamanStrategy::InitCombatTriggers(std::list<TriggerNode*>& trig
 
     triggers.push_back(new TriggerNode(
         "medium aoe heal",
-        NextAction::array(0, new NextAction("chain heal", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array(0, new NextAction("tidal force", ACTION_MEDIUM_HEAL + 1),
+            new NextAction("chain heal", ACTION_MEDIUM_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "medium health",
