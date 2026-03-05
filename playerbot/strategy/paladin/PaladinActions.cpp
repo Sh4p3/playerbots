@@ -4,6 +4,31 @@
 
 using namespace ai;
 
+namespace
+{
+    bool HasAnyConfiguredBlessing(Unit* target, PlayerbotAI* ai, const std::vector<std::string>& blessings, bool greaterOnly)
+    {
+        if (!target)
+            return false;
+
+        for (const std::string& blessing : blessings)
+        {
+            const std::string greaterBlessing = "greater " + blessing;
+            if (greaterOnly)
+            {
+                if (ai->HasAura(greaterBlessing, target))
+                    return true;
+            }
+            else if (ai->HasAura(blessing, target) || ai->HasAura(greaterBlessing, target))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 bool CastPaladinAuraAction::Execute(Event& event)
 {
     // List of all paladin auras
@@ -67,6 +92,32 @@ std::string CastBlessingAction::GetBlessingForTarget(Unit* target)
     if (target)
     {
         std::vector<std::string> possibleBlessings = GetPossibleBlessingsForTarget(target);
+        if (!greater)
+        {
+            // Any already active valid blessing is acceptable: don't swap between alternatives.
+            if (HasAnyConfiguredBlessing(target, ai, possibleBlessings, false))
+                return "";
+        }
+        else
+        {
+            // If a valid greater blessing is already up, do nothing.
+            if (HasAnyConfiguredBlessing(target, ai, possibleBlessings, true))
+                return "";
+
+            // If a normal blessing is up, only upgrade that same blessing to greater.
+            for (const std::string& blessing : possibleBlessings)
+            {
+                if (!ai->HasAura(blessing, target))
+                    continue;
+
+                const std::string greaterBlessing = "greater " + blessing;
+                if (ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true))
+                    return greaterBlessing;
+
+                return "";
+            }
+        }
+
         for (const std::string& blessing : possibleBlessings)
         {
             const std::string greaterBlessing = "greater " + blessing;
@@ -131,6 +182,32 @@ std::string CastBlessingOnPartyAction::GetBlessingForTarget(Unit* target)
     if (target)
     {
         std::vector<std::string> possibleBlessings = GetPossibleBlessingsForTarget(target);
+        if (!greater)
+        {
+            // Any already active valid blessing is acceptable: don't swap between alternatives.
+            if (HasAnyConfiguredBlessing(target, ai, possibleBlessings, false))
+                return "";
+        }
+        else
+        {
+            // If a valid greater blessing is already up, do nothing.
+            if (HasAnyConfiguredBlessing(target, ai, possibleBlessings, true))
+                return "";
+
+            // If a normal blessing is up, only upgrade that same blessing to greater.
+            for (const std::string& blessing : possibleBlessings)
+            {
+                if (!ai->HasAura(blessing, target))
+                    continue;
+
+                const std::string greaterBlessing = "greater " + blessing;
+                if (ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true))
+                    return greaterBlessing;
+
+                return "";
+            }
+        }
+
         for (const std::string& blessing : possibleBlessings)
         {
             // Don't cast greater salvation on possible tank classes
@@ -243,17 +320,29 @@ bool ai::HasPossibleBlessingForTarget(Unit* target, PlayerbotAI* ai, bool greate
     if (!target)
         return false;
 
-    for (const std::string& blessing : GetBlessingsForTarget(target, ai))
+    const std::vector<std::string> possibleBlessings = GetBlessingsForTarget(target, ai);
+    if (!greater)
+    {
+        return !HasAnyConfiguredBlessing(target, ai, possibleBlessings, false);
+    }
+
+    if (HasAnyConfiguredBlessing(target, ai, possibleBlessings, true))
+        return false;
+
+    for (const std::string& blessing : possibleBlessings)
+    {
+        if (!ai->HasAura(blessing, target))
+            continue;
+
+        const std::string greaterBlessing = "greater " + blessing;
+        return ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true);
+    }
+
+    for (const std::string& blessing : possibleBlessings)
     {
         const std::string greaterBlessing = "greater " + blessing;
-        if ((greater || !ai->HasAura(blessing, target)) && !ai->HasAura(greaterBlessing, target))
-        {
-            if ((greater && ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true)) ||
-                (!greater && ai->CanCastSpell(blessing, target, 0, nullptr, true)))
-            {
-                return true;
-            }
-        }
+        if (ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true))
+            return true;
     }
 
     return false;
