@@ -1488,7 +1488,7 @@ void PaladinBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "sacred shield",
-        NextAction::array(0, new NextAction("sacred shield", ACTION_HIGH + 2), NULL)));
+        NextAction::array(0, new NextAction("sacred shield", ACTION_MOVE), NULL)));
 }
 
 void PaladinBuffStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)

@@ -1297,6 +1297,10 @@ void HolyPaladinBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigge
     PaladinBuffStrategy::InitCombatTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
+        "sacred shield",
+        NextAction::array(0, new NextAction("sacred shield", ACTION_HIGH + 3), NULL)));
+
+    triggers.push_back(new TriggerNode(
         "beacon of light",
         NextAction::array(0, new NextAction("beacon of light", ACTION_HIGH + 2), NULL)));
 
