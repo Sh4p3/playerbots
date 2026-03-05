@@ -731,7 +731,8 @@ void ArcaneMageStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "arcane blast",
-        NextAction::array(0, new NextAction("arcane blast", ACTION_NORMAL + 1), NULL)));
+        NextAction::array(0, new NextAction("presence of mind", ACTION_NORMAL + 2),
+            new NextAction("arcane blast", ACTION_NORMAL + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "missile barrage",
@@ -932,10 +933,6 @@ void ArcaneMageBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigge
     triggers.push_back(new TriggerNode(
         "arcane power",
         NextAction::array(0, new NextAction("arcane power", ACTION_HIGH + 2), NULL)));
-
-    triggers.push_back(new TriggerNode(
-        "presence of mind",
-        NextAction::array(0, new NextAction("presence of mind", ACTION_HIGH + 1), NULL)));
 }
 
 void ArcaneMageBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
