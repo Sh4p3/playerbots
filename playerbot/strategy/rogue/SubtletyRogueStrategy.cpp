@@ -1068,11 +1068,11 @@ void SubtletyRogueBoostStrategy::InitCombatTriggers(std::list<TriggerNode*>& tri
 
     triggers.push_back(new TriggerNode(
         "very often",
-        NextAction::array(0, new NextAction("preparation", ACTION_HIGH + 3), NULL)));
+        NextAction::array(0, new NextAction("shadow dance", ACTION_HIGH + 2), NULL)));
 
     triggers.push_back(new TriggerNode(
         "very often",
-        NextAction::array(0, new NextAction("shadow dance", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("preparation", ACTION_HIGH), NULL)));
 }
 
 void SubtletyRogueBoostStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
