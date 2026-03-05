@@ -850,12 +850,12 @@ void BalanceDruidStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "critical health",
         NextAction::array(0, new NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 1),
-            new NextAction("regrowth", ACTION_CRITICAL_HEAL), NULL)));
+            new NextAction("healing touch", ACTION_CRITICAL_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
         "party member critical health",
         NextAction::array(0, new NextAction("nature's swiftness", ACTION_HIGH + 1),
-            new NextAction("regrowth on party", ACTION_HIGH), NULL)));
+            new NextAction("healing touch on party", ACTION_HIGH), NULL)));
 
     triggers.push_back(new TriggerNode(
         "low health",
