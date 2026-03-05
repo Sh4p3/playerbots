@@ -1,6 +1,7 @@
 #include "PlayerbotMgr.h"
 #include "playerbot/playerbot.h"
 #include <stdarg.h>
+#include <algorithm>
 #include <iomanip>
 
 #include "playerbot/AiFactory.h"
@@ -62,6 +63,102 @@ uint64 extractGuid(WorldPacket& packet);
 std::string &trim(std::string &s);
 
 std::set<std::string> PlayerbotAI::unsecuredCommands;
+
+namespace
+{
+    constexpr float LANDING_HEIGHT_SEARCH_DIST = 20.0f;
+    constexpr float LANDING_PROBE_DEPTH = 200.0f;
+    constexpr float LANDING_HEIGHT_EPS = 0.5f;
+    constexpr float FORCE_FALL_MIN_HEIGHT = 10.0f;
+    constexpr uint32 SOFT_RECOVER_RETRY_MS = 300;
+
+#ifdef MANGOSBOT_ZERO
+    constexpr MovementFlags AIRBORNE_CLEAR_FLAGS = MovementFlags(MOVEFLAG_MASK_MOVING | MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR | MOVEFLAG_JUMPING);
+#else
+    constexpr MovementFlags AIRBORNE_CLEAR_FLAGS = MovementFlags(MOVEFLAG_MASK_MOVING | MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR);
+#endif
+
+    void ClearAirborneFlags(Player* bot)
+    {
+        if (!bot)
+            return;
+
+        bot->m_movementInfo.RemoveMovementFlag(AIRBORNE_CLEAR_FLAGS);
+    }
+
+    void SetAirborneFlag(Player* bot, MovementFlags flag)
+    {
+        ClearAirborneFlags(bot);
+        if (bot)
+            bot->m_movementInfo.AddMovementFlag(flag);
+    }
+
+    bool ResolveLandingZ(Player* bot, float x, float y, float z, float& resolvedZ)
+    {
+        if (!bot || !bot->IsInWorld())
+            return false;
+
+        Map* map = bot->GetMap();
+        if (!map)
+            return false;
+
+        float candidateZ = z;
+        bool hasGround = false;
+
+#ifdef MANGOSBOT_TWO
+        if (map->GetHeightInRange(bot->GetPhaseMask(), x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+#else
+        if (map->GetHeightInRange(x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+#endif
+        {
+            resolvedZ = candidateZ;
+            hasGround = true;
+        }
+
+        if (!hasGround)
+        {
+#ifdef MANGOSBOT_TWO
+            candidateZ = map->GetHeight(bot->GetPhaseMask(), x, y, z);
+#else
+            candidateZ = map->GetHeight(x, y, z);
+#endif
+            if (candidateZ > INVALID_HEIGHT)
+            {
+                resolvedZ = candidateZ;
+                hasGround = true;
+            }
+        }
+
+        if (!hasGround)
+        {
+            float hitX = x;
+            float hitY = y;
+            float hitFromZ = z + std::max(2.0f, bot->GetCollisionHeight());
+            float hitZ = z - LANDING_PROBE_DEPTH;
+
+#ifdef MANGOSBOT_TWO
+            if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, bot->GetPhaseMask(), -0.5f))
+#else
+            if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, -0.5f))
+#endif
+            {
+                resolvedZ = hitZ;
+                hasGround = true;
+            }
+        }
+
+        if (!hasGround || resolvedZ <= INVALID_HEIGHT)
+            return false;
+
+        float adjustedZ = resolvedZ;
+        bot->UpdateAllowedPositionZ(x, y, adjustedZ, map);
+        if (adjustedZ <= INVALID_HEIGHT)
+            return false;
+
+        resolvedZ = adjustedZ;
+        return true;
+    }
+}
 
 uint32 PlayerbotChatHandler::extractQuestId(std::string str)
 {
@@ -363,49 +460,60 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     uint32 curTime = sWorld.GetCurrentMSTime();
     if (jumpTime && (jumpTime < curTime || (jumpTime + 10000 < curTime)))
     {
-        // might be not needed
         if (GetJumpDestination())
-        {
-            bot->Relocate(jumpDestination.getX(), jumpDestination.getY(), jumpDestination.getZ());
-        }
+            bot->m_movementInfo.ChangePosition(jumpDestination.getX(), jumpDestination.getY(), jumpDestination.getZ(), bot->m_movementInfo.pos.o);
 
         // normal landing
         if (!fallAfterJump)
         {
-            bot->m_movementInfo.AddMovementFlag(MOVEFLAG_FALLINGFAR);
+            float landingX = bot->m_movementInfo.pos.x;
+            float landingY = bot->m_movementInfo.pos.y;
+            float landingZ = bot->m_movementInfo.pos.z;
+            if (!ResolveLandingZ(bot, landingX, landingY, landingZ, landingZ))
+            {
+                SetAirborneFlag(bot, MOVEFLAG_FALLING);
+                SetJumpTime(curTime + SOFT_RECOVER_RETRY_MS);
+                sLog.outDetail("%s: Jump: soft recover, unresolved landing point", bot->GetName());
+            }
+            else
+            {
+                bot->m_movementInfo.ChangePosition(landingX, landingY, landingZ, bot->m_movementInfo.pos.o);
 
-            WorldPacket stop(MSG_MOVE_STOP);
+                MovementInfo stopInfo = bot->m_movementInfo;
+                stopInfo.AddMovementFlag(MOVEFLAG_FALLINGFAR);
+
+                WorldPacket stop(MSG_MOVE_STOP);
 #ifdef MANGOSBOT_TWO
-            stop << bot->GetObjectGuid().WriteAsPacked();
+                stop << bot->GetObjectGuid().WriteAsPacked();
 #endif
-            stop << bot->m_movementInfo;
-            QueuePacket(stop);
+                stop << stopInfo;
+                QueuePacket(stop);
 
-            bot->m_movementInfo.SetMovementFlags(MOVEFLAG_NONE);
-            bot->m_movementInfo.jump = MovementInfo::JumpInfo();
+                ClearAirborneFlags(bot);
+                bot->m_movementInfo.jump = MovementInfo::JumpInfo();
 
-            WorldPacket land(MSG_MOVE_FALL_LAND);
+                WorldPacket land(MSG_MOVE_FALL_LAND);
 #ifdef MANGOSBOT_TWO
-            land << bot->GetObjectGuid().WriteAsPacked();
+                land << bot->GetObjectGuid().WriteAsPacked();
 #endif
-            land << bot->m_movementInfo;
-            QueuePacket(land);
-            sLog.outDetail("%s: Jump: Landed, landTime: %u", bot->GetName(), curTime);
+                land << bot->m_movementInfo;
+                QueuePacket(land);
+                sLog.outDetail("%s: Jump: Landed, landTime: %u", bot->GetName(), curTime);
 
-            jumpTime = 0;
-            fallAfterJump = false;
-            ResetJumpDestination();
+                jumpTime = 0;
+                fallAfterJump = false;
+                ResetJumpDestination();
 
-            bot->InterruptMoving();
+                bot->InterruptMoving();
+            }
         }
         // falling after hitting something
         else
         {
-            //bot->SetFallInformation(0, bot->m_movementInfo.pos.z);
 #ifdef MANGOSBOT_ZERO
-            bot->m_movementInfo.AddMovementFlag(MOVEFLAG_JUMPING);
+            SetAirborneFlag(bot, MOVEFLAG_JUMPING);
 #else
-            bot->m_movementInfo.AddMovementFlag(MOVEFLAG_FALLING);
+            SetAirborneFlag(bot, MOVEFLAG_FALLING);
 #endif
             // use motion master (disabled for now, makes bot move to ceiling it just hit)
             static bool useMoveFall = false;
@@ -420,44 +528,68 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             else
             {
                 float landingHeight = bot->m_movementInfo.pos.z;
-                bot->UpdateAllowedPositionZ(bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight);
-
-                // calculate fall time
-                float gravity = 19.2911f;
-                float terminalVelocity = 60.148f;
-                float time;
-
-                const float terminal_length = float(terminalVelocity* terminalVelocity) / (2.f* gravity);
-                const float terminalFallTime = float(terminalVelocity / gravity);
-
-                float path_length = fabs(bot->m_movementInfo.pos.z - landingHeight);
-                if (path_length >= terminal_length)
-                    time = (path_length - terminal_length) / terminalVelocity + terminalFallTime;
+                if (!ResolveLandingZ(bot, bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight, landingHeight))
+                {
+                    SetJumpTime(curTime + SOFT_RECOVER_RETRY_MS);
+                    sLog.outDetail("%s: Jump: soft recover, unresolved falling destination", bot->GetName());
+                }
                 else
-                    time = sqrtf(2.f * path_length / gravity);
+                {
+                    // calculate fall time
+                    float gravity = 19.2911f;
+                    float terminalVelocity = 60.148f;
+                    float time;
 
-                SetJumpTime(curTime + uint32(time * static_cast<uint32>(IN_MILLISECONDS)) + 1000);
-                fallAfterJump = false;
-                jumpDestination = WorldPosition(bot->GetMapId(), bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight);
-                sLog.outDetail("%s: Jump: Falling simulated, height: %f, timeToLand %u", bot->GetName(), landingHeight, jumpTime);
+                    const float terminal_length = float(terminalVelocity* terminalVelocity) / (2.f* gravity);
+                    const float terminalFallTime = float(terminalVelocity / gravity);
+
+                    float path_length = fabs(bot->m_movementInfo.pos.z - landingHeight);
+                    if (path_length < LANDING_HEIGHT_EPS)
+                    {
+                        SetJumpTime(curTime + SOFT_RECOVER_RETRY_MS);
+                        jumpDestination = WorldPosition(bot->GetMapId(), bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight);
+                        fallAfterJump = false;
+                    }
+                    else
+                    {
+                        if (path_length >= terminal_length)
+                            time = (path_length - terminal_length) / terminalVelocity + terminalFallTime;
+                        else
+                            time = sqrtf(2.f * path_length / gravity);
+
+                        SetJumpTime(curTime + uint32(time * static_cast<uint32>(IN_MILLISECONDS)) + 1000);
+                        fallAfterJump = false;
+                        jumpDestination = WorldPosition(bot->GetMapId(), bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight);
+                        sLog.outDetail("%s: Jump: Falling simulated, height: %f, timeToLand %u", bot->GetName(), landingHeight, jumpTime);
+                    }
+                }
             }
         }
     }
 
     // force fall if not flying
+    float groundZ = bot->m_movementInfo.pos.z;
+    bool hasResolvedGround = ResolveLandingZ(bot, bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, groundZ, groundZ);
     if (!bot->IsFalling())
     {
-        if (!bot->IsFlying() && !bot->IsTaxiFlying() && !bot->IsFreeFlying() && WorldPosition(bot).currentHeight() > 10.0f)
+        if (!bot->IsFlying() && !bot->IsTaxiFlying() && !bot->IsFreeFlying() && hasResolvedGround)
         {
-            float landingHeight = bot->m_movementInfo.pos.z; 
-            bot->UpdateAllowedPositionZ(bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, landingHeight);
-            bot->m_movementInfo.SetMovementFlags(MOVEFLAG_FALLING); 
-            bot->GetMotionMaster()->MoveFall();            
+            if ((bot->m_movementInfo.pos.z - groundZ) > FORCE_FALL_MIN_HEIGHT)
+            {
+                SetAirborneFlag(bot, MOVEFLAG_FALLING);
+                if (!bot->GetMotionMaster()->MoveFall())
+                {
+                    fallAfterJump = true;
+                    jumpDestination = WorldPosition(bot->GetMapId(), bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, groundZ);
+                    SetJumpTime(curTime + SOFT_RECOVER_RETRY_MS);
+                }
+            }
         }
     }
-    else if (WorldPosition(bot).currentHeight() < 0.5f)
+    else if (hasResolvedGround && fabs(bot->m_movementInfo.pos.z - groundZ) < LANDING_HEIGHT_EPS)
     {
         bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_FALLING);
+        bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_FALLINGFAR);
     }
 
     // cheat options
@@ -1814,14 +1946,14 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         bot->SetFallInformation(0, maxHeight);
 
         // fix height
+        fallAfterJump = false;
         if (goodLanding)
         {
             float ox = dest_calculated.getX();
             float oy = dest_calculated.getY();
             float oz = dest_calculated.getZ();
-            bot->UpdateAllowedPositionZ(ox, oy, oz);
-            // set to fall after land if not at the ground
-            if (fabs(oz - dest_calculated.getZ()) > 5.0f)
+
+            if (!ResolveLandingZ(bot, ox, oy, oz, oz))
             {
                 SetFallAfterJump();
             }
@@ -1837,10 +1969,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
 
         // add moveflags
 #ifdef MANGOSBOT_ZERO
-        bot->m_movementInfo.SetMovementFlags(MOVEFLAG_JUMPING);
+        SetAirborneFlag(bot, MOVEFLAG_JUMPING);
         bot->m_movementInfo.AddMovementFlag(MOVEFLAG_BACKWARD);
 #else
-        bot->m_movementInfo.SetMovementFlags(MOVEFLAG_FALLING);
+        SetAirborneFlag(bot, MOVEFLAG_FALLING);
         bot->m_movementInfo.AddMovementFlag(MOVEFLAG_BACKWARD);
 #endif
 
@@ -1864,16 +1996,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         jumpTime = curTime + sWorld.GetAverageDiff() + (uint32)(timeToLand * static_cast<uint32>(IN_MILLISECONDS)) + 1000;
         SetJumpDestination(dest_calculated);
 
-        // set highest jump point to relocate
-        WorldPosition highestPoint = dest_calculated;
-        for (auto& point : path)
-        {
-            if (point.getZ() > highestPoint.getZ())
-                highestPoint = point;
-        }
-
-        bot->Relocate(highestPoint.getX(), highestPoint.getY(), highestPoint.getZ());
-        //bot->m_movementInfo.ChangePosition(dest_calculated.getX(), dest_calculated.getY(), dest_calculated.getZ(), bot->GetOrientation());
         sLog.outDetail("%s: KNOCKBACK x: %f, y: %f, z: %f, time: %f, dist: %f, maxHeight: %f inPlace: %u, landTime: %u", bot->GetName(), dest_calculated.getX(), dest_calculated.getY(), dest_calculated.getZ(), timeToLand, distToLand, maxHeight, jumpInPlace, jumpTime);
         return;
     }

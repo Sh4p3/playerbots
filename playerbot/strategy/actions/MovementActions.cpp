@@ -20,6 +20,51 @@
 
 using namespace ai;
 
+namespace
+{
+    constexpr float JUMP_LANDING_SEARCH_DIST = 20.0f;
+    constexpr float JUMP_LANDING_EPS = 0.01f;
+
+    bool ResolveJumpLandingZ(Unit* jumper, float x, float y, float fallbackZ, float& resolvedZ)
+    {
+        if (!jumper || !jumper->IsInWorld() || !jumper->GetMap())
+            return false;
+
+        bool hasGround = false;
+        float candidateZ = resolvedZ;
+
+#ifdef MANGOSBOT_TWO
+        if (jumper->GetMap()->GetHeightInRange(jumper->GetPhaseMask(), x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+#else
+        if (jumper->GetMap()->GetHeightInRange(x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+#endif
+        {
+            hasGround = true;
+        }
+
+        if (!hasGround)
+        {
+#ifdef MANGOSBOT_TWO
+            candidateZ = jumper->GetMap()->GetHeight(jumper->GetPhaseMask(), x, y, fallbackZ + 0.5f);
+#else
+            candidateZ = jumper->GetMap()->GetHeight(x, y, fallbackZ + 0.5f);
+#endif
+            if (candidateZ > INVALID_HEIGHT)
+                hasGround = true;
+        }
+
+        if (!hasGround)
+            return false;
+
+        jumper->UpdateAllowedPositionZ(x, y, candidateZ);
+        if (candidateZ <= INVALID_HEIGHT)
+            return false;
+
+        resolvedZ = candidateZ;
+        return true;
+    }
+}
+
 void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float o, uint32 entry, bool important)
 {
     float dist = wpOwner->GetDistance(x, y, z);
@@ -3039,10 +3084,17 @@ WorldPosition JumpAction::CalculateJumpParameters(const WorldPosition& src, Unit
             if (goodLanding)
             {
                 float groundZ = destination.getZ() + 0.5f;
-                if (!destination.isInWater())
-                    jumper->UpdateAllowedPositionZ(destination.getX(), destination.getY(), groundZ);
+                float oldGroundZ = groundZ;
+                if (!destination.isInWater() && !ResolveJumpLandingZ(jumper, destination.getX(), destination.getY(), destination.getZ(), groundZ))
+                {
+                    goodLanding = false;
+                }
                 // set to fall after land if not at the ground
-                if (groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
+                if (goodLanding && fabs(groundZ - oldGroundZ) < JUMP_LANDING_EPS && fabs(oz - destination.getZ()) > 5.0f)
+                {
+                    goodLanding = false;
+                }
+                else if (goodLanding && groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
                 {
                     goodLanding = false;
                 }
@@ -3298,6 +3350,8 @@ bool JumpAction::JumpTowards(const ai::WorldPosition &src, const ai::WorldPositi
 
 bool JumpAction::DoJump(const WorldPosition &dest, const WorldPosition& highestPoint, float angle, float vSpeed, float hSpeed, float timeToLand, float distanceToLand, float maxHeight, bool goodLanding, bool jumpInPlace, bool jumpBackward, bool showOnly)
 {
+    (void)highestPoint;
+
     if (!dest)
         return false;
 
@@ -3309,8 +3363,19 @@ bool JumpAction::DoJump(const WorldPosition &dest, const WorldPosition& highestP
         float ox = dest.getX();
         float oy = dest.getY();
         float oz = dest.getZ() + 0.5f;
-        bot->UpdateAllowedPositionZ(ox, oy, oz);
-        landing = WorldPosition(dest.getMapId(), ox, oy, oz);
+        float oldZ = oz;
+        if (!ResolveJumpLandingZ(bot, ox, oy, dest.getZ(), oz))
+        {
+            goodLanding = false;
+        }
+        else if (fabs(oz - oldZ) < JUMP_LANDING_EPS && fabs(bot->GetPositionZ() - dest.getZ()) > 5.0f)
+        {
+            goodLanding = false;
+        }
+        else
+        {
+            landing = WorldPosition(dest.getMapId(), ox, oy, oz);
+        }
     }
 
     if (!goodLanding)
@@ -3394,10 +3459,6 @@ bool JumpAction::DoJump(const WorldPosition &dest, const WorldPosition& highestP
         move << bot->m_movementInfo;
         ai->QueuePacket(move);
     }
-
-    // change position to highest position
-    // todo add in between points to avoid mobs instant aggro before landing
-    bot->Relocate(highestPoint.getX(), highestPoint.getY(), highestPoint.getZ());
 
     if (ai->HasStrategy("debug", BotState::BOT_STATE_NON_COMBAT))
     {
