@@ -1464,7 +1464,7 @@ void PriestBuffStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "inner fire",
-        NextAction::array(0, new NextAction("inner fire", ACTION_MOVE), NULL)));
+        NextAction::array(0, new NextAction("inner fire", ACTION_HIGH + 1), NULL)));
 
     triggers.push_back(new TriggerNode(
         "low mana",
