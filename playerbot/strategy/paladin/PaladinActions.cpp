@@ -238,7 +238,7 @@ std::vector<std::string> GetBlessingsForTarget(Unit* target, PlayerbotAI* ai)
 #endif 
 }
 
-bool HasPossibleBlessingForTarget(Unit* target, PlayerbotAI* ai, bool greater)
+bool ai::HasPossibleBlessingForTarget(Unit* target, PlayerbotAI* ai, bool greater)
 {
     if (!target)
         return false;
