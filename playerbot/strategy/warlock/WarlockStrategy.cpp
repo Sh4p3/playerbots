@@ -1016,7 +1016,7 @@ void WarlockPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("drain life", ACTION_LIGHT_HEAL), NULL)));
 
     triggers.push_back(new TriggerNode(
-        "very often",
+        "target critical health",
         NextAction::array(0, new NextAction("shadowburn", ACTION_HIGH), NULL)));
 }
 
