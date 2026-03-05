@@ -4876,8 +4876,15 @@ bool ArenaTactics::Execute(Event& event)
     uint32 mapid = bg->GetMapId();
     float x, y, z, O;
     Team team = bot->GetBGTeam();
-    if (team == 0)
+    if (team != ALLIANCE && team != HORDE)
         team = bot->GetTeam();
+
+    if (team != ALLIANCE && team != HORDE)
+        return false;
+
+    // Avoid corrective teleports while map-transfer state is still in flux.
+    if (bot->IsBeingTeleported() || !bot->IsInWorld() || bot->GetMapId() != mapid)
+        return false;
 
     bg->GetTeamStartLoc(team, x, y, z, O);
 
@@ -4902,7 +4909,8 @@ bool ArenaTactics::Execute(Event& event)
 
         if (!bot->IsWithinDist3d(arenaCenterX, arenaCenterY, arenaCenterZ, 100.0f) || bot->GetPositionZ() < minStartZ - 1.0f)
         {
-            bot->TeleportTo(mapid, arenaCenterX, arenaCenterY, arenaCenterZ, O);
+            // Keep recovery conservative: team start locations are validated battleground spawn points.
+            bot->TeleportTo(mapid, x, y, z, O);
             return false;
         }
     }
@@ -4936,7 +4944,7 @@ bool ArenaTactics::moveToCenter(BattleGround* bg)
     uint32 preference = context->GetValue<uint32>("bg role")->Get();
 
     Team team = bot->GetBGTeam();
-    if (team == 0)
+    if (team != ALLIANCE && team != HORDE)
         team = bot->GetTeam();
 
     Team enemyTeam = team == ALLIANCE ? HORDE : ALLIANCE;
