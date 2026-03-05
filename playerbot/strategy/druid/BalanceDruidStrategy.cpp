@@ -1190,7 +1190,7 @@ void BalanceDruidCcStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "entangling roots kite",
-        NextAction::array(0, new NextAction("entangling roots", ACTION_HIGH), NULL)));
+        NextAction::array(0, new NextAction("entangling roots", ACTION_INTERRUPT), NULL)));
 
     triggers.push_back(new TriggerNode(
         "enemy five yards",
