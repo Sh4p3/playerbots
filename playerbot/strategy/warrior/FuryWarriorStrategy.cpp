@@ -771,7 +771,7 @@ void FuryWarriorStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "target critical health",
-        NextAction::array(0, new NextAction("execute", ACTION_NORMAL + 1), NULL)));
+        NextAction::array(0, new NextAction("execute", ACTION_NORMAL + 5), NULL)));
 
     triggers.push_back(new TriggerNode(
         "intercept on snare target",

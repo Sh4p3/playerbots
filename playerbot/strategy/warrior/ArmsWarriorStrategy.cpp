@@ -775,7 +775,7 @@ void ArmsWarriorStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "target critical health",
-        NextAction::array(0, new NextAction("execute", ACTION_NORMAL), NULL)));
+        NextAction::array(0, new NextAction("execute", ACTION_NORMAL + 5), NULL)));
 
 }
 
