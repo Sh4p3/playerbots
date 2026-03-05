@@ -829,7 +829,7 @@ void ArmsWarriorPvpStrategy::InitCombatTriggers(std::list<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode(
         "medium rage available",
-        NextAction::array(0, new NextAction("bladestorm", ACTION_NORMAL), NULL)));
+        NextAction::array(0, new NextAction("bladestorm", ACTION_HIGH), NULL)));
 }
 
 void ArmsWarriorPvpStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
