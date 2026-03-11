@@ -1468,7 +1468,10 @@ public:
             (actionName == "attack enemy flag carrier") ||
             (actionName == "attack enemy flag carrier") ||
             (actionName == "arena tactics") ||
-            (actionName == "move to center"))
+            (actionName == "move to center") ||
+            (actionName == "travel") ||
+            (actionName == "move to suppression device") ||
+            (actionName == "disarm suppression device"))
         {
             return 1.0f;
         }
