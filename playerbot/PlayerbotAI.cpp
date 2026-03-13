@@ -6129,6 +6129,9 @@ std::pair<uint32, uint32> PlayerbotAI::GetPriorityBracket(ActivePiorityType type
     case ActivePiorityType::IN_LFG:
         return { 0,30 };
     case ActivePiorityType::NEARBY_PLAYER:
+        if (sPlayerbotAIConfig.forceActiveWhenNearPlayer)
+            return { 0,0 };
+
         return { 0,40 };
     case ActivePiorityType::PLAYER_FRIEND:
     case ActivePiorityType::PLAYER_GUILD:
@@ -6191,10 +6194,6 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         case ActivePiorityType::VISIBLE_FOR_PLAYER:
         case ActivePiorityType::IS_ALWAYS_ACTIVE:
             return true;
-        case ActivePiorityType::VISIBLE_FOR_PLAYER:
-            if (sPlayerbotAIConfig.forceActiveWhenNearPlayer)
-                return true;
-            break;
         case ActivePiorityType::IN_COMBAT:
         case ActivePiorityType::NEARBY_PLAYER:
         case ActivePiorityType::IN_BG_QUEUE:
