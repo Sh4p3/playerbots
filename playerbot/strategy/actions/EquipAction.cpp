@@ -56,6 +56,11 @@ bool EquipAction::Execute(Event& event)
                 continue;
             }
 
+            if (targetSlot != NULL_SLOT && (dest & 0xFF) != targetSlot)
+            {
+                continue;
+            }
+
             if (std::find(dests.begin(), dests.end(), dest) != dests.end())
             {
                 continue;
@@ -159,10 +164,6 @@ uint8 EquipAction::GetSmallestBagSlot()
 
 void EquipAction::EquipItemToSlot(Player* requester, Item* item, uint8 targetSlot)
 {
-    uint8 bagIndex = item->GetBagSlot();
-    uint8 slot = item->GetSlot();
-    uint32 itemId = item->GetProto()->ItemId;
-
     uint16 dest;
     InventoryResult msg = bot->CanEquipItem(targetSlot, dest, item, true);
     if (msg != EQUIP_ERR_OK)
@@ -178,10 +179,9 @@ void EquipAction::EquipItemToSlot(Player* requester, Item* item, uint8 targetSlo
         return;
     }
 
-    uint16 src = ((bagIndex << 8) | slot);
-    uint16 dstPos = ((INVENTORY_SLOT_BAG_0 << 8) | targetSlot);
-
-    bot->SwapItem(src, dstPos);
+    WorldPacket packet(CMSG_AUTOEQUIP_ITEM_SLOT, 9);
+    packet << item->GetObjectGuid() << targetSlot;
+    bot->GetSession()->HandleAutoEquipItemSlotOpcode(packet);
 
     sPlayerbotAIConfig.logEvent(ai, "EquipAction", item->GetProto()->Name1, std::to_string(item->GetProto()->ItemId));
 
