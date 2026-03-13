@@ -720,18 +720,18 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool minimal)
     if (time(nullptr) > (OfflineGroupBotsTimer + 5) && players.size())
         AddOfflineGroupBots();
 
+    uint32 updateBots = sPlayerbotAIConfig.randomBotsPerInterval == 0 ? UINT32_MAX : sPlayerbotAIConfig.randomBotsPerInterval;
+
     //Update bots
     for (auto bot : availableBots)
     {
         if (GetPlayerBot(bot))
         {
-            ProcessBot(bot);
-        }
-        else if (GetEventValue(bot, "login"))
-        {
-            ProcessBot(bot);
+            if (ProcessBot(bot))
+                updateBots--;
 
-            onlineBotCount++;
+            if (!updateBots)
+                break;
         }
     }
 
@@ -745,16 +745,22 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool minimal)
             if (GetPlayerBot(bot))
                 continue;   
 
-            if (GetEventValue(bot, "login"))
+            if (!eventCache[bot].empty() && GetEventValue(bot, "login"))
+            {
+                onlineBotCount++;
                 continue;
+            }
 
-            ProcessBot(bot);
+            if (GetEventValue(bot, "login"))
+                onlineBotCount++;
 
-            ++onlineBotCount;
             if (onlineBotCount >= maxAllowedBotCount)
                 break;
 
-            --maxLogins;
+            if (ProcessBot(bot)) {
+                --maxLogins;
+            }
+
             if (maxLogins == 0)
                 break;
         }

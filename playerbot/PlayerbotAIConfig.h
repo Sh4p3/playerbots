@@ -170,6 +170,7 @@ public:
     uint32 minRandomBotReviveTime, maxRandomBotReviveTime;
     uint32 minRandomBotPvpTime, maxRandomBotPvpTime;
     uint32 randomBotsMaxLoginsPerInterval;
+    uint32 randomBotsPerInterval;
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
     //Auction house settings
     bool shouldQueryAHListingsOutsideOfAH;
@@ -234,6 +235,8 @@ public:
     float playerbotsXPrate;
     bool disableBotOptimizations;
     bool disableActivityPriorities;
+    bool forceActiveWhenNearPlayer;
+    bool limitCombatActivity;
     uint32 botActiveAlone;
     uint32 diffWithPlayer;
     uint32 diffEmpty;
@@ -247,6 +250,9 @@ public:
     bool randomBotFormGuild;
     bool randomBotRandomPassword;
     bool inviteChat;
+    bool enableOffSpecStrategies;
+    bool useWanderAsDefaultFollowStrategy;
+    std::string defaultFormation;
 
     uint32 guildMaxBotLimit;
 

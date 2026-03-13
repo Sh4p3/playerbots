@@ -70,6 +70,12 @@ AiPlayerbot.RandomBotAccountCount = 200
 # (0-1), default 0
 # AiPlayerbot.DisableActivityPriorities = 0
 
+# Force bots to become active when a player is nearby
+#AiPlayerbot.ForceActiveWhenNearPlayer = 0
+
+# Limit combat activity for slight performance boost.
+#AiPlayerbot.LimitCombatActivity = 0
+
 # Percentage of fully active bots. Default is 10, higher numbers may affect performance
 # AiPlayerbot.botActiveAlone = 10
 
@@ -852,6 +858,9 @@ AiPlayerbot.FleeingEnabled = 1
 #AiPlayerbot.ReactStrategies = 
 #AiPlayerbot.DeadStrategies = 
 
+# Toggle offheal and offdps strategies for hybrid classes.
+#AiPlayerbot.EnableOffSpecStrategies = 1
+
 # Quest items to leave (do not destroy)
 #AiPlayerbot.RandomBotQuestItems = 6948,5175,5176,5177,5178,16309,12382,13704,11000
 
@@ -936,6 +945,12 @@ AiPlayerbot.JumpChase = 1
 
 # Allow knockbacks work on bots
 AiPlayerbot.UseKnockback = 1
+
+# Set 'wander' as a default following strategy instead of 'follow' (Bots have freedom to move around while near master)
+#AiPlayerbot.UseWanderAsDefaultFollowStrategy = 1
+
+# Default bot formation
+#AiPlayerbot.DefaultFormation = near
 
 # Debug switches
 #AiPlayerbot.SpellDump = 0

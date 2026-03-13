@@ -305,14 +305,20 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             if (tab == 0)
             {
                 combatEngine->addStrategy("discipline");
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
             else if (tab == 1)
             {
                 combatEngine->addStrategy("holy");
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offdps");
             }
             else
             {
                 combatEngine->addStrategy("shadow");
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
 
             combatEngine->addStrategies("dps assist", "flee", "cure", "ranged", "cc", "buff", "aoe", "boost", NULL);
@@ -342,7 +348,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
         {
             if (tab == 2)
             {
-                combatEngine->addStrategies("protection", "tank assist", "pull", "pull back", "mark rti", NULL);
+                combatEngine->addStrategies("protection", "tank assist", "pull", "pull back", "close", NULL);
             }
             else if (player->GetLevel() < 30 || tab == 0)
             {
@@ -362,14 +368,20 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             if (tab == 0)
             {
                 combatEngine->addStrategies("elemental", "aoe", "cc", "flee", "ranged", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
             else if (tab == 2)
             {
                 combatEngine->addStrategies("restoration", "flee", "ranged", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offdps");
             }
             else
             {
                 combatEngine->addStrategies("enhancement", "aoe", "cc", "close", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
 
             combatEngine->addStrategies("dps assist", "cure", "totems", "buff", "boost", NULL);
@@ -385,10 +397,14 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             else if(tab == 0)
             {
                 combatEngine->addStrategies("holy", "dps assist", "flee", "ranged", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offdps");
             }
             else
             {
                 combatEngine->addStrategies("retribution", "dps assist", "close", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
 
             combatEngine->addStrategies("cure", "aoe", "cc", "buff", "boost", "aura", "blessing", NULL);
@@ -399,15 +415,28 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
         {
             if (tab == 1)
             {
-                combatEngine->addStrategies("tank feral", "tank assist", "pull", "pull back", "close", "behind", NULL);
+                if (player->HasSpell(16961) || player->HasSpell(16958))
+                {
+                    combatEngine->addStrategies("tank feral", "tank assist", "pull", "pull back", "close", NULL);
+                }
+                else
+                {
+                    combatEngine->addStrategies("dps feral", "dps assist", "close", "behind", NULL);
+                    if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                        combatEngine->addStrategy("offheal");
+                }
             }
             else if (tab == 2)
             {
                 combatEngine->addStrategies("restoration", "dps assist", "flee", "ranged", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offdps");
             }
             else
             {
                 combatEngine->addStrategies("balance", "dps assist", "flee", "ranged", NULL);
+                if (sPlayerbotAIConfig.enableOffSpecStrategies)
+                    combatEngine->addStrategy("offheal");
             }
 
             combatEngine->addStrategies("cure", "aoe", "cc", "buff", "boost", NULL);
@@ -510,8 +539,19 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
             if (player->getClass() == CLASS_DRUID && tab == 1 && urand(0, 100) > 50 && player->GetLevel() >= 20)
             {
-                combatEngine->addStrategies("dps feral", "close" "stealth", "behind", NULL);
-                combatEngine->removeStrategy("ranged");
+                if (player->HasSpell(16961) || player->HasSpell(16958))
+                {
+                    combatEngine->addStrategies("dps feral", "close", "stealth", "behind", NULL);
+                    combatEngine->removeStrategy("tank feral");
+                    combatEngine->removeStrategy("tank assist");
+                }
+                else
+                {
+                    combatEngine->addStrategies("tank feral", "tank assist", "close", NULL);
+                    combatEngine->removeStrategy("dps feral");
+                    combatEngine->removeStrategy("dps assist");
+                    combatEngine->removeStrategy("behind");
+                }
             }
 
             if (player->getClass() == CLASS_PRIEST && tab < 2)
@@ -621,7 +661,14 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
         if (player->getClass() == CLASS_DRUID && tab == 1)
         {
-            combatEngine->addStrategies("behind", "dps feral", "stealth", NULL);
+            if (player->HasSpell(16961) || player->HasSpell(16958))
+            {
+                combatEngine->addStrategies("tank feral", "close", NULL);
+            }
+            else
+            {
+                combatEngine->addStrategies("behind", "dps feral", "stealth", NULL);
+            }
         }
         
         if (player->getClass() == CLASS_ROGUE)
@@ -786,7 +833,14 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         {
             if (tab == 1)
             {
-                nonCombatEngine->addStrategies("tank feral", "tank assist", NULL);
+                if (player->HasSpell(16961) || player->HasSpell(16958))
+                {
+                    nonCombatEngine->addStrategies("tank feral", "tank assist", NULL);
+                }
+                else
+                {
+                    nonCombatEngine->addStrategies("dps feral", "dps assist", NULL);
+                }
             }
             else if (tab == 2)
             {
@@ -858,11 +912,13 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
 
         if (master && !master->GetPlayerbotAI())
         {
-            nonCombatEngine->addStrategies("racials", "nc", "food", "follow", "default", "quest", "loot", "gather", "duel", "emote", "buff", "mount", NULL);
+            const char* wanderFollow = sPlayerbotAIConfig.useWanderAsDefaultFollowStrategy ? "wander" : "follow";
+            nonCombatEngine->addStrategies("racials", "nc", "food", wanderFollow, "default", "quest", "loot", "gather", "duel", "emote", "buff", "mount", NULL);
         }
         else
         {
-            nonCombatEngine->addStrategies("racials", "nc", "food", "wander", "default", "quest", "loot", "gather", "duel", "emote", "buff", "mount", NULL);
+            const char* wanderFollow = sPlayerbotAIConfig.useWanderAsDefaultFollowStrategy ? "wander" : "follow";
+            nonCombatEngine->addStrategies("racials", "nc", "food", wanderFollow, "default", "quest", "loot", "gather", "duel", "emote", "buff", "mount", NULL);
         }
     }
 
@@ -1192,7 +1248,14 @@ void AiFactory::AddDefaultDeadStrategies(Player* player, PlayerbotAI* const faca
         {
             if (tab == 1)
             {
-                deadEngine->addStrategy("tank feral");
+                if (player->HasSpell(16961) || player->HasSpell(16958))
+                {
+                    deadEngine->addStrategy("tank feral");
+                }
+                else
+                {
+                    deadEngine->addStrategy("dps feral");
+                }
             }
             else if (tab == 2)
             {
@@ -1379,7 +1442,14 @@ void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const 
         {
             if (tab == 1)
             {
-                reactionEngine->addStrategy("tank feral");
+                if (player->HasSpell(16961) || player->HasSpell(16958))
+                {
+                    reactionEngine->addStrategy("tank feral");
+                }
+                else
+                {
+                    reactionEngine->addStrategy("dps feral");
+                }
             }
             else if (tab == 2)
             {
