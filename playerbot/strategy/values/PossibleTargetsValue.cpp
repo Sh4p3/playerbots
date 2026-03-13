@@ -115,9 +115,17 @@ bool PossibleTargetsValue::IsValid(Unit* target, Player* player, bool ignoreLos)
             return false;
         }
 
-        bool isInCombatWithTarget = target->GetVictim() == player || 
-                                     target->getThreatManager().getThreat(player) > 0.0f ||
-                                     player->IsInCombat();
+        bool isInCombatWithTarget = target->GetVictim() == player ||
+                                     target->getThreatManager().getThreat(player) > 0.0f;
+
+        if (!isInCombatWithTarget)
+        {
+            if (Pet* pet = player->GetPet())
+            {
+                isInCombatWithTarget = target->GetVictim() == pet ||
+                                       target->getThreatManager().getThreat(pet) > 0.0f;
+            }
+        }
 
         if (!ignoreLos && !isInCombatWithTarget)
         {
