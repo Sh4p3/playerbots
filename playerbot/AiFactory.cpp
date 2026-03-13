@@ -537,15 +537,18 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 combatEngine->removeStrategy("close");
             }
 
-            if (player->getClass() == CLASS_DRUID && tab == 1 && urand(0, 100) > 50 && player->GetLevel() >= 20)
+            if (player->getClass() == CLASS_DRUID && tab == 1 && player->GetLevel() >= 20)
             {
-                if (player->HasSpell(16961) || player->HasSpell(16958))
+                bool hasBearTalents = player->HasSpell(16961) || player->HasSpell(16958);
+                bool useAlternateSoloFeralMode = (player->GetObjectGuid().GetCounter() % 2) != 0;
+
+                if (useAlternateSoloFeralMode && hasBearTalents)
                 {
                     combatEngine->addStrategies("dps feral", "close", "stealth", "behind", NULL);
                     combatEngine->removeStrategy("tank feral");
                     combatEngine->removeStrategy("tank assist");
                 }
-                else
+                else if (useAlternateSoloFeralMode && !hasBearTalents)
                 {
                     combatEngine->addStrategies("tank feral", "tank assist", "close", NULL);
                     combatEngine->removeStrategy("dps feral");
