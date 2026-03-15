@@ -279,6 +279,7 @@ namespace ai
     {
     public:
         WaterShieldTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "water shield") {}
+        bool IsActive() override;
     };
 
     class LightningShieldTrigger : public BuffTrigger

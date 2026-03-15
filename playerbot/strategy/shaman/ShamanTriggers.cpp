@@ -57,6 +57,15 @@ bool MaelstromWeaponHealTrigger::IsActive()
     return AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.lowHealth && ai->HasAura("maelstrom weapon", bot, true);
 }
 
+bool WaterShieldTrigger::IsActive()
+{
+    if (!BuffTrigger::IsActive())
+        return false;
+
+    Unit* target = context->GetValue<Unit*>("preferred single buff target", "earth shield")->Get();
+    return target != bot;
+}
+
 bool PreferredTargetEarthShieldTrigger::IsActive()
 {
     Unit* target = context->GetValue<Unit*>("preferred single buff target", "earth shield")->Get();
