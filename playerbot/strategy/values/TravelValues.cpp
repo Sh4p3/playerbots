@@ -377,6 +377,35 @@ bool ShouldTravelNamedValue::Calculate()
         time_t now = time(nullptr);
         return (now >= meeting.startTime - 30 * 60) && (now <= meeting.endTime);
     }
+    else if (name == "guild order")
+    {
+        if (!bot->GetGuildId())
+            return false;
+
+        Guild* guild = sGuildMgr.GetGuildById(bot->GetGuildId());
+        if (!guild)
+            return false;
+
+        MemberSlot* member = guild->GetMemberSlot(bot->GetObjectGuid());
+        if (!member)
+            return false;
+
+        std::string note = member->OFFnote;
+        if (note.empty())
+            return false;
+
+        // Check if the officer's note contains a valid guild order.
+        // Format:
+        // Farm: <item>
+        // Kill: <npc>
+        // Explore: <zone>
+        if (note.find("Farm:") != std::string::npos ||
+            note.find("Kill:") != std::string::npos ||
+            note.find("Explore:") != std::string::npos)
+            return true;
+
+        return false;
+    }
     else if (name == "mount")
     {
         if (AI_VALUE(bool, "can buy mount"))
