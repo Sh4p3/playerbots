@@ -3,8 +3,8 @@
 #include "playerbot/LootObjectStack.h"
 #include "ChooseTravelTargetAction.h"
 #include "playerbot/PlayerbotAIConfig.h"
+#include "playerbot/strategy/triggers/GuildMeetingTrigger.h"
 #include "playerbot/strategy/values/TravelValues.h"
-#include "Guilds/GuildMgr.h"
 #include <iomanip>
 
 using namespace ai;
@@ -768,41 +768,14 @@ bool RequestNamedTravelTargetAction::Execute(Event& event)
     }
     else if (travelName == "guild meeting")
     {
-        // Parse guild MOTD for the meeting time.
-        // Meeting: <location> <start time> <end time>
-        std::string meetingLocation;
-        if (bot->GetGuildId())
-        {
-            Guild* guild = sGuildMgr.GetGuildById(bot->GetGuildId());
-            if (guild)
-            {
-                std::string motd = guild->GetMOTD();
-                auto pos = motd.find("Meeting:");
-                if (pos != std::string::npos)
-                {
-                    std::string body = motd.substr(pos + 8);
-                    body.erase(body.begin(), std::find_if(body.begin(), body.end(), [](unsigned char ch) { return !std::isspace(ch); }));
-                    std::vector<std::string> tokens;
-                    { std::istringstream iss(body); std::string t; while (iss >> t) tokens.push_back(t); }
-                    if (tokens.size() >= 3)
-                    {
-                        tokens.pop_back(); // end time
-                        tokens.pop_back(); // start time
-                        std::ostringstream loc;
-                        for (size_t i = 0; i < tokens.size(); ++i) { if (i) loc << " "; loc << tokens[i]; }
-                        meetingLocation = loc.str();
-                    }
-                }
-            }
-        }
-
-        if (meetingLocation.empty())
+        GuildMeetingData meeting;
+        if (!TryGetGuildMeetingData(bot, meeting))
         {
             ai->TellDebug(ai->GetMaster(), "No meeting location found in guild MOTD", "debug travel");
             return false;
         }
 
-        *AI_VALUE(FutureDestinations*, "future travel destinations") = std::async(std::launch::async, [travelInfo = PlayerTravelInfo(bot), center, meetingLocation]()
+        *AI_VALUE(FutureDestinations*, "future travel destinations") = std::async(std::launch::async, [travelInfo = PlayerTravelInfo(bot), center, meetingLocation = meeting.location]()
             {
                 PartitionedTravelList list;
                 for (auto& destination : ChooseTravelTargetAction::FindDestination(travelInfo, meetingLocation, true, false, false, false, false))

@@ -18,6 +18,7 @@
 #include <regex>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 #include "PlayerbotLoginMgr.h"
 
 std::vector<std::string> ConfigAccess::GetValues(const std::string& name) const
@@ -690,7 +691,7 @@ bool PlayerbotAIConfig::Initialize()
         llmBlockedReplyChannels.insert(sourceName[channelName]);
 
     {
-        std::string promptsFile = config.GetStringDefault("AiPlayerbot.LLMDefaultPromptsFile", "llm_character_card");
+        std::string promptsFile = config.GetStringDefault("AiPlayerbot.LLMDefaultPromptsFile", "llm_character_card.txt");
         LoadLLMDefaultPrompts(promptsFile);
     }
 
@@ -1231,6 +1232,7 @@ void PlayerbotAIConfig::LoadLLMDefaultPrompts(const std::string& fileName)
 
     std::string line;
     uint32 loaded = 0;
+    std::unordered_map<uint32, std::vector<std::string>> promptsByGuid;
 
     std::string likePattern = std::string("manual saved string::llmdefaultprompt>%");
     CharacterDatabase.escape_string(likePattern);
@@ -1259,7 +1261,10 @@ void PlayerbotAIConfig::LoadLLMDefaultPrompts(const std::string& fileName)
             continue;
         }
 
-        auto result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s' LIMIT 1", name.c_str());
+        std::string escapedName = name;
+        CharacterDatabase.escape_string(escapedName);
+
+        auto result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s' LIMIT 1", escapedName.c_str());
         if (!result)
         {
             sLog.outError("Character '%s' not found in characters DB while loading '%s'.", name.c_str(), fileName.c_str());
@@ -1268,19 +1273,26 @@ void PlayerbotAIConfig::LoadLLMDefaultPrompts(const std::string& fileName)
 
         Field* fields = result->Fetch();
         uint32 guid = fields[0].GetUInt32();
+        promptsByGuid[guid].push_back(text);
+    }
 
+    for (const auto& [guid, prompts] : promptsByGuid)
+    {
         CharacterDatabase.PExecute(
-            "DELETE FROM `ai_playerbot_db_store` WHERE `guid` = '%u' AND `key` = '%s' AND `value` LIKE '%s'",
+            "DELETE FROM `ai_playerbot_db_store` WHERE `guid` = '%u' AND `preset` = '' AND `key` = '%s' AND `value` LIKE '%s'",
             guid, "value", likePattern.c_str());
 
-        std::string dbValue = std::string("manual saved string::llmdefaultprompt>") + text;
-        CharacterDatabase.escape_string(dbValue);
+        for (const std::string& prompt : prompts)
+        {
+            std::string dbValue = std::string("manual saved string::llmdefaultprompt>") + prompt;
+            CharacterDatabase.escape_string(dbValue);
 
-        CharacterDatabase.PExecute(
-            "INSERT INTO `ai_playerbot_db_store` (`guid`, `preset`, `key`, `value`) VALUES ('%u', '%s', '%s', '%s')",
-            guid, "", "value", dbValue.c_str());
+            CharacterDatabase.PExecute(
+                "INSERT INTO `ai_playerbot_db_store` (`guid`, `preset`, `key`, `value`) VALUES ('%u', '%s', '%s', '%s')",
+                guid, "", "value", dbValue.c_str());
 
-        ++loaded;
+            ++loaded;
+        }
     }
 
     sLog.outString("Loaded %u LLM character personalities from %s", loaded, fileName.c_str());
