@@ -424,6 +424,7 @@ public:
 
 private:
     void LoadTalentSpecs();
+    void LoadLLMDefaultPrompts(const std::string& fileName);
 
     Config config;
 };
