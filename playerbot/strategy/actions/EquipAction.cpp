@@ -228,7 +228,6 @@ void EquipAction::EquipItem(PlayerbotAI* ai, Player* requester, Item* item, bool
         if (oldItem && oldItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && item->GetProto()->InventoryType == INVTYPE_2HWEAPON)
             oldOffhand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
     }
-
     if (item->GetProto()->InventoryType == INVTYPE_AMMO)
     {
         bot->SetAmmo(itemId);
