@@ -53,6 +53,7 @@
 #include "GuildManagementActions.h"
 #include "GuildAcceptAction.h"
 #include "GuildShareItemAction.h"
+#include "GuildShareAhBuyAction.h"
 #include "RpgSubActions.h"
 #include "VehicleActions.h"
 #include "UseTrinketAction.h"
@@ -208,6 +209,7 @@ namespace ai
             creators["buy tabard"] = [](PlayerbotAI* ai) { return new BuyTabardAction(ai); };
             creators["guild manage nearby"] = [](PlayerbotAI* ai) { return new GuildManageNearbyAction(ai); };
             creators["guild share item"] = [](PlayerbotAI* ai) { return new GuildShareItemAction(ai); };
+            creators["guild ah buy"] = [](PlayerbotAI* ai) { return new GuildShareAhBuyAction(ai); };
             creators["use trinket"] = [](PlayerbotAI* ai) { return new UseTrinketAction(ai); };
             creators["use pvp trinket"] = [](PlayerbotAI* ai) { return new UseTrinketAction(ai, true); };
             creators["unstuck"] = [](PlayerbotAI* ai) { return new UnstuckAction(ai); };
