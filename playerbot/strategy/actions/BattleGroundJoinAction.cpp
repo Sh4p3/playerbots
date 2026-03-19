@@ -1628,6 +1628,9 @@ bool BGStatusAction::Execute(Event& event)
     if (statusid == STATUS_WAIT_JOIN) //bot may join
     {
         sLog.outDetail("Bot #%u %s:%d <%s>: Received BG status WAIT_JOIN for %s %s", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG", _bgType.c_str());
+
+        if (!bot->InBattleGroundQueueForBattleGroundQueueType(queueTypeId) || !bot->IsInvitedForBattleGroundQueueType(queueTypeId))
+            return true;
 #ifndef MANGOSBOT_ZERO
         if (isArena)
         {
