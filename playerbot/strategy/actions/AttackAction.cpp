@@ -79,7 +79,7 @@ bool AttackRTITargetAction::isUseful()
 bool AttackAction::Attack(Player* requester, Unit* target)
 {
     MotionMaster &mm = *bot->GetMotionMaster();
-	if (mm.GetCurrentMovementGeneratorType() == TAXI_MOTION_TYPE || (bot->IsFlying() && WorldPosition(bot).currentHeight() > 10.0f))
+    if (mm.GetCurrentMovementGeneratorType() == TAXI_MOTION_TYPE || (bot->IsFlying() && WorldPosition(bot).currentHeightForPhase(bot->GetPhaseMask()) > 10.0f))
     {
         if (verbose)
         {

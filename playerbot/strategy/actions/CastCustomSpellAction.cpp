@@ -175,7 +175,7 @@ bool CastCustomSpellAction::Execute(Event& event)
 
     if (AI_VALUE2(uint32, "current mount speed", "self target"))
     {
-        if (bot->IsFlying() && WorldPosition(bot).currentHeight() > 10.0f)
+        if (bot->IsFlying() && WorldPosition(bot).currentHeightForPhase(bot->GetPhaseMask()) > 10.0f)
             return false;
 
         ai->Unmount();

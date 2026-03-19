@@ -54,7 +54,7 @@ bool MoveAwayFromHazard::Execute(Event& event)
             for (uint8 i = 0; i < attempts; i++)
             {
                 WorldPosition point = initialPosition + WorldPosition(0, distance * cos(angle), distance * sin(angle), 1.0f);
-                point.setZ(point.getHeight());
+                point.setZ(point.getHeightForPhase(bot->GetPhaseMask()));
 
                 // Check if the point is not near other hazards
                 if (!IsHazardNearby(point, hazards))
@@ -179,9 +179,9 @@ bool MoveAwayFromCreature::Execute(Event& event)
 
         // Calculate a point to the left and right
         WorldPosition pointLeft = creaturePosition + WorldPosition(0, distance * cos(angleLeft), distance * sin(angleLeft), 1.0f);
-        pointLeft.setZ(pointLeft.getHeight());
+        pointLeft.setZ(pointLeft.getHeightForPhase(bot->GetPhaseMask()));
         WorldPosition pointRight = creaturePosition + WorldPosition(0, distance * cos(angleRight), distance * sin(angleRight), 1.0f);
-        pointRight.setZ(pointRight.getHeight());
+        pointRight.setZ(pointRight.getHeightForPhase(bot->GetPhaseMask()));
 
         if (IsValidPoint(pointLeft, creatures, hazards))
         {

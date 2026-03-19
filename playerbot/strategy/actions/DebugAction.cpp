@@ -345,7 +345,7 @@ bool DebugAction::HandleAvoidScan(Event& event, Player* requester, const std::st
             WorldPosition p(requester);
             p.setX(p.getX() + x);
             p.setY(p.getY() + y);
-            p.setZ(p.getHeight(bot->GetInstanceId()));
+            p.setZ(p.getHeightForPhase(bot->GetPhaseMask()));
             Creature* wpCreature = requester->SummonCreature(2334, p.getX(), p.getY(), p.getZ(), 0.0, TEMPSPAWN_TIMED_DESPAWN, 20000.0f);
             if(path.getArea(p.getMapId(), p.getX(), p.getY(), p.getZ()) == 12)
                 ai->AddAura(wpCreature, 246);
@@ -475,7 +475,7 @@ bool DebugAction::HandleGY(Event& event, Player* requester, const std::string& t
                     continue;
                 }
 
-                pos.setZ(pos.getHeight(bot->GetInstanceId()));
+                pos.setZ(pos.getHeightForPhase(bot->GetPhaseMask()));
 
                 const uint32 zoneId = sTerrainMgr.GetZoneId(mapId, pos.getX(), pos.getY(), pos.getZ());
                 const uint32 areaId = sTerrainMgr.GetAreaId(mapId, pos.getX(), pos.getY(), pos.getZ());
@@ -2353,7 +2353,7 @@ bool DebugAction::HandleDSpell(Event& event, Player* requester, const std::strin
 
         botPos.setX(botPos.getX() + cos(ang) * dist);
         botPos.setY(botPos.getY() + sin(ang) * dist);
-        botPos.setZ(botPos.getHeight(bot->GetInstanceId()) + 2);
+        botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()) + 2);
 
         Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2380,7 +2380,7 @@ bool DebugAction::HandleVSpell(Event& event, Player* requester, const std::strin
 
         botPos.setX(botPos.getX() + cos(ang) * dist);
         botPos.setY(botPos.getY() + sin(ang) * dist);
-        botPos.setZ(botPos.getHeight(bot->GetInstanceId()) + 2);
+        botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()) + 2);
 
         Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);            
 
@@ -2411,7 +2411,7 @@ bool DebugAction::HandleASpell(Event& event, Player* requester, const std::strin
 
         botPos.setX(botPos.getX() + cos(ang) * dist);
         botPos.setY(botPos.getY() + sin(ang) * dist);
-        botPos.setZ(botPos.getHeight(bot->GetInstanceId()) + 2);
+        botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()) + 2);
 
         Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 5000.0f + i * 100.0f);
         wpCreature->SetObjectScale(0.5f);
@@ -2439,7 +2439,7 @@ bool DebugAction::HandleCSpell(Event& event, Player* requester, const std::strin
 
         botPos.setX(botPos.getX() + cos(ang) * dist);
         botPos.setY(botPos.getY() + sin(ang) * dist);
-        botPos.setZ(botPos.getHeight(bot->GetInstanceId()) + 2);
+        botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()) + 2);
 
         Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
         units.push_back(wpCreature->GetObjectGuid());
@@ -2508,7 +2508,7 @@ bool DebugAction::HandleTSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(6, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2539,7 +2539,7 @@ bool DebugAction::HandleUSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(effect, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
         }
@@ -2559,7 +2559,7 @@ bool DebugAction::HandleDSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             FakeSpell(effect, bot, nullptr, ObjectGuid(), {}, {}, botPos, botPos, true);
         }
@@ -2580,7 +2580,7 @@ bool DebugAction::HandleVSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
                                    
@@ -2626,7 +2626,7 @@ bool DebugAction::HandleISpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(6, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2671,7 +2671,7 @@ bool DebugAction::HandleCSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             wpCreature = bot->SummonCreature(6, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2700,7 +2700,7 @@ bool DebugAction::HandleASpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2734,7 +2734,7 @@ bool DebugAction::HandleGSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2812,7 +2812,7 @@ bool DebugAction::HandleMSpellMap(Event& event, Player* requester, const std::st
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 
@@ -2890,7 +2890,7 @@ bool DebugAction::HandleSoundMap(Event& event, Player* requester, const std::str
 
             botPos.setX(botPos.getX() + (dx - 5) * 5);
             botPos.setY(botPos.getY() + (dy - 5) * 5);
-            botPos.setZ(botPos.getHeight(bot->GetInstanceId()));
+            botPos.setZ(botPos.getHeightForPhase(bot->GetPhaseMask()));
 
             Creature* wpCreature = bot->SummonCreature(6, botPos.getX(), botPos.getY(), botPos.getZ(), 0, TEMPSPAWN_TIMED_DESPAWN, 10000.0f);
 

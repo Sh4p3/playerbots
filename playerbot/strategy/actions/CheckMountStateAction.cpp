@@ -44,7 +44,7 @@ bool CheckMountStateAction::Execute(Event& event)
     //Mount up in battle grounds
     if (bot->InBattleGround())
     {
-        if (WorldPosition(bot).currentHeight() < -5.0f)
+        if (WorldPosition(bot).currentHeightForPhase(bot->GetPhaseMask()) < -5.0f)
             return UnMount();
 
         if (!canAttackTarget)
@@ -545,7 +545,7 @@ bool CheckMountStateAction::UnMount() const
     if (!AI_VALUE2(uint32, "current mount speed", "self target"))
         return false;
 
-    if (bot->IsFlying() && WorldPosition(bot).currentHeight() > 10.0f)
+    if (bot->IsFlying() && WorldPosition(bot).currentHeightForPhase(bot->GetPhaseMask()) > 10.0f)
     {
         return false;
     }

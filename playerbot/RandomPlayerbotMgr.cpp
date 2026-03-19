@@ -2971,24 +2971,26 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
         for (std::list<Unit *>::iterator i = targets.begin(); i != targets.end(); ++i)
         {
             Unit* unit = *i;
-            bot->SetPosition(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ(), 0);
-            FleeManager manager(bot, sPlayerbotAIConfig.sightDistance, 0, true);
+            FleeManager manager(bot, sPlayerbotAIConfig.sightDistance, 0, true, WorldPosition(unit));
             float rx, ry, rz;
             if (manager.CalculateDestination(&rx, &ry, &rz))
             {
-                WorldLocation loc(bot->GetMapId(), rx, ry, rz);
+                WorldLocation loc(unit->GetMapId(), rx, ry, rz);
                 locs.push_back(loc);
             }
         }
-    }
-    else
-    {
-        RandomTeleportForLevel(bot, true);
+
+        if (!locs.empty())
+        {
+            RandomTeleport(bot, locs, false, true);
+            pmo.reset();
+            Refresh(bot);
+            return;
+        }
     }
 
     pmo.reset();
-
-    Refresh(bot);
+    RandomTeleportForLevel(bot, true);
 }
 
 void RandomPlayerbotMgr::InstaRandomize(Player* bot)

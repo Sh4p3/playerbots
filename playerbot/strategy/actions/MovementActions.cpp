@@ -209,10 +209,10 @@ bool MovementAction::FlyDirect(WorldPosition &startPosition, WorldPosition &endP
         movePath.clear();
         AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
-        if (movePosition.currentHeight() < minDist)
+        if (movePosition.currentHeightForPhase(bot->GetPhaseMask()) < minDist)
             return false;
         else
-            movePosition.setZ(movePosition.getHeight());
+            movePosition.setZ(movePosition.getHeightForPhase(bot->GetPhaseMask()));
     }
 
     uint32 flyHeight = 0;
@@ -281,7 +281,7 @@ bool MovementAction::FlyDirect(WorldPosition &startPosition, WorldPosition &endP
 
     for (uint32 modZ = 0; modZ < maxDist / 5.0f; modZ++)
     {
-        if (movePosition.currentHeight() > flyHeight && startPosition.IsInLineOfSight(movePosition))
+        if (movePosition.currentHeightForPhase(bot->GetPhaseMask()) > flyHeight && startPosition.IsInLineOfSightForPhase(movePosition, 0.5f, bot->GetPhaseMask()))
             break;
 
         movePosition.setZ(movePosition.getZ() + 5.0f);
@@ -1300,7 +1300,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     if (movePosition.getMapId() == endPosition.getMapId() && movePosition.isUnderWater() && !endPosition.isUnderWater()) //Try to swim on the surface.
     {
-        movePosition.setZ(movePosition.getHeight(true));
+        movePosition.setZ(movePosition.getHeightForPhase(bot->GetPhaseMask(), true));
 
         if (ai->HasStrategy("debug move", BotState::BOT_STATE_NON_COMBAT))
             ai->TellPlayerNoFacing(GetMaster(), "Setting movePosition to water surface.");
@@ -1772,7 +1772,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
             {
                 float bottom = terrain->GetHeightStatic(moveToPos.getX(), moveToPos.getY(), moveToPos.getZ());
                 float waterLevel = terrain->GetWaterOrGroundLevel(moveToPos.getX(), moveToPos.getY(), moveToPos.getZ(), bottom, true);
-                bool canSwimToTarget = selfOnSurface && botPos.IsInLineOfSight(tarPos);
+                bool canSwimToTarget = selfOnSurface && botPos.IsInLineOfSightForPhase(tarPos, 0.5f, bot->GetPhaseMask());
                 moveToPos.setZ(waterLevel);
                 if (waterLevel > -200000.0f && waterLevel > bottom)
                 {
@@ -1974,7 +1974,7 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
     const Vector3 directionToTarget = (targetPoint - botPoint).directionOrZero();
     const Vector3 endPoint = botPoint + (directionToTarget * std::min(distance, distanceToTarget));
     WorldPosition endPosition(obj->GetMapId(), endPoint.x, endPoint.y, endPoint.z);
-    endPosition.setZ(endPosition.getHeight());
+    endPosition.setZ(endPosition.getHeightForPhase(bot->GetPhaseMask()));
 
     // Check if the end position is inside a hazard
     HazardPosition hazardPosition;
@@ -2380,7 +2380,7 @@ bool MovementAction::IsValidPosition(const WorldPosition& position, const WorldP
     const WorldPosition botPosition(bot);
     return botPosition.canPathTo(position, bot) &&
            MaNGOS::IsValidMapCoord(position.getX(), position.getY(), position.getZ(), 0.0f) &&
-           position.IsInLineOfSight(visibleFromPosition, bot->GetCollisionHeight()) &&
+           position.IsInLineOfSightForPhase(visibleFromPosition, bot->GetCollisionHeight(), bot->GetPhaseMask()) &&
            !IsHazardNearPosition(position);
 }
 

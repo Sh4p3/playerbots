@@ -222,11 +222,16 @@ namespace ai
 
         bool IsInStaticLineOfSight(WorldPosition pos, float heightMod = 0.5f) const;
 #if defined(MANGOSBOT_TWO) || MAX_EXPANSION == 2
-        bool IsInLineOfSight(WorldPosition pos, float heightMod = 0.5f) const { return mapid == pos.mapid && getMap(getFirstInstanceId()) && getMap(getFirstInstanceId())->IsInLineOfSight(coord_x, coord_y, coord_z + heightMod, pos.coord_x, pos.coord_y, pos.coord_z + heightMod, 0, true); }
-        bool GetHitPosition(WorldPosition& pos) const { return getMap(getFirstInstanceId())->GetHitPosition(coord_x, coord_y, coord_z, pos.coord_x, pos.coord_y, pos.coord_z,0, 0.0f);};
+        static uint32 NormalizePhaseMask(uint32 phaseMask) { return phaseMask ? phaseMask : 1; }
+        bool IsInLineOfSight(WorldPosition pos, float heightMod = 0.5f) const { return IsInLineOfSightForPhase(pos, heightMod, 1); }
+        bool IsInLineOfSightForPhase(WorldPosition pos, float heightMod, uint32 phaseMask) const { auto map = getMap(getFirstInstanceId()); return mapid == pos.mapid && map && map->IsInLineOfSight(coord_x, coord_y, coord_z + heightMod, pos.coord_x, pos.coord_y, pos.coord_z + heightMod, NormalizePhaseMask(phaseMask), true); }
+        bool GetHitPosition(WorldPosition& pos) const { return GetHitPositionForPhase(pos, 1); };
+        bool GetHitPositionForPhase(WorldPosition& pos, uint32 phaseMask) const { auto map = getMap(getFirstInstanceId()); return map && map->GetHitPosition(coord_x, coord_y, coord_z, pos.coord_x, pos.coord_y, pos.coord_z, NormalizePhaseMask(phaseMask), 0.0f); };
 #else
         bool IsInLineOfSight(WorldPosition pos, float heightMod = 0.5f) const { return mapid == pos.mapid && getMap(getFirstInstanceId()) && getMap(getFirstInstanceId())->IsInLineOfSight(coord_x, coord_y, coord_z + heightMod, pos.coord_x, pos.coord_y, pos.coord_z + heightMod, true); }
+        bool IsInLineOfSightForPhase(WorldPosition pos, float heightMod, uint32 /*phaseMask*/) const { return IsInLineOfSight(pos, heightMod); }
         bool GetHitPosition(WorldPosition& pos) { return getMap(getFirstInstanceId())->GetHitPosition(coord_x, coord_y, coord_z, pos.coord_x, pos.coord_y, pos.coord_z, 0.0f);};
+        bool GetHitPositionForPhase(WorldPosition& pos, uint32 /*phaseMask*/) { return GetHitPosition(pos); };
 #endif
 
 
@@ -234,14 +239,19 @@ namespace ai
         bool canFly() const;
 
 #if defined(MANGOSBOT_TWO) || MAX_EXPANSION == 2
-        const float getHeight(bool swim = false) const { auto map = getMap(getFirstInstanceId()); if(map) return map->GetHeight(0, coord_x, coord_y, coord_z, swim); return 0.0;}
-        float GetHeightInRange(float maxSearchDist = 4.0f) const { float z = coord_z; auto map = getMap(getFirstInstanceId()); return map ? (map->GetHeightInRange(0, coord_x, coord_y, z, maxSearchDist) ? z : coord_z) : coord_z; }
+        const float getHeight(bool swim = false) const { return getHeightForPhase(1, swim); }
+        float getHeightForPhase(uint32 phaseMask, bool swim = false) const { auto map = getMap(getFirstInstanceId()); return map ? map->GetHeight(NormalizePhaseMask(phaseMask), coord_x, coord_y, coord_z, swim) : coord_z; }
+        float GetHeightInRange(float maxSearchDist = 4.0f) const { return GetHeightInRangeForPhase(1, maxSearchDist); }
+        float GetHeightInRangeForPhase(uint32 phaseMask, float maxSearchDist = 4.0f) const { float z = coord_z; auto map = getMap(getFirstInstanceId()); return map ? (map->GetHeightInRange(NormalizePhaseMask(phaseMask), coord_x, coord_y, z, maxSearchDist) ? z : coord_z) : coord_z; }
 #else
         float getHeight(bool swim = false) const { return getMap(getFirstInstanceId()) ? getMap(getFirstInstanceId())->GetHeight(coord_x, coord_y, coord_z, swim) : coord_z; }
+        float getHeightForPhase(uint32 /*phaseMask*/, bool swim = false) const { return getHeight(swim); }
         float GetHeightInRange(float maxSearchDist = 4.0f) const { float z = coord_z;  return getMap(getFirstInstanceId()) ? (getMap(getFirstInstanceId())->GetHeightInRange(coord_x, coord_y, z, maxSearchDist) ? z : coord_z) : coord_z; }
+        float GetHeightInRangeForPhase(uint32 /*phaseMask*/, float maxSearchDist = 4.0f) const { return GetHeightInRange(maxSearchDist); }
 #endif
 
         float currentHeight() const { return coord_z - getHeight(); }
+        float currentHeightForPhase(uint32 phaseMask) const { return coord_z - getHeightForPhase(phaseMask); }
 
         std::set<GenericTransport*> getTransports(uint32 entry = 0);
         void CalculatePassengerPosition(GenericTransport* transport);

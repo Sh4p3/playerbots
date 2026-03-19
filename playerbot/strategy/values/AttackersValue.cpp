@@ -19,7 +19,7 @@ std::list<ObjectGuid> AttackersValue::Calculate()
     if (bot->IsBeingTeleported())
         return result;
 
-    if (bot->IsFlying() && WorldPosition(bot).currentHeight() > 10.0f)
+    if (bot->IsFlying() && WorldPosition(bot).currentHeightForPhase(bot->GetPhaseMask()) > 10.0f)
         return result;
 
     // lost control, e.g. BG ended

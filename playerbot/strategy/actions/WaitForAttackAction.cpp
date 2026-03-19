@@ -59,7 +59,7 @@ const ai::WorldPosition WaitForAttackKeepSafeDistanceAction::GetBestPoint(Unit* 
 
             WorldPosition point = targetPosition + WorldPosition(0, distance * cos(pointAngle), distance * sin(pointAngle), 1.0f);
 
-            point.setZ(point.getHeight());
+            point.setZ(point.getHeightForPhase(bot->GetPhaseMask()));
 
             if (ai->HasStrategy("debug move", BotState::BOT_STATE_COMBAT))
             {
