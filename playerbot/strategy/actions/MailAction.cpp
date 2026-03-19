@@ -340,12 +340,13 @@ void MailProcessor::RemoveMail(Player* bot, uint32 id, ObjectGuid mailbox)
 
 ObjectGuid MailProcessor::FindMailbox(PlayerbotAI* ai)
 {
+    Player* bot = ai->GetBot();
     std::list<ObjectGuid> gos = *ai->GetAiObjectContext()->GetValue<std::list<ObjectGuid> >("nearest game objects no los");
     ObjectGuid mailbox;
     for (std::list<ObjectGuid>::iterator i = gos.begin(); i != gos.end(); ++i)
     {
         GameObject* go = ai->GetGameObject(*i);
-        if (go && go->GetGoType() == GAMEOBJECT_TYPE_MAILBOX)
+        if (go && go->GetGoType() == GAMEOBJECT_TYPE_MAILBOX && go->IsSpawned() && go->IsAtInteractDistance(bot))
         {
             mailbox = go->GetObjectGuid();
             break;
