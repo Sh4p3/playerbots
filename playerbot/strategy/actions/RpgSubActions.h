@@ -276,8 +276,16 @@ namespace ai
         virtual std::string GetRpgActionName() const override { return "using"; };
 
         virtual bool Execute(Event& event) override {
+            GuidPosition target = rpg->guidP();
             rpg->BeforeExecute();
             bool doAction = ai->DoSpecificAction(ActionName(), ActionEvent(event), true);
+
+            if (!doAction && target)
+            {
+                AI_VALUE(std::set<ObjectGuid>&, "ignore rpg target").insert(target);
+                RESET_AI_VALUE(GuidPosition, "rpg target");
+            }
+
             rpg->AfterExecute(true);
             DoDelay();
             return doAction;
