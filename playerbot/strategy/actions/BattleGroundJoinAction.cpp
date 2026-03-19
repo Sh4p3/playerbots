@@ -1,5 +1,6 @@
 #include "Entities/ObjectGuid.h"
 
+#include "playerbot/ArenaJoinPolicy.h"
 #include "playerbot/playerbot.h"
 #include "playerbot/PlayerbotAI.h"
 #include "LfgActions.h"
@@ -37,6 +38,251 @@
 #endif
 
 using namespace ai;
+
+#ifndef MANGOSBOT_ZERO
+namespace
+{
+ArenaTeam* FindArenaTeamForType(Player* player, ArenaType type)
+{
+    if (!player || type == ARENA_TYPE_NONE)
+        return nullptr;
+
+    for (uint32 arenaSlot = 0; arenaSlot < MAX_ARENA_SLOT; ++arenaSlot)
+    {
+        ArenaTeam* team = sObjectMgr.GetArenaTeamById(player->GetArenaTeamId(arenaSlot));
+        if (!team || team->GetType() != type)
+            continue;
+
+        return team;
+    }
+
+    return nullptr;
+}
+
+bool IsArenaTeamMemberReady(Player* member)
+{
+    if (!member || !member->GetPlayerbotAI() || !member->GetSession())
+        return false;
+
+    if (member->GetGroup() && member->GetPlayerbotAI()->HasRealPlayerMaster())
+        return false;
+
+    if (!sPlayerbotAIConfig.IsInRandomAccountList(member->GetSession()->GetAccountId()))
+        return false;
+
+    if (member->InBattleGround() || member->InBattleGroundQueue())
+        return false;
+
+    if (member->GetLevel() < DEFAULT_MAX_LEVEL)
+        return false;
+
+    return true;
+}
+
+bool HasAnyArenaTeam(Player* player)
+{
+    if (!player)
+        return false;
+
+    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
+        if (player->GetArenaTeamId(i))
+            return true;
+
+    return false;
+}
+
+uint32 CountReadyArenaTeamMembers(ArenaTeam* team, ArenaType type)
+{
+    if (!team || type == ARENA_TYPE_NONE)
+        return 0;
+
+    uint32 readyMembers = 0;
+    uint32 requiredMembers = static_cast<uint32>(type);
+
+    for (ArenaTeam::MemberList::const_iterator itr = team->GetMembers().begin(); itr != team->GetMembers().end(); ++itr)
+    {
+        Player* member = sObjectMgr.GetPlayer(itr->guid);
+        if (!IsArenaTeamMemberReady(member))
+            continue;
+
+        ++readyMembers;
+        if (readyMembers >= requiredMembers)
+            break;
+    }
+
+    return readyMembers;
+}
+
+bool IsTeamQueuedForArena(ArenaTeam* team, BattleGroundQueueTypeId queueTypeId)
+{
+    if (!team)
+        return false;
+
+    for (ArenaTeam::MemberList::const_iterator itr = team->GetMembers().begin(); itr != team->GetMembers().end(); ++itr)
+    {
+        Player* member = sObjectMgr.GetPlayer(itr->guid);
+        if (!member)
+            continue;
+
+        if (member->GetBattleGroundQueueIndex(queueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
+            return true;
+    }
+
+    return false;
+}
+
+bool IsTeamInsideArena(ArenaTeam* team, ArenaType type)
+{
+    if (!team || type == ARENA_TYPE_NONE)
+        return false;
+
+    for (ArenaTeam::MemberList::const_iterator itr = team->GetMembers().begin(); itr != team->GetMembers().end(); ++itr)
+    {
+        Player* member = sObjectMgr.GetPlayer(itr->guid);
+        if (!member || !member->InArena())
+            continue;
+
+        BattleGround* bg = member->GetBattleGround();
+        if (bg && bg->GetMaxPlayersPerTeam() == static_cast<uint32>(type))
+            return true;
+    }
+
+    return false;
+}
+
+struct ArenaJoinState
+{
+    ArenaType type = ARENA_TYPE_NONE;
+    bool isArena = false;
+    bool isTeamLead = false;
+    bool isRated = false;
+    bool allowArenaTeamBoost = false;
+    ArenaPushDiagnostics diagnostics;
+};
+
+ArenaJoinState BuildArenaJoinState(Player* player, BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId, bool hasPlayers)
+{
+    ArenaJoinState state;
+    state.type = sServerFacade.BgArenaType(queueTypeId);
+    state.isArena = state.type != ARENA_TYPE_NONE;
+    if (!state.isArena)
+        return state;
+
+    state.diagnostics = GetArenaPushDiagnostics(player, queueTypeId, bracketId);
+    state.isTeamLead = state.diagnostics.isCaptain;
+    state.isRated = sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1] > 0;
+    if (!hasPlayers && state.isTeamLead)
+        state.isRated = true;
+    state.allowArenaTeamBoost = !hasPlayers && state.diagnostics.boostEligible;
+
+    return state;
+}
+
+bool PrepareRatedArenaJoin(Player* player, BattleGroundQueueTypeId queueTypeId, ArenaJoinState const& state, std::vector<uint32>& ratedList)
+{
+    if (!state.isRated)
+        return true;
+
+    if (!state.isTeamLead)
+        return false;
+
+    if (!FindArenaTeamForType(player, state.type))
+        return false;
+
+    ratedList.push_back(queueTypeId);
+    return true;
+}
+
+void ApplyArenaQueueSizing(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId, ArenaJoinState const& state,
+    uint32& bracketSize, uint32& teamSize, uint32& allyCount, uint32& hordeCount, uint32& bgCount, uint32& skirmishCount, uint32& ratedCount)
+{
+    if (!state.isArena)
+        return;
+
+    bracketSize = static_cast<uint32>(state.type * 2);
+    teamSize = static_cast<uint32>(state.type);
+    allyCount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][state.isRated][0];
+    hordeCount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][state.isRated][1];
+    bgCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][state.isRated] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][state.isRated];
+    skirmishCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0];
+    ratedCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][1] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1];
+}
+
+void LogUnderplayedArenaBoost(Player* player, ArenaPushDiagnostics const& diagnostics)
+{
+    char const* reason = diagnostics.boostEligible ? "underplayed arena boost" : "arena team rotation";
+    sLog.outDetail("Team #%u <%s>: %s queued captain #%d <%s> for %uv%u (rating %u, weekly games %u/%u)",
+        diagnostics.teamId, diagnostics.teamName.c_str(), reason, player->GetGUIDLow(), player->GetName(),
+        static_cast<uint32>(diagnostics.type), static_cast<uint32>(diagnostics.type),
+        diagnostics.teamRating, diagnostics.gamesWeek, sPlayerbotAIConfig.randomBotArenaTeamBoostWeeklyGames);
+}
+}
+
+namespace ai
+{
+ArenaPushDiagnostics GetArenaPushDiagnostics(Player* player, BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId)
+{
+    ArenaPushDiagnostics diagnostics;
+    diagnostics.queueTypeId = queueTypeId;
+    diagnostics.bracketId = bracketId;
+    diagnostics.type = sServerFacade.BgArenaType(queueTypeId);
+    diagnostics.autoJoinArena = sPlayerbotAIConfig.randomBotAutoJoinArena;
+    diagnostics.boostEnabled = sPlayerbotAIConfig.randomBotArenaTeamBoost;
+
+    if (!player || diagnostics.type == ARENA_TYPE_NONE)
+    {
+        diagnostics.blockingReason = "not an arena queue";
+        return diagnostics;
+    }
+
+    diagnostics.requiredMembers = static_cast<uint32>(diagnostics.type);
+    diagnostics.needBots = sRandomPlayerbotMgr.NeedBots[queueTypeId][bracketId][1];
+
+    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
+    {
+        if (player->GetArenaTeamId(i))
+        {
+            diagnostics.hasArenaTeam = true;
+            break;
+        }
+    }
+
+    ArenaTeam* team = FindArenaTeamForType(player, diagnostics.type);
+    if (!team)
+    {
+        diagnostics.blockingReason = diagnostics.hasArenaTeam ? "no matching arena team for this bracket" : "bot has no arena team";
+        return diagnostics;
+    }
+
+    diagnostics.hasMatchingTeam = true;
+    diagnostics.isCaptain = team->GetCaptainGuid() == player->GetObjectGuid();
+    diagnostics.teamId = team->GetId();
+    diagnostics.teamName = team->GetName();
+    diagnostics.teamRating = team->GetStats().rating;
+    diagnostics.gamesWeek = team->GetStats().games_week;
+    diagnostics.readyMembers = CountReadyArenaTeamMembers(team, diagnostics.type);
+    diagnostics.teamQueued = IsTeamQueuedForArena(team, queueTypeId);
+    diagnostics.teamInArena = IsTeamInsideArena(team, diagnostics.type);
+    diagnostics.boostEligible = diagnostics.isCaptain && !diagnostics.teamQueued && !diagnostics.teamInArena &&
+        diagnostics.boostEnabled && diagnostics.gamesWeek < sPlayerbotAIConfig.randomBotArenaTeamBoostWeeklyGames;
+
+    if (!diagnostics.isCaptain)
+        diagnostics.blockingReason = "bot is not the team captain";
+    else if (diagnostics.teamInArena)
+        diagnostics.blockingReason = "team is already inside an arena";
+    else if (diagnostics.teamQueued)
+        diagnostics.blockingReason = "team is already queued";
+    else if (!diagnostics.boostEnabled)
+        diagnostics.blockingReason = "underplayed arena boost is disabled";
+    else if (diagnostics.gamesWeek >= sPlayerbotAIConfig.randomBotArenaTeamBoostWeeklyGames)
+        diagnostics.blockingReason = "weekly arena games threshold reached";
+    else
+        diagnostics.blockingReason.clear();
+
+    return diagnostics;
+}
+}
+#endif
 
 
 bool BGJoinAction::Execute(Event& event)
@@ -345,33 +591,34 @@ bool BGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleGroun
     bool isArena = false;
     bool isRated = false;
     bool hasTeam = false;
-    bool isTeamLead = false;
     bool noLag = sWorld.GetAverageDiff() < (sRandomPlayerbotMgr.GetPlayers().empty() ? sPlayerbotAIConfig.diffEmpty : sPlayerbotAIConfig.diffWithPlayer) * 1.1;
+    bool allowArenaTeamBoost = false;
+    bool allowArenaTeamRotation = false;
+#ifndef MANGOSBOT_ZERO
+    ArenaJoinState arenaState;
+    ArenaPushDiagnostics arenaDiagnostics;
+#endif
 
     if (sPlayerbotAIConfig.disableActivityPriorities)
     {
         noLag = true;
     }
 
-#ifndef MANGOSBOT_ZERO
-    ArenaType type = sServerFacade.BgArenaType(queueTypeId);
-    if (type != ARENA_TYPE_NONE)
-        isArena = true;
-
-    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
-    {
-        if (uint32 a_id = bot->GetArenaTeamId(i))
-        {
-            hasTeam = true;
-            break;
-        }
-    }
-
-    isTeamLead = sObjectMgr.GetArenaTeamByCaptain(bot->GetObjectGuid());
-#endif
     bool hasPlayers = (sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1]) > 0;
-    bool hasBots = (sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][1]) >= bg->GetMinPlayersPerTeam();
-    if (!sPlayerbotAIConfig.randomBotAutoJoinBG && !(sPlayerbotAIConfig.randomBotAutoJoinArena && isArena) && !hasPlayers)
+#ifndef MANGOSBOT_ZERO
+    hasTeam = HasAnyArenaTeam(bot);
+    arenaState = BuildArenaJoinState(bot, queueTypeId, bracketId, hasPlayers);
+    isArena = arenaState.isArena;
+    isRated = arenaState.isRated;
+    allowArenaTeamBoost = arenaState.allowArenaTeamBoost;
+    arenaDiagnostics = arenaState.diagnostics;
+    allowArenaTeamRotation = isRated && arenaDiagnostics.teamId &&
+        sRandomPlayerbotMgr.IsPreferredRatedArenaTeam(arenaDiagnostics.teamId, queueTypeId, bracketId);
+#endif
+    bool needBots = sRandomPlayerbotMgr.NeedBots[queueTypeId][bracketId][isArena ? isRated : GetTeamIndexByTeamId(bot->GetTeam())];
+
+    if (!sPlayerbotAIConfig.randomBotAutoJoinBG && !(sPlayerbotAIConfig.randomBotAutoJoinArena && isArena) &&
+        !allowArenaTeamBoost && !allowArenaTeamRotation && !hasPlayers && !needBots)
         return false;
 
     if (!hasPlayers && !noLag)
@@ -415,63 +662,22 @@ bool BGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleGroun
     //}
 
 #ifndef MANGOSBOT_ZERO
-    if (isArena)
+    if (arenaState.isArena)
     {
-        uint32 rated_players = sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1];
-        if (rated_players)
-        {
-            isRated = true;
-        }
-        if (!hasPlayers && isTeamLead)
-            isRated = true;
-
         // do not queue skirmish without real players
-        if (!hasPlayers && !(isTeamLead || isRated))
+        if (!hasPlayers && !arenaState.isRated && !arenaState.isTeamLead)
             return false;
 
-        isArena = true;
-        BracketSize = (uint32)(type * 2);
-        TeamSize = type;
-        ACount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][isRated][0];
-        HCount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][isRated][1];
-        BgCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][isRated] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][isRated];
-        SCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0];
-        RCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][1] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1];
+        ApplyArenaQueueSizing(queueTypeId, bracketId, arenaState, BracketSize, TeamSize, ACount, HCount, BgCount, SCount, RCount);
     }
 
-    // do not try if not a captain of arena team
-
-    if (isRated)
-    {
-        if (!isTeamLead)
-            return false;
-
-        // check if bot has correct team
-        ArenaTeam* arenateam = nullptr;
-        for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
-        {
-            ArenaTeam* temp = sObjectMgr.GetArenaTeamById(bot->GetArenaTeamId(arena_slot));
-            if (!temp)
-                continue;
-
-            if (temp->GetType() != type)
-                continue;
-
-            arenateam = temp;
-        }
-
-        if (!arenateam)
-            return false;
-
-        ratedList.push_back(queueTypeId);
-    }
+    if (!PrepareRatedArenaJoin(bot, queueTypeId, arenaState, ratedList))
+        return false;
 #endif
 
     // hack fix crash in queue remove event
     if (!isArena && bot->GetGroup() && !bot->GetGroup()->IsLeader(bot->GetObjectGuid()))
         return false;
-
-    bool needBots = sRandomPlayerbotMgr.NeedBots[queueTypeId][bracketId][isArena ? isRated : GetTeamIndexByTeamId(bot->GetTeam())];
 
     // add more bots if players are not invited or if 1st BG instance is full
     if (needBots || (hasPlayers && BgCount > BracketSize && (BgCount % BracketSize) != 0))
@@ -522,6 +728,13 @@ bool BGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleGroun
     {
         return false;
     }
+
+#ifndef MANGOSBOT_ZERO
+    if ((allowArenaTeamBoost || allowArenaTeamRotation) && !needBots && !sPlayerbotAIConfig.randomBotAutoJoinArena)
+    {
+        LogUnderplayedArenaBoost(bot, arenaDiagnostics);
+    }
+#endif
 
     return true;
 }
@@ -834,9 +1047,6 @@ bool BGJoinAction::JoinQueue(uint32 type)
 
 bool FreeBGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId)
 {
-    if (!sPlayerbotAIConfig.randomBotAutoJoinBG && !sPlayerbotAIConfig.randomBotAutoJoinArena)
-        return false;
-
     BattleGroundTypeId bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
     BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
     if (!bg)
@@ -846,31 +1056,39 @@ bool FreeBGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleG
     bool isRated = false;
     bool hasTeam = false;
     bool noLag = sWorld.GetAverageDiff() < (sRandomPlayerbotMgr.GetPlayers().empty() ? sPlayerbotAIConfig.diffEmpty : sPlayerbotAIConfig.diffWithPlayer) * 1.5;
+    bool allowArenaTeamBoost = false;
+    bool allowArenaTeamRotation = false;
+#ifndef MANGOSBOT_ZERO
+    ArenaJoinState arenaState;
+    ArenaPushDiagnostics arenaDiagnostics;
+#endif
 
     if (sPlayerbotAIConfig.disableActivityPriorities)
     {
         noLag = true;
     }
 
-#ifndef MANGOSBOT_ZERO
-    ArenaType type = sServerFacade.BgArenaType(queueTypeId);
-    if (type != ARENA_TYPE_NONE)
-        isArena = true;
-    if (!isArena && !sPlayerbotAIConfig.randomBotAutoJoinBG) 
-        return false;
+    bool hasPlayers = (sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1]) > 0;
 
-    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
-    {
-        if (uint32 a_id = bot->GetArenaTeamId(i))
-        {
-            hasTeam = true;
-            break;
-        }
-    }
+#ifndef MANGOSBOT_ZERO
+    hasTeam = HasAnyArenaTeam(bot);
+    arenaState = BuildArenaJoinState(bot, queueTypeId, bracketId, hasPlayers);
+    isArena = arenaState.isArena;
+    isRated = arenaState.isRated;
+    allowArenaTeamBoost = arenaState.allowArenaTeamBoost;
+    arenaDiagnostics = arenaState.diagnostics;
+    allowArenaTeamRotation = isRated && arenaDiagnostics.teamId &&
+        sRandomPlayerbotMgr.IsPreferredRatedArenaTeam(arenaDiagnostics.teamId, queueTypeId, bracketId);
 #endif
 
-    bool hasPlayers = (sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1]) > 0;
-    bool hasBots = (sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][1]) >= bg->GetMinPlayersPerTeam();
+    bool needBots = sRandomPlayerbotMgr.NeedBots[queueTypeId][bracketId][isArena ? isRated : GetTeamIndexByTeamId(bot->GetTeam())];
+
+    if (!sPlayerbotAIConfig.randomBotAutoJoinBG &&
+        !(isArena && (sPlayerbotAIConfig.randomBotAutoJoinArena || allowArenaTeamBoost || allowArenaTeamRotation || needBots)))
+        return false;
+
+    if (!isArena && !sPlayerbotAIConfig.randomBotAutoJoinBG)
+        return false;
 
     if (!hasPlayers && !noLag && !(isArena && hasTeam))
         return false;
@@ -904,55 +1122,18 @@ bool FreeBGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleG
     uint32 TeamId = bot->GetTeam() == ALLIANCE ? 0 : 1;
 
 #ifndef MANGOSBOT_ZERO
-    if (isArena)
+    if (arenaState.isArena)
     {
-        uint32 rated_players = sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1];
-        if (rated_players)
-        {
-            isRated = true;
-        }
-        BracketSize = (uint32)(type * 2);
-        TeamSize = type;
-        ACount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][isRated][0];
-        HCount = sRandomPlayerbotMgr.ArenaBots[queueTypeId][bracketId][isRated][1];
-        BgCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][isRated] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][isRated];
-        SCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0];
-        RCount = sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][1] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1];
+        ApplyArenaQueueSizing(queueTypeId, bracketId, arenaState, BracketSize, TeamSize, ACount, HCount, BgCount, SCount, RCount);
     }
 
-    // do not try if not a captain of arena team
-
-    if (isRated)
-    {
-        if (!sObjectMgr.GetArenaTeamByCaptain(bot->GetObjectGuid()))
-            return false;
-
-        // check if bot has correct team
-        ArenaTeam* arenateam = nullptr;
-        for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
-        {
-            ArenaTeam* temp = sObjectMgr.GetArenaTeamById(bot->GetArenaTeamId(arena_slot));
-            if (!temp)
-                continue;
-
-            if (temp->GetType() != type)
-                continue;
-
-            arenateam = temp;
-        }
-
-        if (!arenateam)
-            return false;
-
-        ratedList.push_back(queueTypeId);
-    }
+    if (!PrepareRatedArenaJoin(bot, queueTypeId, arenaState, ratedList))
+        return false;
 #endif
 
     // hack fix crash in queue remove event
     //if (bot->GetGroup() && !bot->GetGroup()->IsLeader(bot->GetObjectGuid()))
     //    return false;
-
-    bool needBots = sRandomPlayerbotMgr.NeedBots[queueTypeId][bracketId][isArena ? isRated : GetTeamIndexByTeamId(bot->GetTeam())];
 
     // add more bots if players are not invited or 1st BG instance is full
     if (needBots/* || (hasPlayers && BgCount > BracketSize && (BgCount % BracketSize) != 0)*/)
@@ -987,6 +1168,13 @@ bool FreeBGJoinAction::shouldJoinBg(BattleGroundQueueTypeId queueTypeId, BattleG
     {
         return false;
     }
+
+#ifndef MANGOSBOT_ZERO
+    if ((allowArenaTeamBoost || allowArenaTeamRotation) && !needBots && !sPlayerbotAIConfig.randomBotAutoJoinArena)
+    {
+        LogUnderplayedArenaBoost(bot, arenaDiagnostics);
+    }
+#endif
 
     return true;
 }
@@ -1040,6 +1228,8 @@ bool BGLeaveAction::Execute(Event& event)
     uint32 queueType = AI_VALUE(uint32, "bg type");
     if (!queueType && event.getSource().empty())
         return false;
+
+    BattleGroundTypeId queueBgTypeId = queueType ? sServerFacade.BgTemplateId(BattleGroundQueueTypeId(queueType)) : _bgTypeId;
 
     sLog.outDetail("Bot #%d %s:%d <%s> leaves %s queue", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG");
 
@@ -1178,10 +1368,11 @@ bool BGStatusAction::Execute(Event& event)
 
     bool IsRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot);
     BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(QueueSlot);
-    BattleGroundTypeId _bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+    BattleGroundTypeId queueBgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+    BattleGroundTypeId _bgTypeId = queueBgTypeId;
     BattleGroundBracketId bracketId;
 #ifndef MANGOSBOT_ZERO    
-    BattleGroundTypeId bgTypeId = BattleGroundTypeId((arenaByte >> 16) & 0xFFFFFFFF);    
+    BattleGroundTypeId bgTypeId = BattleGroundTypeId((arenaByte >> 16) & 0xFFFFFFFF);
     _bgTypeId = bgTypeId;
 #endif
 
@@ -1361,7 +1552,7 @@ bool BGStatusAction::Execute(Event& event)
 #ifdef MANGOSBOT_ZERO
                     packet << mapId << action;
 #else
-                    packet << type << unk2 << (uint32)_bgTypeId << unk << action;
+                    packet << type << unk2 << (uint32)queueBgTypeId << unk << action;
 #endif
                     bot->GetSession()->HandleBattlefieldPortOpcode(packet);
 
@@ -1403,7 +1594,7 @@ bool BGStatusAction::Execute(Event& event)
 #ifdef MANGOSBOT_ZERO
             packet << mapId << action;
 #else
-            packet << type << unk2 << (uint32)_bgTypeId << unk << action;
+            packet << type << unk2 << (uint32)queueBgTypeId << unk << action;
 #endif
 #ifdef MANGOS
             bot->GetSession()->HandleBattleFieldPortOpcode(packet);
@@ -1469,7 +1660,7 @@ bool BGStatusAction::Execute(Event& event)
 #ifdef MANGOSBOT_ZERO
         packet << mapId << action;
 #else
-        packet << type << unk2 << (uint32)_bgTypeId << unk << action;
+        packet << type << unk2 << (uint32)queueBgTypeId << unk << action;
 #endif
 
         if (bot->InBattleGround() && bot->GetBattleGroundTypeId() != _bgTypeId)

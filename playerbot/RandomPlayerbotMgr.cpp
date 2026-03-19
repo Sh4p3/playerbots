@@ -17,6 +17,7 @@
 #include "Grids/GridNotifiersImpl.h"
 #include "Grids/CellImpl.h"
 #include "FleeManager.h"
+#include "playerbot/ArenaJoinPolicy.h"
 #include "playerbot/ServerFacade.h"
 
 #include "BattleGround/BattleGround.h"
@@ -39,6 +40,7 @@
 #include "playerbot/TravelMgr.h"
 #include <iomanip>
 #include <float.h>
+#include <set>
 
 #if PLATFORM == PLATFORM_WINDOWS
 #include "windows.h"
@@ -77,6 +79,184 @@ void activatePrintStatsThread(uint32 requesterGuid)
 #ifdef CMANGOS
     boost::thread t(PrintStatsThread, requesterGuid);
     t.detach();
+#endif
+}
+
+namespace
+{
+struct RatedArenaTeamCandidate
+{
+    uint32 teamId = 0;
+    uint32 weight = 0;
+};
+
+BattleGroundQueueTypeId ParseArenaQueueType(std::string const& value)
+{
+    if (value == "2v2")
+        return BATTLEGROUND_QUEUE_2v2;
+    if (value == "3v3")
+        return BATTLEGROUND_QUEUE_3v3;
+    if (value == "5v5")
+        return BATTLEGROUND_QUEUE_5v5;
+
+    return BATTLEGROUND_QUEUE_NONE;
+}
+
+std::string ArenaQueueLabel(BattleGroundQueueTypeId queueTypeId)
+{
+    switch (queueTypeId)
+    {
+    case BATTLEGROUND_QUEUE_2v2:
+        return "2v2";
+    case BATTLEGROUND_QUEUE_3v3:
+        return "3v3";
+    case BATTLEGROUND_QUEUE_5v5:
+        return "5v5";
+    default:
+        return "unknown";
+    }
+}
+
+#ifndef MANGOSBOT_ZERO
+uint32 GetArenaTeamRotationWeight(uint32 gamesWeek)
+{
+    if (gamesWeek < 10)
+        return 10;
+    if (gamesWeek < 30)
+        return 5;
+    if (gamesWeek < 80)
+        return 2;
+
+    return 1;
+}
+
+bool IsArenaCaptainEligibleForRotation(Player* bot, BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId)
+{
+    if (!bot || !bot->IsInWorld() || !bot->GetPlayerbotAI())
+        return false;
+
+    if (!sRandomPlayerbotMgr.IsFreeBot(bot))
+        return false;
+
+    if (bot->GetPlayerbotAI()->HasActivePlayerMaster())
+        return false;
+
+    if (bot->InBattleGround() || bot->InBattleGroundQueue())
+        return false;
+
+    BattleGroundTypeId bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+    if (!bot->GetBGAccessByLevel(bgTypeId))
+        return false;
+
+#ifdef MANGOSBOT_TWO
+    BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
+    if (!bg)
+        return false;
+
+    PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(bg->GetMapId(), bot->GetLevel());
+    if (!pvpDiff || pvpDiff->GetBracketId() != bracketId)
+        return false;
+#else
+    if (sBattleGroundMgr.GetBattleGroundBracketIdFromLevel(bgTypeId, bot->GetLevel()) != bracketId)
+        return false;
+#endif
+
+    return true;
+}
+#endif
+}
+
+uint32 RandomPlayerbotMgr::GetPreferredRatedArenaTeam(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const
+{
+    auto queueItr = preferredRatedArenaTeams.find(queueTypeId);
+    if (queueItr == preferredRatedArenaTeams.end())
+        return 0;
+
+    auto bracketItr = queueItr->second.find(bracketId);
+    return bracketItr == queueItr->second.end() ? 0 : bracketItr->second;
+}
+
+uint32 RandomPlayerbotMgr::GetPreferredRatedArenaTeamWeight(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const
+{
+    auto queueItr = preferredRatedArenaTeamWeights.find(queueTypeId);
+    if (queueItr == preferredRatedArenaTeamWeights.end())
+        return 0;
+
+    auto bracketItr = queueItr->second.find(bracketId);
+    return bracketItr == queueItr->second.end() ? 0 : bracketItr->second;
+}
+
+bool RandomPlayerbotMgr::IsPreferredRatedArenaTeam(uint32 teamId, BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const
+{
+    uint32 preferredTeamId = GetPreferredRatedArenaTeam(queueTypeId, bracketId);
+    return preferredTeamId && preferredTeamId == teamId;
+}
+
+void RandomPlayerbotMgr::UpdatePreferredRatedArenaTeams()
+{
+    preferredRatedArenaTeams.clear();
+    preferredRatedArenaTeamWeights.clear();
+
+#ifndef MANGOSBOT_ZERO
+    if (!sPlayerbotAIConfig.randomBotArenaTeamRotation)
+        return;
+
+    for (int i = BG_BRACKET_ID_FIRST; i < MAX_BATTLEGROUND_BRACKETS; ++i)
+    {
+        BattleGroundBracketId bracketId = BattleGroundBracketId(i);
+
+        for (int j = BATTLEGROUND_QUEUE_2v2; j <= BATTLEGROUND_QUEUE_5v5; ++j)
+        {
+            BattleGroundQueueTypeId queueTypeId = BattleGroundQueueTypeId(j);
+            std::vector<RatedArenaTeamCandidate> candidates;
+            std::set<uint32> seenTeamIds;
+            uint32 totalWeight = 0;
+            uint32 ratedAlliance = ArenaBots[queueTypeId][bracketId][1][0];
+            uint32 ratedHorde = ArenaBots[queueTypeId][bracketId][1][1];
+            bool preferAlliance = NeedBots[queueTypeId][bracketId][1] && ratedAlliance < ratedHorde;
+            bool preferHorde = NeedBots[queueTypeId][bracketId][1] && ratedHorde < ratedAlliance;
+
+            ForEachPlayerbot([&](Player* bot)
+            {
+                if (!IsArenaCaptainEligibleForRotation(bot, queueTypeId, bracketId))
+                    return;
+
+                if (preferAlliance && bot->GetTeam() != ALLIANCE)
+                    return;
+
+                if (preferHorde && bot->GetTeam() != HORDE)
+                    return;
+
+                ArenaPushDiagnostics diagnostics = GetArenaPushDiagnostics(bot, queueTypeId, bracketId);
+                if (!diagnostics.hasMatchingTeam || !diagnostics.isCaptain || diagnostics.teamQueued || diagnostics.teamInArena)
+                    return;
+
+                if (!seenTeamIds.insert(diagnostics.teamId).second)
+                    return;
+
+                uint32 weight = GetArenaTeamRotationWeight(diagnostics.gamesWeek);
+                totalWeight += weight;
+                candidates.push_back({ diagnostics.teamId, weight });
+            });
+
+            if (!totalWeight)
+                continue;
+
+            uint32 roll = urand(1, totalWeight);
+            for (RatedArenaTeamCandidate const& candidate : candidates)
+            {
+                if (roll > candidate.weight)
+                {
+                    roll -= candidate.weight;
+                    continue;
+                }
+
+                preferredRatedArenaTeams[queueTypeId][bracketId] = candidate.teamId;
+                preferredRatedArenaTeamWeights[queueTypeId][bracketId] = candidate.weight;
+                break;
+            }
+        }
+    }
 #endif
 }
 
@@ -1477,6 +1657,8 @@ void RandomPlayerbotMgr::CheckBgQueue()
                     sRandomPlayerbotMgr.BgBots[queueTypeId][bracketId][TeamId]++;
                 }
             });
+
+            sRandomPlayerbotMgr.UpdatePreferredRatedArenaTeams();
 
             for (int i = BG_BRACKET_ID_FIRST; i < MAX_BATTLEGROUND_BRACKETS; ++i)
             {
@@ -3211,7 +3393,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
 
     if (!args || !*args)
     {
-        sLog.outError("Usage: rndbot stats/update/reset/init/refresh/add/remove");
+        sLog.outError("Usage: rndbot stats/update/reset/init/refresh/add/remove/arena status");
         return false;
     }
 
@@ -3312,6 +3494,107 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
 
         return true;
     }
+
+#ifndef MANGOSBOT_ZERO
+    if (cmd.find("arena status") == 0)
+    {
+        std::vector<std::string> params = Qualified::getMultiQualifiers(cmd, " ");
+        if (params.size() < 3)
+        {
+            sLog.outError("Usage: rndbot arena status <botname> [2v2|3v3|5v5]");
+            return false;
+        }
+
+        BattleGroundQueueTypeId queueTypeId = ParseArenaQueueType(params.size() > 3 ? params[3] : "2v2");
+        if (queueTypeId == BATTLEGROUND_QUEUE_NONE)
+        {
+            sLog.outError("Arena bracket must be one of: 2v2, 3v3, 5v5");
+            return false;
+        }
+
+        Player* target = sObjectAccessor.FindPlayerByName(params[2].c_str());
+        if (!target)
+        {
+            sLog.outError("Player '%s' is not online", params[2].c_str());
+            return false;
+        }
+
+        if (!target->GetPlayerbotAI())
+        {
+            sLog.outError("Player '%s' is not a bot", target->GetName());
+            return false;
+        }
+
+        BattleGroundTypeId bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+        BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
+        if (!bg)
+        {
+            sLog.outError("Unable to resolve arena template for '%s'", ArenaQueueLabel(queueTypeId).c_str());
+            return false;
+        }
+
+        BattleGroundBracketId bracketId;
+#ifdef MANGOSBOT_TWO
+        PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(bg->GetMapId(), target->GetLevel());
+        if (!pvpDiff)
+        {
+            sLog.outError("No PvP bracket found for %s at level %u", target->GetName(), target->GetLevel());
+            return false;
+        }
+        bracketId = pvpDiff->GetBracketId();
+#else
+        bracketId = sBattleGroundMgr.GetBattleGroundBracketIdFromLevel(bgTypeId, target->GetLevel());
+#endif
+
+        ArenaPushDiagnostics diagnostics = GetArenaPushDiagnostics(target, queueTypeId, bracketId);
+        uint32 preferredTeamId = sRandomPlayerbotMgr.GetPreferredRatedArenaTeam(queueTypeId, bracketId);
+        bool selectedForRotation = diagnostics.teamId && sRandomPlayerbotMgr.IsPreferredRatedArenaTeam(diagnostics.teamId, queueTypeId, bracketId);
+        uint32 rotationWeight = diagnostics.hasMatchingTeam ? GetArenaTeamRotationWeight(diagnostics.gamesWeek) : 0;
+        bool hasPlayers = (sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][0] + sRandomPlayerbotMgr.BgPlayers[queueTypeId][bracketId][1]) > 0;
+        std::stringstream ss;
+        ss << "Arena status for " << target->GetName() << " [" << ArenaQueueLabel(queueTypeId) << "]\n";
+        ss << "captain: " << (diagnostics.isCaptain ? "yes" : "no") << "\n";
+        ss << "has_arena_team: " << (diagnostics.hasArenaTeam ? "yes" : "no") << "\n";
+        ss << "valid_team: " << (diagnostics.hasMatchingTeam ? "yes" : "no");
+        if (diagnostics.hasMatchingTeam)
+            ss << " (" << diagnostics.teamName << ", id " << diagnostics.teamId << ")";
+        ss << "\n";
+        ss << "rating: " << diagnostics.teamRating << "\n";
+        ss << "games_week: " << diagnostics.gamesWeek << "/" << sPlayerbotAIConfig.randomBotArenaTeamBoostWeeklyGames << "\n";
+        ss << "queued: " << (diagnostics.teamQueued ? "yes" : "no") << "\n";
+        ss << "in_arena: " << (diagnostics.teamInArena ? "yes" : "no") << "\n";
+        ss << "NeedBots: " << (diagnostics.needBots ? "yes" : "no") << "\n";
+        ss << "auto_join_arena: " << (diagnostics.autoJoinArena ? "yes" : "no") << "\n";
+        ss << "arena_team_boost: " << (diagnostics.boostEnabled ? "on" : "off") << "\n";
+        ss << "arena_team_rotation: " << (sPlayerbotAIConfig.randomBotArenaTeamRotation ? "on" : "off") << "\n";
+        ss << "selected_for_rotation: " << (selectedForRotation ? "yes" : "no") << "\n";
+        ss << "rotation_weight: " << rotationWeight << "\n";
+        ss << "boost_eligible: " << (diagnostics.boostEligible ? "yes" : "no") << "\n";
+        ss << "ready_members: " << diagnostics.readyMembers << "/" << diagnostics.requiredMembers << "\n";
+        ss << "status: ";
+        if (diagnostics.teamInArena)
+            ss << "team is already inside an arena";
+        else if (diagnostics.teamQueued)
+            ss << "team is already queued";
+        else if (selectedForRotation && !hasPlayers && !diagnostics.needBots && !diagnostics.autoJoinArena)
+            ss << "team has idle-start priority this rotation window";
+        else if (diagnostics.needBots)
+            ss << "NeedBots requested this rated queue";
+        else if (diagnostics.boostEligible && !diagnostics.autoJoinArena)
+            ss << "NeedBots is false, but the underplayed-team captain boost can still queue";
+        else if (diagnostics.autoJoinArena)
+            ss << "arena auto-join can queue this team";
+        else
+            ss << diagnostics.blockingReason;
+
+        sLog.outString("%s", ss.str().c_str());
+        Player* requester = handler->GetSession() ? handler->GetSession()->GetPlayer() : nullptr;
+        if (requester)
+            requester->SendMessageToPlayer(ss.str());
+
+        return true;
+    }
+#endif
 
     if (cmd.find("login debug") == 0)
     {

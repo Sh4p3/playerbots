@@ -134,6 +134,9 @@ public:
         std::map<uint32, std::map<uint32, std::map<uint32, std::map<uint32, uint32> > > > ArenaBots;
         std::map<uint32, std::map<uint32, std::map<uint32, uint32> > > Rating;
         std::map<uint32, std::map<uint32, std::map<uint32, uint32> > > Supporters;
+        uint32 GetPreferredRatedArenaTeam(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const;
+        uint32 GetPreferredRatedArenaTeamWeight(BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const;
+        bool IsPreferredRatedArenaTeam(uint32 teamId, BattleGroundQueueTypeId queueTypeId, BattleGroundBracketId bracketId) const;
         std::map<Team, std::vector<uint32>> LfgDungeons;
         void CheckBgQueue();
         void CheckLfgQueue();
@@ -178,6 +181,9 @@ public:
         uint32 SetEventValue(uint32 bot, std::string event, uint32 value, uint32 validIn, std::string data = "");
         std::list<uint32> GetBots();
         std::list<uint32> GetBgBots(uint32 bracket);
+        void UpdatePreferredRatedArenaTeams();
+        std::map<uint32, std::map<uint32, uint32>> preferredRatedArenaTeams;
+        std::map<uint32, std::map<uint32, uint32>> preferredRatedArenaTeamWeights;
         time_t BgCheckTimer;
         time_t LfgCheckTimer;
         time_t PlayersCheckTimer;

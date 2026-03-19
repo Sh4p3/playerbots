@@ -184,6 +184,9 @@ public:
     bool randomBotJoinBG;
     bool randomBotAutoJoinBG;
     bool randomBotAutoJoinArena;
+    bool randomBotArenaTeamBoost;
+    bool randomBotArenaTeamRotation;
+    uint32 randomBotArenaTeamBoostWeeklyGames;
     uint32 randomBotBracketCount;
     bool randomBotLoginAtStartup;
     uint32 randomBotTeleLevel;
