@@ -1968,16 +1968,16 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
     if (!bot->IsStandState())
         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-#ifndef MANGOSBOT_ZERO
-    if (bot->InArena())
-        return MoveNear(obj, std::max(MELEE_LEEWAY, distance));
-#endif
-
     // Calculate the chase position
     const WorldPosition botPosition(bot);
     const WorldPosition targetPosition(obj);
     const Vector3 botPoint = botPosition.getVector3();
     const Vector3 targetPoint = targetPosition.getVector3();
+
+#ifndef MANGOSBOT_ZERO
+    if (bot->InArena() && fabs(botPosition.getZ() - targetPosition.getZ()) <= MOVE_NEAR_SURFACE_Z_TOLERANCE)
+        return MoveNear(obj, std::max(MELEE_LEEWAY, distance));
+#endif
 
     const float distanceToTarget = botPosition.distance(targetPosition);
 
@@ -1987,7 +1987,16 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
     const Vector3 directionToTarget = (targetPoint - botPoint).directionOrZero();
     const Vector3 endPoint = botPoint + (directionToTarget * std::min(distance, distanceToTarget));
     WorldPosition endPosition(obj->GetMapId(), endPoint.x, endPoint.y, endPoint.z);
-    endPosition.setZ(endPosition.getHeightForPhase(bot->GetPhaseMask()));
+    if (!bot->IsFlying() && !bot->IsFreeFlying() && !bot->IsSwimming())
+    {
+        float resolvedZ = targetPosition.getZ();
+        if (ResolveJumpLandingZ(bot, endPosition.getX(), endPosition.getY(), targetPosition.getZ(), resolvedZ))
+            endPosition.setZ(resolvedZ);
+        else
+            endPosition.setZ(endPosition.getHeightForPhase(bot->GetPhaseMask()));
+    }
+    else
+        endPosition.setZ(endPosition.getHeightForPhase(bot->GetPhaseMask()));
 
     // Check if the end position is inside a hazard
     HazardPosition hazardPosition;
