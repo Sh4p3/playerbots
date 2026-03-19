@@ -1185,6 +1185,8 @@ bool BGLeaveAction::Execute(Event& event)
     if (!(bot->InBattleGroundQueue() || bot->InBattleGround()))
         return false;
 
+    RESET_AI_VALUE2(int32, "manual int", "accepted bg invite");
+
     BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(0);
     BattleGroundTypeId _bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
     uint8 type = false;
@@ -1238,7 +1240,7 @@ bool BGLeaveAction::Execute(Event& event)
     uint32 mapId = GetBattleGrounMapIdByTypeId(_bgTypeId);
     packet << mapId << uint8(0);
 #else
-    packet << type << unk2 << (uint32)_bgTypeId << unk << uint8(0);
+    packet << type << unk2 << (uint32)queueBgTypeId << unk << uint8(0);
 #endif
 
     if (!event.getSource().empty())
@@ -1277,6 +1279,7 @@ bool BGStatusAction::Execute(Event& event)
     uint32 Time2;
     std::string _bgType;
     uint8 isRated = 0;
+    static constexpr char acceptedInviteValue[] = "accepted bg invite";
 
 #ifndef MANGOSBOT_ZERO
     //uint64 arenatype;
@@ -1463,6 +1466,7 @@ bool BGStatusAction::Execute(Event& event)
 
     if (Time1 == TIME_TO_AUTOREMOVE) //battleground is over, bot needs to leave
     {
+        RESET_AI_VALUE2(int32, "manual int", acceptedInviteValue);
         sLog.outDetail("Bot #%u <%s> (%u %s): Received BG status TIME_REMOVE for %s %s", bot->GetGUIDLow(), bot->GetName(), bot->GetLevel(), bot->GetTeam() == ALLIANCE ? "A" : "H", isArena ? "Arena" : "BG", _bgType.c_str());
         BattleGround* bg = bot->GetBattleGround();
         if (bg)
@@ -1518,6 +1522,7 @@ bool BGStatusAction::Execute(Event& event)
     }
     if (statusid == STATUS_WAIT_QUEUE) //bot is in queue
     {
+        RESET_AI_VALUE2(int32, "manual int", acceptedInviteValue);
         sLog.outDetail("Bot #%u %s:%d <%s>: Received BG status WAIT_QUEUE (wait time: %u) for %s %s", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), Time2, isArena ? "Arena" : "BG", _bgType.c_str());
         // temp fix for crash
          //return true;
@@ -1616,6 +1621,7 @@ bool BGStatusAction::Execute(Event& event)
     }
     if (statusid == STATUS_IN_PROGRESS) // placeholder for Leave BG if it takes too long
     {
+        RESET_AI_VALUE2(int32, "manual int", acceptedInviteValue);
         sLog.outDetail("Bot #%u %s:%d <%s>: Received BG status IN_PROGRESS for %s %s", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG", _bgType.c_str());
         return false;
     }
@@ -1675,11 +1681,20 @@ bool BGStatusAction::Execute(Event& event)
             return true;
         }
 
+        if (bot->IsBeingTeleported() || (instanceId && bot->GetBattleGroundId() == instanceId))
+            return true;
+
+        if (instanceId && AI_VALUE2_EXISTS(int32, "manual int", acceptedInviteValue, 0) == int32(instanceId))
+            return true;
+
 #ifdef MANGOSBOT_ZERO
         sLog.outDetail("Bot #%d <%s> (%u %s) joined BG (%s)", bot->GetGUIDLow(), bot->GetName(), bot->GetLevel(), bot->GetTeam() == ALLIANCE ? "A" : "H", _bgType.c_str());
 #else
         sLog.outDetail("Bot #%d %s:%d <%s> joined %s - %s", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG", _bgType.c_str());
 #endif
+
+        if (instanceId)
+            SET_AI_VALUE2(int32, "manual int", acceptedInviteValue, int32(instanceId));
 
         bot->GetSession()->HandleBattlefieldPortOpcode(packet);
 
