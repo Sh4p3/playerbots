@@ -1,10 +1,29 @@
+#include "Arena/ArenaTeam.h"
 #include "PlayerbotLoginMgr.h"
 #include "Database/DatabaseImpl.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "RandomPlayerbotMgr.h"
+#include <algorithm>
 
 using namespace ai;
+
+namespace
+{
+    bool HasArenaTeamMembership(Player* player)
+    {
+        if (!player)
+            return false;
+
+        for (uint8 slot = 0; slot < MAX_ARENA_SLOT; ++slot)
+        {
+            if (player->GetArenaTeamId(slot))
+                return true;
+        }
+
+        return false;
+    }
+}
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -36,9 +55,11 @@ public:
     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
 };
 
-PlayerLoginInfo::PlayerLoginInfo(const uint32 account, const uint32 guid, const uint8 race, const uint8 cls, const uint32 level, const bool isNew, const WorldPosition& position, const uint32 guildId) : account(account), guid(guid), race(race), cls(cls), level(level), isNew(isNew), position(position), guildId(guildId) {}
+PlayerLoginInfo::PlayerLoginInfo(const uint32 account, const uint32 guid, const uint8 race, const uint8 cls, const uint32 level, const bool isNew, const WorldPosition& position, const uint32 guildId, const bool hasArenaTeam)
+    : account(account), guid(guid), race(race), cls(cls), level(level), isNew(isNew), position(position), guildId(guildId), hasArenaTeam(hasArenaTeam) {}
 
-PlayerLoginInfo::PlayerLoginInfo(Player* player) : PlayerLoginInfo(player->GetSession()->GetAccountId(), player->GetDbGuid(), player->getRace(), player->getClass(), player->GetLevel(), player->GetTotalPlayedTime() == 0, player, player->GetGuildId()) {};
+PlayerLoginInfo::PlayerLoginInfo(Player* player)
+    : PlayerLoginInfo(player->GetSession()->GetAccountId(), player->GetDbGuid(), player->getRace(), player->getClass(), player->GetLevel(), player->GetTotalPlayedTime() == 0, player, player->GetGuildId(), HasArenaTeamMembership(player)) {};
 
 uint32 PlayerLoginInfo::GetLevel() const
 {
@@ -286,6 +307,7 @@ void PlayerLoginInfo::Update(Player* player)
     isNew = ((level > 1) ? false : (player->GetTotalPlayedTime() == 0));
     groupId = player->GetGroup() ? player->GetGroup()->GetId() : 0;
     guildId = player->GetGuildId();
+    hasArenaTeam = HasArenaTeamMembership(player);
 }
 
 bool PlayerLoginInfo::LoginBot()
@@ -410,7 +432,10 @@ BotPool PlayerBotLoginMgr::LoadBotsFromDb()
 
     sLog.outDebug("PlayerbotLoginMgr: %d accounts found.", uint32(accounts.size()));
 
-    result = CharacterDatabase.PQuery("SELECT account, guid, race, class, level, online, totaltime, map, position_x, position_y, position_z, orientation, (SELECT guildid FROM guild_member m WHERE m.guid = c.guid) guildId FROM characters c");
+    result = CharacterDatabase.PQuery("SELECT account, guid, race, class, level, online, totaltime, map, position_x, position_y, position_z, orientation, "
+        "(SELECT guildid FROM guild_member m WHERE m.guid = c.guid) guildId, "
+        "EXISTS(SELECT 1 FROM arena_team_member atm WHERE atm.guid = c.guid) hasArenaTeam "
+        "FROM characters c");
          
     if (!result)
     {
@@ -435,7 +460,8 @@ BotPool PlayerBotLoginMgr::LoadBotsFromDb()
         bool isNew = sPlayerbotAIConfig.instantRandomize ? (fields[6].GetUInt32() == 0) : level == 1;
         WorldPosition position(fields[7].GetFloat(), fields[8].GetFloat(), fields[9].GetFloat(), fields[10].GetFloat(), fields[11].GetFloat());
         uint32 guildId = fields[12].GetUInt32();
-        botPool.insert(std::make_pair(guid, PlayerLoginInfo(account, guid, race, cls, level, isNew, position, guildId)));
+        bool hasArenaTeam = fields[13].GetBool();
+        botPool.insert(std::make_pair(guid, PlayerLoginInfo(account, guid, race, cls, level, isNew, position, guildId, hasArenaTeam)));
 
         if (isOnline)
         {
@@ -542,6 +568,8 @@ LoginCriteria PlayerBotLoginMgr::GetLoginCriteria(const uint8 attempt)
             ADD_KEEP_CRITERIA(GUILD, info.IsInPlayerGuild(space));
         if (criterion == "group")
             ADD_KEEP_CRITERIA(GROUP, info.IsInPlayerGroup(space));
+        if (criterion == "arenateam")
+            ADD_KEEP_CRITERIA(ARENA_TEAM, info.HasArenaTeam());
     }
 
     return criteria;

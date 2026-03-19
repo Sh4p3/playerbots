@@ -301,9 +301,10 @@ bool PlayerbotAIConfig::Initialize()
     if (criteriaValues.empty())
     {
         loginCriteria.push_back({ "group" });
-        loginCriteria.push_back({ "arena" });
         loginCriteria.push_back({ "bg" });
+        loginCriteria.push_back({ "arena" });
         loginCriteria.push_back({ "guild" });
+        loginCriteria.push_back({ "arenateam" });
         loginCriteria.push_back({ "logoff,classrace,level,online" });
         loginCriteria.push_back({ "logoff,classrace,level" });
         loginCriteria.push_back({ "logoff,classrace" });

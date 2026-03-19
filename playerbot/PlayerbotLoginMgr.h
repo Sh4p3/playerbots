@@ -55,6 +55,7 @@ namespace ai
 		MAP,
 		GROUP,
 		GUILD,
+		ARENA_TEAM,
 		BG,
 		ARENA,
 		INSTANCE,
@@ -74,6 +75,7 @@ namespace ai
 		,{LoginCriterionFailType::MAP , "MAP"}
 		,{LoginCriterionFailType::GUILD , "GUILD"}
 		,{LoginCriterionFailType::GROUP , "GROUP"}
+		,{LoginCriterionFailType::ARENA_TEAM , "ARENA_TEAM"}
 		,{LoginCriterionFailType::BG , "BG"}
 		,{LoginCriterionFailType::ARENA , "ARENA"}
 		,{LoginCriterionFailType::INSTANCE , "INSTANCE"}
@@ -84,7 +86,7 @@ namespace ai
 	class PlayerLoginInfo
 	{
 	public:
-		PlayerLoginInfo(const uint32 account, const uint32 guid, const uint8 race, const uint8 cls, const uint32 level, const bool isNew, const WorldPosition& position, const uint32 guildId);
+		PlayerLoginInfo(const uint32 account, const uint32 guid, const uint8 race, const uint8 cls, const uint32 level, const bool isNew, const WorldPosition& position, const uint32 guildId, const bool hasArenaTeam);
 
 		PlayerLoginInfo(Player* player);
 
@@ -101,6 +103,7 @@ namespace ai
 		bool IsInBG() const;
 		bool IsInArena() const;
 		bool IsInInstance() const;
+		bool HasArenaTeam() const { return hasArenaTeam; }
 		bool IsOnline() const { return loginState == LoginState::BOT_ONLINE || loginState == LoginState::BOT_ON_LOGOUTQUEUE; }
 		LoginState GetLoginState() const { return loginState; }
 
@@ -130,6 +133,7 @@ namespace ai
 		WorldPosition position;
 		uint32 groupId;
 		uint32 guildId;
+		bool hasArenaTeam = false;
 
 		SqlQueryHolder* holder = nullptr;
 		HolderState holderState = HolderState::HOLDER_EMPTY;
