@@ -24,6 +24,7 @@ namespace
 {
     constexpr float JUMP_LANDING_SEARCH_DIST = 20.0f;
     constexpr float JUMP_LANDING_EPS = 0.01f;
+    constexpr float MOVE_NEAR_SURFACE_Z_TOLERANCE = 3.0f;
 
     bool ResolveJumpLandingZ(Unit* jumper, float x, float y, float fallbackZ, float& resolvedZ)
     {
@@ -141,6 +142,18 @@ bool MovementAction::MoveNear(WorldObject* target, float distance)
             y = target->GetPositionY() + sin(angle) * dist;
             z = target->GetPositionZ();
 #endif
+            if (!bot->IsFlying() && !bot->IsFreeFlying() && !bot->IsSwimming())
+            {
+                float resolvedZ = z;
+                if (!ResolveJumpLandingZ(bot, x, y, target->GetPositionZ(), resolvedZ))
+                    continue;
+
+                if (fabs(resolvedZ - target->GetPositionZ()) > MOVE_NEAR_SURFACE_Z_TOLERANCE)
+                    continue;
+
+                z = resolvedZ;
+            }
+
             if (bot->IsWithinLOS(x, y, z + bot->GetCollisionHeight(), true))
             {
                 if (MoveTo(target->GetMapId(), x, y, z))
