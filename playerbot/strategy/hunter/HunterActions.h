@@ -238,7 +238,18 @@ namespace ai
     };
 
     BUFF_ACTION(IntimidationAction, "intimidation");
-    BUFF_ACTION(DeterrenceAction, "deterrence");
+    class DeterrenceAction : public CastBuffSpellAction
+    {
+    public:
+        DeterrenceAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "deterrence") {}
+
+        bool isUseful() override
+        {
+            return CastBuffSpellAction::isUseful() &&
+                AI_VALUE2(bool, "combat", "self target") &&
+                (bot->GetHealthPercent() < sPlayerbotAIConfig.lowHealth || AI_VALUE(uint8, "my attacker count") > 1);
+        }
+    };
     BUFF_ACTION(CastCallOfTheWildAction, "call of the wild");
     BUFF_ACTION(CastDisengageAction, "disengage");
     SPELL_ACTION(CastKillShotAction, "kill shot");
