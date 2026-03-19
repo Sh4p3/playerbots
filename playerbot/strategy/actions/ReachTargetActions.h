@@ -53,7 +53,9 @@ namespace ai
                     chaseDist = (chaseDist - sPlayerbotAIConfig.contactDistance);
                 }
 
-                if (MoveStyleValue::WaitForEnemy(ai) && target->m_movementInfo.HasMovementFlag(movementFlagsMask) &&
+                const bool isHostilePlayer = target->IsPlayer() && sServerFacade.IsHostileTo(bot, target);
+                if (!isHostilePlayer && !bot->InBattleGround() && !bot->InArena() &&
+                        MoveStyleValue::WaitForEnemy(ai) && target->m_movementInfo.HasMovementFlag(movementFlagsMask) &&
                         sServerFacade.IsInFront(target, bot, sPlayerbotAIConfig.sightDistance, CAST_ANGLE_IN_FRONT) &&
                         sServerFacade.IsDistanceGreaterThan(distanceToTarget, sPlayerbotAIConfig.tooCloseDistance))
                 {

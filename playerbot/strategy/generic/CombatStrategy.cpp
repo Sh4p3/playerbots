@@ -105,6 +105,9 @@ bool WaitForAttackStrategy::ShouldWait(PlayerbotAI* ai)
     {
         // Only check if bot is in a group with a real player
         Player* bot = ai->GetBot();
+        if (bot->InBattleGround() || bot->InArena())
+            return false;
+
         AiObjectContext* context = ai->GetAiObjectContext();
         if (bot->GetGroup() && ai->HasRealPlayerMaster())
         {
@@ -116,7 +119,7 @@ bool WaitForAttackStrategy::ShouldWait(PlayerbotAI* ai)
                 Player* player = dynamic_cast<Player*>(target);
                 if (player)
                 {
-                    enemyPlayer = !sServerFacade.IsFriendlyTo(target, player);
+                    enemyPlayer = !sServerFacade.IsFriendlyTo(bot, player);
                 }
             }
 
