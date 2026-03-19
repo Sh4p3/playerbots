@@ -102,17 +102,32 @@ namespace
         if (!map)
             return false;
 
-        float candidateZ = z;
+        float candidateZ = resolvedZ;
         bool hasGround = false;
 
+        float hitX = x;
+        float hitY = y;
+        float hitFromZ = std::max(z, resolvedZ) + std::max(LANDING_HEIGHT_SEARCH_DIST, bot->GetCollisionHeight() + 2.0f);
+        float hitZ = std::min(z, resolvedZ) - LANDING_PROBE_DEPTH;
+
 #ifdef MANGOSBOT_TWO
-        if (map->GetHeightInRange(bot->GetPhaseMask(), x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+        if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, bot->GetPhaseMask(), -0.5f))
 #else
-        if (map->GetHeightInRange(x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+        if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, -0.5f))
 #endif
         {
-            resolvedZ = candidateZ;
+            candidateZ = hitZ;
             hasGround = true;
+        }
+
+        if (!hasGround)
+        {
+#ifdef MANGOSBOT_TWO
+            if (map->GetHeightInRange(bot->GetPhaseMask(), x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+#else
+            if (map->GetHeightInRange(x, y, candidateZ, LANDING_HEIGHT_SEARCH_DIST))
+#endif
+                hasGround = true;
         }
 
         if (!hasGround)
@@ -123,34 +138,13 @@ namespace
             candidateZ = map->GetHeight(x, y, z);
 #endif
             if (candidateZ > INVALID_HEIGHT)
-            {
-                resolvedZ = candidateZ;
                 hasGround = true;
-            }
         }
 
-        if (!hasGround)
-        {
-            float hitX = x;
-            float hitY = y;
-            float hitFromZ = z + std::max(2.0f, bot->GetCollisionHeight());
-            float hitZ = z - LANDING_PROBE_DEPTH;
-
-#ifdef MANGOSBOT_TWO
-            if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, bot->GetPhaseMask(), -0.5f))
-#else
-            if (map->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, -0.5f))
-#endif
-            {
-                resolvedZ = hitZ;
-                hasGround = true;
-            }
-        }
-
-        if (!hasGround || resolvedZ <= INVALID_HEIGHT)
+        if (!hasGround || candidateZ <= INVALID_HEIGHT)
             return false;
 
-        float adjustedZ = resolvedZ;
+        float adjustedZ = candidateZ;
         bot->UpdateAllowedPositionZ(x, y, adjustedZ, map);
         if (adjustedZ <= INVALID_HEIGHT)
             return false;

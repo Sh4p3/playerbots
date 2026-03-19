@@ -33,13 +33,29 @@ namespace
         bool hasGround = false;
         float candidateZ = resolvedZ;
 
+        float hitX = x;
+        float hitY = y;
+        float hitFromZ = std::max(fallbackZ, resolvedZ) + std::max(JUMP_LANDING_SEARCH_DIST, jumper->GetCollisionHeight() + 2.0f);
+        float hitZ = std::min(fallbackZ, resolvedZ) - (JUMP_LANDING_SEARCH_DIST * 10.0f);
+
 #ifdef MANGOSBOT_TWO
-        if (jumper->GetMap()->GetHeightInRange(jumper->GetPhaseMask(), x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+        if (jumper->GetMap()->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, jumper->GetPhaseMask(), -0.5f))
 #else
-        if (jumper->GetMap()->GetHeightInRange(x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+        if (jumper->GetMap()->GetHitPosition(x, y, hitFromZ, hitX, hitY, hitZ, -0.5f))
 #endif
         {
+            candidateZ = hitZ;
             hasGround = true;
+        }
+
+        if (!hasGround)
+        {
+#ifdef MANGOSBOT_TWO
+            if (jumper->GetMap()->GetHeightInRange(jumper->GetPhaseMask(), x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+#else
+            if (jumper->GetMap()->GetHeightInRange(x, y, candidateZ, JUMP_LANDING_SEARCH_DIST))
+#endif
+                hasGround = true;
         }
 
         if (!hasGround)
@@ -3290,12 +3306,17 @@ WorldPosition JumpAction::CalculateJumpParameters(const WorldPosition& src, Unit
             if (goodLanding)
             {
                 float groundZ = destination.getZ() + 0.5f;
+                float oldGroundZ = groundZ;
                 if (!destination.isInWater() && !ResolveJumpLandingZ(jumper, destination.getX(), destination.getY(), destination.getZ(), groundZ))
                 {
                     goodLanding = false;
                 }
                 // set to fall after land if not at the ground
-                if (goodLanding && groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
+                if (goodLanding && fabs(groundZ - oldGroundZ) < JUMP_LANDING_EPS && fabs(oz - destination.getZ()) > 5.0f)
+                {
+                    goodLanding = false;
+                }
+                else if (goodLanding && groundZ < destination.getZ() && fabs(oz - destination.getZ()) > 5.0f)
                 {
                     goodLanding = false;
                 }
@@ -3554,7 +3575,12 @@ bool JumpAction::DoJump(const WorldPosition &dest, float angle, float vSpeed, fl
         float ox = dest.getX();
         float oy = dest.getY();
         float oz = dest.getZ() + 0.5f;
+        float oldZ = oz;
         if (!ResolveJumpLandingZ(bot, ox, oy, dest.getZ(), oz))
+        {
+            goodLanding = false;
+        }
+        else if (fabs(oz - oldZ) < JUMP_LANDING_EPS && fabs(bot->GetPositionZ() - dest.getZ()) > 5.0f)
         {
             goodLanding = false;
         }
