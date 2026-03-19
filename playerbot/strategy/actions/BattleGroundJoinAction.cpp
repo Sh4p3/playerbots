@@ -1718,8 +1718,15 @@ bool BGStatusAction::Execute(Event& event)
 
 bool BGStatusCheckAction::Execute(Event& event)
 {
-    if (bot->IsBeingTeleported())
+    if (bot->IsBeingTeleported() || bot->InBattleGround())
         return false;
+
+    for (int i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+    {
+        BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(i);
+        if (queueTypeId != BATTLEGROUND_QUEUE_NONE && bot->IsInvitedForBattleGroundQueueType(queueTypeId))
+            return false;
+    }
 
     WorldPacket packet(CMSG_BATTLEFIELD_STATUS);
     bot->GetSession()->HandleBattlefieldStatusOpcode(packet);
@@ -1728,5 +1735,15 @@ bool BGStatusCheckAction::Execute(Event& event)
 }
 bool BGStatusCheckAction::isUseful()
 {
-    return bot->InBattleGroundQueue();
+    if (!bot->InBattleGroundQueue() || bot->InBattleGround())
+        return false;
+
+    for (int i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+    {
+        BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(i);
+        if (queueTypeId != BATTLEGROUND_QUEUE_NONE && bot->IsInvitedForBattleGroundQueueType(queueTypeId))
+            return false;
+    }
+
+    return true;
 }
