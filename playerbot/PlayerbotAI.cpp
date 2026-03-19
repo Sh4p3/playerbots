@@ -582,8 +582,22 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
     else if (hasResolvedGround && fabs(bot->m_movementInfo.pos.z - groundZ) < LANDING_HEIGHT_EPS)
     {
-        bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_FALLING);
-        bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_FALLINGFAR);
+        MotionMaster* motionMaster = bot->GetMotionMaster();
+        if (motionMaster->GetCurrentMovementGeneratorType() == FALL_MOTION_TYPE)
+            motionMaster->MovementExpired();
+        else
+            bot->InterruptMoving();
+
+        bot->m_movementInfo.ChangePosition(bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, groundZ, bot->m_movementInfo.pos.o);
+        ClearAirborneFlags(bot);
+        bot->m_movementInfo.jump = MovementInfo::JumpInfo();
+
+        WorldPacket land(MSG_MOVE_FALL_LAND);
+#ifdef MANGOSBOT_TWO
+        land << bot->GetObjectGuid().WriteAsPacked();
+#endif
+        land << bot->m_movementInfo;
+        QueuePacket(land);
     }
 
     // cheat options
@@ -8369,10 +8383,7 @@ void PlayerbotAI::StopMoving()
     if (bot->IsBeingTeleportedFar())
         return;
 
-    if (bot->IsFalling())
-        return;
-
-    bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_MASK_MOVING);
+    bot->m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_MASK_MOVING_OR_TURN | MOVEFLAG_ASCENDING));
     if (bot->GetTransport())
         bot->m_movementInfo.AddMovementFlag(MOVEFLAG_ONTRANSPORT);
     else
