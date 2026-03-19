@@ -73,11 +73,7 @@ namespace
         if (!hasGround)
             return false;
 
-        jumper->UpdateAllowedPositionZ(x, y, candidateZ);
-        if (candidateZ <= INVALID_HEIGHT)
-            return false;
-
-        resolvedZ = candidateZ;
+        resolvedZ = candidateZ + jumper->GetHoverOffset();
         return true;
     }
 }

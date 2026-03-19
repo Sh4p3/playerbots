@@ -144,12 +144,7 @@ namespace
         if (!hasGround || candidateZ <= INVALID_HEIGHT)
             return false;
 
-        float adjustedZ = candidateZ;
-        bot->UpdateAllowedPositionZ(x, y, adjustedZ, map);
-        if (adjustedZ <= INVALID_HEIGHT)
-            return false;
-
-        resolvedZ = adjustedZ;
+        resolvedZ = candidateZ + bot->GetHoverOffset();
         return true;
     }
 }
