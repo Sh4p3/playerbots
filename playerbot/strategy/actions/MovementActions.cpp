@@ -2045,14 +2045,23 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
 
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
     {
-        if (!bot->IsStopped() &&
-            sServerFacade.GetChaseTarget(bot) == obj && 
-            sServerFacade.GetChaseOffset(bot) == distance)
+        MovementGenerator* currentMovement = bot->GetMotionMaster()->GetCurrent();
+        float destX, destY, destZ;
+        const bool sameChaseTarget = sServerFacade.GetChaseTarget(bot) == obj;
+        const bool sameChaseOffset = sServerFacade.GetChaseOffset(bot) == distance;
+        const bool chaseReachable = currentMovement && currentMovement->IsReachable();
+        const bool hasActiveDestination = bot->GetMotionMaster()->GetDestination(destX, destY, destZ);
+        const bool chaseInProgress = bot->IsMoving() || hasActiveDestination;
+
+        if (sameChaseTarget && sameChaseOffset && chaseReachable && chaseInProgress)
         {
             bot->SetTarget(obj); //Needed to keep chase going in combat.
             bot->Attack((Unit*)obj, false); //Needed to keep chase going in combat.
             return true;
         }
+
+        if (sameChaseTarget && sameChaseOffset)
+            mm.Clear(false, true);
     }
 
     // charge
