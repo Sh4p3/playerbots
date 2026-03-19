@@ -282,8 +282,39 @@ namespace ai
 
             if (!doAction && target)
             {
-                AI_VALUE(std::set<ObjectGuid>&, "ignore rpg target").insert(target);
-                RESET_AI_VALUE(GuidPosition, "rpg target");
+                bool resetTarget = true;
+                bool ignoreTarget = !target.IsGameObject();
+
+                if (target.IsGameObject())
+                {
+                    if (GameObject* go = target.GetGameObject(bot->GetInstanceId()))
+                    {
+                        if (!sServerFacade.isSpawned(go))
+                        {
+                            ignoreTarget = false;
+                        }
+                        else if (go->IsInUse() || go->GetGoState() != GO_STATE_READY || bot->GetDistance(go) > INTERACTION_DISTANCE)
+                        {
+                            // Temporary object states should be retried later, not blacklisted.
+                            resetTarget = false;
+                            ignoreTarget = false;
+                        }
+                        else
+                        {
+                            ignoreTarget = go->GetGoType() == GAMEOBJECT_TYPE_GENERIC || go->GetGoType() == GAMEOBJECT_TYPE_DUEL_ARBITER;
+                        }
+                    }
+                    else
+                    {
+                        ignoreTarget = false;
+                    }
+                }
+
+                if (ignoreTarget)
+                    AI_VALUE(std::set<ObjectGuid>&, "ignore rpg target").insert(target);
+
+                if (resetTarget)
+                    RESET_AI_VALUE(GuidPosition, "rpg target");
             }
 
             rpg->AfterExecute(true);
