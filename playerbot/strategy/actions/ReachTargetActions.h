@@ -103,6 +103,9 @@ namespace ai
                         if (bot->IsWithinLOSInMap(target, true))
                         {
                             // Check if the bot is already on the range required
+                            if (range <= MELEE_LEEWAY)
+                                return !bot->CanReachWithMeleeAttack(target);
+
                             return bot->GetDistance(target, true, DIST_CALC_COMBAT_REACH) > range;
                         }
 
