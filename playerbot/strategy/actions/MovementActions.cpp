@@ -2045,7 +2045,7 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
 
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
     {
-        MovementGenerator* currentMovement = bot->GetMotionMaster()->GetCurrent();
+        MovementGenerator const* currentMovement = bot->GetMotionMaster()->GetCurrent();
         float destX, destY, destZ;
         const bool sameChaseTarget = sServerFacade.GetChaseTarget(bot) == obj;
         const bool sameChaseOffset = sServerFacade.GetChaseOffset(bot) == distance;
@@ -2328,7 +2328,7 @@ bool MovementAction::Flee(Unit *target)
 
         if (mm->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
         {
-            ChaseMovementGenerator* chase = (ChaseMovementGenerator*)mm->GetCurrent();
+            ChaseMovementGenerator const* chase = static_cast<ChaseMovementGenerator const*>(mm->GetCurrent());
 
             if (chase->GetCurrentTarget() == target && sServerFacade.GetChaseOffset(bot) == distance)
                 return true;
