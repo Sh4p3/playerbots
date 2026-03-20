@@ -106,6 +106,7 @@ namespace ai
     {
     public:
         EntanglingRootsTrigger(PlayerbotAI* ai) : HasCcTargetTrigger(ai, "entangling roots") {}
+        bool IsActive() override;
     };
 
     class EntanglingRootsKiteTrigger : public DebuffTrigger
@@ -125,6 +126,7 @@ namespace ai
     {
     public:
         HibernateTrigger(PlayerbotAI* ai) : HasCcTargetTrigger(ai, "hibernate") {}
+        bool IsActive() override;
     };
 
     class CurePoisonTrigger : public NeedCureTrigger

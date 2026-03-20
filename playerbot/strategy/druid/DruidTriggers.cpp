@@ -5,10 +5,39 @@
 
 using namespace ai;
 
+namespace
+{
+    constexpr time_t ARENA_CYCLONE_RECAST_DELAY = 4;
+    constexpr time_t ARENA_ROOTS_RECAST_DELAY = 6;
+    constexpr time_t ARENA_HIBERNATE_RECAST_DELAY = 8;
+}
+
+bool EntanglingRootsTrigger::IsActive()
+{
+    if (!HasCcTargetTrigger::IsActive())
+        return false;
+
+    if (bot->InArena())
+    {
+        const time_t lastCast = AI_VALUE2(time_t, "last spell cast time", "entangling roots");
+        if (lastCast && time(0) - lastCast < ARENA_ROOTS_RECAST_DELAY)
+            return false;
+    }
+
+    return true;
+}
+
 bool EntanglingRootsKiteTrigger::IsActive() 
 { 
 	if (!DebuffTrigger::IsActive())
 		return false;
+
+    if (bot->InArena())
+    {
+        const time_t lastCast = AI_VALUE2(time_t, "last spell cast time", "entangling roots");
+        if (lastCast && time(0) - lastCast < ARENA_ROOTS_RECAST_DELAY)
+            return false;
+    }
 
     if (AI_VALUE(uint8, "attackers count") > 3)
         return false;
@@ -30,6 +59,21 @@ bool EntanglingRootsKiteTrigger::IsActive()
     return !HasMaxDebuffs();
 }
 
+bool HibernateTrigger::IsActive()
+{
+    if (!HasCcTargetTrigger::IsActive())
+        return false;
+
+    if (bot->InArena())
+    {
+        const time_t lastCast = AI_VALUE2(time_t, "last spell cast time", "hibernate");
+        if (lastCast && time(0) - lastCast < ARENA_HIBERNATE_RECAST_DELAY)
+            return false;
+    }
+
+    return true;
+}
+
 bool ActiveHotTrigger::IsActive()
 {
     Unit* target = GetTarget();
@@ -43,7 +87,7 @@ Value<Unit*>* LifebloomTankTrigger::GetTargetValue()
 
 bool CyclonePvpTrigger::IsActive()
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
+    Unit* target = GetTarget();
     if (!target || !target->IsPlayer() || target->GetDiminishing(DIMINISHING_CYCLONE) >= DIMINISHING_LEVEL_IMMUNE)
         return false;
 
@@ -53,9 +97,22 @@ bool CyclonePvpTrigger::IsActive()
 
     // Check bot's health for defensive use
     const uint8 health = AI_VALUE2(uint8, "health", "self target");
+    const bool defensiveWindow = health <= sPlayerbotAIConfig.lowHealth && target->GetSelectionGuid() == bot->GetObjectGuid();
+
+    if (bot->InArena() && !defensiveWindow)
+    {
+        const time_t lastCast = AI_VALUE2(time_t, "last spell cast time", "cyclone");
+        if (lastCast && time(0) - lastCast < ARENA_CYCLONE_RECAST_DELAY)
+            return false;
+    }
+
+    // Keep battleground behavior conservative to avoid Cyclone spam.
+    if (bot->InBattleGround() && !bot->InArena() && !defensiveWindow)
+        return false;
+
+    // Defensive CC: peel when low.
     if (health <= sPlayerbotAIConfig.lowHealth && target->GetSelectionGuid() == bot->GetObjectGuid())
     {
-        // Defensive CC: Check distance for Cyclone
         if (target->GetDistance(bot) <= 20.0f)
         {
             return true;
@@ -68,7 +125,7 @@ bool CyclonePvpTrigger::IsActive()
     {
         std::list<ObjectGuid> attackers = AI_VALUE(std::list<ObjectGuid>, "attackers");
 
-        if (attackers.size() == 1 || (bot->InBattleGround() && !bot->InArena()))
+        if (attackers.size() <= 1)
             return false;
 
         // Check if Cyclone is already active
@@ -78,6 +135,22 @@ bool CyclonePvpTrigger::IsActive()
             if (ai->HasAura("cyclone", attacker, false, true))
                 return false; // Cyclone already active on another target
         }
+
+        // In arena, use Cyclone offensively mostly for healer casts or when we are under pressure.
+        if (bot->InArena())
+        {
+            Unit* enemyHealer = AI_VALUE(Unit*, "enemy healer target");
+            const bool targetIsEnemyHealer = enemyHealer && enemyHealer->GetObjectGuid() == target->GetObjectGuid();
+            const bool interruptingHealerCast = targetIsEnemyHealer && target->IsNonMeleeSpellCasted(false);
+
+            Unit* victim = target->GetVictim();
+            const bool underPressure = health <= sPlayerbotAIConfig.mediumHealth &&
+                                       victim && victim->GetObjectGuid() == bot->GetObjectGuid();
+
+            if (!interruptingHealerCast && !underPressure)
+                return false;
+        }
+
         return true;
     }
 
