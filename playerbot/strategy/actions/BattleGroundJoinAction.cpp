@@ -27,6 +27,7 @@
 #include "MotionGenerators/TargetedMovementGenerator.h"
 #include "BattleGround/BattleGround.h"
 #include "BattleGround/BattleGroundMgr.h"
+#include "Database/DatabaseEnv.h"
 #include "BattleGroundJoinAction.h"
 #ifndef MANGOSBOT_ZERO
 #ifdef CMANGOS
@@ -461,9 +462,14 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
             if (member->GetGroup())
                 member->RemoveFromGroup();
 
-            member->TeleportTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0);
+            // Cross-map teleports complete asynchronously.
+            if (member->IsBeingTeleported() || member->GetMapId() != bot->GetMapId() || !member->IsWithinDistInMap(bot, sPlayerbotAIConfig.sightDistance, false))
+            {
+                if (!member->IsBeingTeleported())
+                    member->TeleportTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0);
 
-            member->GetPlayerbotAI()->Reset();
+                member->GetPlayerbotAI()->Reset();
+            }
 
             members.push_back(member->GetObjectGuid());
         }
@@ -524,23 +530,39 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
     }
     sLog.outDetail("Bot #%d <%s>: Leader of <%s>", bot->GetGUIDLow(), bot->GetName(), arenateam->GetName().c_str());
 
+    std::vector<Player*> assignedMembers;
+    assignedMembers.reserve(needMembers);
+    assignedMembers.push_back(bot);
+
+    bool assemblyFailed = false;
     for (ObjectGuid memberGuid : readyMembers)
     {
         Player* member = sObjectMgr.GetPlayer(memberGuid);
         if (!member)
-            continue;
+        {
+            assemblyFailed = true;
+            break;
+        }
 
-        group->AddMember(memberGuid, member->GetName());
+        if (member->GetGroup())
+        {
+            assemblyFailed = true;
+            break;
+        }
+
+        if (!group->AddMember(memberGuid, member->GetName()))
+        {
+            assemblyFailed = true;
+            break;
+        }
 
         member->GetPlayerbotAI()->Reset(true);
-
-        if (!member->IsWithinDistInMap(bot, sPlayerbotAIConfig.sightDistance, false))
-            member->TeleportTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0);
+        assignedMembers.push_back(member);
 
         sLog.outDetail("Bot #%d <%s>: Member of <%s>", member->GetGUIDLow(), member->GetName(), arenateam->GetName().c_str());
     }
 
-    if (group->GetMembersCount() >= needMembers)
+    if (!assemblyFailed && group->GetMembersCount() >= needMembers)
     {
         sObjectMgr.AddGroup(group);
         sLog.outDetail("Team #%d <%s>: Group is ready for match", arenateam->GetId(), arenateam->GetName().c_str());
@@ -548,7 +570,27 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
     }
 
     sLog.outDetail("Team #%d <%s>: Group assembly changed unexpectedly", arenateam->GetId(), arenateam->GetName().c_str());
-    group->Disband();
+
+    for (Player* member : assignedMembers)
+    {
+        if (!member)
+            continue;
+
+        if (member->GetOriginalGroup() == group)
+            member->SetOriginalGroup(nullptr);
+
+        if (member->GetGroup() == group)
+            member->SetGroup(nullptr);
+    }
+
+    if (group->GetId())
+    {
+        CharacterDatabase.BeginTransaction();
+        CharacterDatabase.PExecute("DELETE FROM `groups` WHERE groupId='%u'", group->GetId());
+        CharacterDatabase.PExecute("DELETE FROM group_member WHERE groupId='%u'", group->GetId());
+        CharacterDatabase.CommitTransaction();
+    }
+
     delete group;
     return false;
 }
