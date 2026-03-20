@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <algorithm>
 #include <iomanip>
+#include <initializer_list>
 
 #include "playerbot/AiFactory.h"
 
@@ -30,6 +31,7 @@
 #include "playerbot/TravelMgr.h"
 #include "Movement/MoveSplineInitArgs.h"
 #include "Maps/InstanceData.h"
+#include "Server/DBCStores.h"
 #include "ChatHelper.h"
 #include "strategy/values/BudgetValues.h"
 #include "Social/SocialMgr.h"
@@ -70,6 +72,8 @@ namespace
     constexpr float LANDING_PROBE_DEPTH = 200.0f;
     constexpr float LANDING_HEIGHT_EPS = 0.5f;
     constexpr float FORCE_FALL_MIN_HEIGHT = 10.0f;
+    constexpr float ARENA_UNDERGROUND_START_Z_MARGIN = 8.0f;
+    constexpr float ARENA_UNDERGROUND_RECOVER_DEPTH = 0.9f;
     constexpr uint32 SOFT_RECOVER_RETRY_MS = 300;
 
 #ifdef MANGOSBOT_ZERO
@@ -157,6 +161,144 @@ namespace
 
         resolvedZ = candidateZ + bot->GetHoverOffset();
         return true;
+    }
+
+    bool RecoverArenaBoundsByTrigger(Player* bot, BattleGround* bg, std::initializer_list<uint32> triggerIds)
+    {
+        if (!bot || !bg)
+            return false;
+
+        for (uint32 triggerId : triggerIds)
+        {
+            AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
+            if (!atEntry)
+                continue;
+
+            if (!IsPointInAreaTriggerZone(atEntry, bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0.5f))
+                continue;
+
+            bot->StopMoving();
+            if (bg->HandleAreaTrigger(bot, triggerId))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool RecoverArenaBoundsByKnownTriggers(Player* bot, BattleGround* bg)
+    {
+        if (!bot || !bg)
+            return false;
+
+        switch (bg->GetTypeId())
+        {
+            case BATTLEGROUND_NA:
+                return RecoverArenaBoundsByTrigger(bot, bg, { 4917, 5006, 5008 });
+            case BATTLEGROUND_BE:
+                return RecoverArenaBoundsByTrigger(bot, bg, { 4919, 4921, 4922, 4923, 4924, 4925, 4944, 5039, 5040 });
+            case BATTLEGROUND_RL:
+                return RecoverArenaBoundsByTrigger(bot, bg, { 4927, 4928, 4929, 4930, 4931, 4932, 4933, 4934, 4935, 4936, 4941, 5041, 5042 });
+#ifdef MANGOSBOT_TWO
+            case BATTLEGROUND_DS:
+                return RecoverArenaBoundsByTrigger(bot, bg, { 5326 });
+#endif
+            default:
+                return false;
+        }
+    }
+
+    bool ShouldRecoverArenaUnderground(Player* bot, BattleGround* bg)
+    {
+        if (!bot || !bg)
+            return false;
+
+        float ax, ay, az, ao;
+        float hx, hy, hz, ho;
+        bg->GetTeamStartLoc(ALLIANCE, ax, ay, az, ao);
+        bg->GetTeamStartLoc(HORDE, hx, hy, hz, ho);
+
+        if (!MaNGOS::IsValidMapCoord(ax, ay, az, 0.0f) || !MaNGOS::IsValidMapCoord(hx, hy, hz, 0.0f))
+            return false;
+
+        const float currentZ = bot->GetPositionZ();
+        const float minStartZ = std::min(az, hz);
+        if (currentZ < (minStartZ - ARENA_UNDERGROUND_START_Z_MARGIN))
+            return true;
+
+        float resolvedGroundZ = currentZ;
+        if (!ResolveLandingZ(bot, bot->GetPositionX(), bot->GetPositionY(), currentZ, resolvedGroundZ))
+            return false;
+
+        float allowedGroundZ = currentZ;
+        bot->UpdateAllowedPositionZ(bot->GetPositionX(), bot->GetPositionY(), allowedGroundZ);
+        if (allowedGroundZ <= INVALID_HEIGHT)
+            allowedGroundZ = resolvedGroundZ;
+
+        const float recoverGroundZ = std::max(resolvedGroundZ, allowedGroundZ);
+        return (recoverGroundZ - currentZ) > ARENA_UNDERGROUND_RECOVER_DEPTH;
+    }
+
+    bool ShouldRecoverArenaBoundsHeuristic(Player* bot)
+    {
+        if (!bot || !bot->InArena() || bot->IsBeingTeleported() || bot->IsTaxiFlying() || bot->GetTransport())
+            return false;
+
+        BattleGround* bg = bot->GetBattleGround();
+        if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
+            return false;
+
+        float ax, ay, az, ao;
+        float hx, hy, hz, ho;
+        bg->GetTeamStartLoc(ALLIANCE, ax, ay, az, ao);
+        bg->GetTeamStartLoc(HORDE, hx, hy, hz, ho);
+
+        if (!MaNGOS::IsValidMapCoord(ax, ay, az, 0.0f) || !MaNGOS::IsValidMapCoord(hx, hy, hz, 0.0f))
+            return false;
+
+        const float centerX = (ax + hx) * 0.5f;
+        const float centerY = (ay + hy) * 0.5f;
+        const float centerZ = (az + hz) * 0.5f;
+        const float startDistance = std::max(1.0f, sqrtf((ax - hx) * (ax - hx) + (ay - hy) * (ay - hy)));
+        const float distToCenter = bot->GetDistance2d(centerX, centerY);
+
+        const float hardRadius = std::clamp(startDistance * 1.15f, 85.0f, 125.0f);
+        if (distToCenter > hardRadius || fabs(bot->GetPositionZ() - centerZ) > 80.0f)
+            return true;
+
+        const float suspectRadius = std::clamp(startDistance * 0.8f, 60.0f, 100.0f);
+        if (distToCenter <= suspectRadius)
+            return false;
+
+        // Positions near edges should still remain path-connected to arena center.
+        const WorldPosition botPosition(bot);
+        const WorldPosition arenaCenter(bg->GetMapId(), centerX, centerY, centerZ);
+        return !botPosition.canPathTo(arenaCenter, bot) && !arenaCenter.canPathTo(botPosition, bot);
+    }
+
+    void RecoverArenaBounds(Player* bot)
+    {
+        if (!bot || !bot->InArena() || bot->IsBeingTeleported() || bot->IsTaxiFlying() || bot->GetTransport())
+            return;
+
+        BattleGround* bg = bot->GetBattleGround();
+        if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
+            return;
+
+        if (RecoverArenaBoundsByKnownTriggers(bot, bg))
+            return;
+
+        if (ShouldRecoverArenaUnderground(bot, bg))
+        {
+            bot->StopMoving();
+            bg->HandlePlayerUnderMap(bot);
+            return;
+        }
+
+        if (!ShouldRecoverArenaBoundsHeuristic(bot))
+            return;
+
+        bot->StopMoving();
+        bg->HandlePlayerUnderMap(bot);
     }
 }
 
@@ -2304,6 +2446,8 @@ void PlayerbotAI::DoNextAction(bool min)
         bot->GetSession()->HandleMovementOpcodes(stop);
     }
 #endif
+
+    RecoverArenaBounds(bot);
 
     if (bot->IsTaxiFlying())
     {
