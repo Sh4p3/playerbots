@@ -114,6 +114,40 @@ uint32 CountReadyArenaTeamMembers(ArenaTeam* team, ArenaType type)
     return readyMembers;
 }
 
+void RollbackArenaAssemblyGroup(Group* group, std::vector<Player*> const& assignedMembers)
+{
+    if (!group)
+        return;
+
+    // Avoid Group::Disband here: this path can race with rapid arena roster churn.
+    for (Player* member : assignedMembers)
+    {
+        if (!member)
+            continue;
+
+        if (member->GetOriginalGroup() == group)
+            member->SetOriginalGroup(nullptr);
+        else if (member->GetGroup() == group)
+            member->SetGroup(nullptr);
+    }
+
+    group->RemoveAllInvites();
+
+    if (group->GetId())
+    {
+        // Mirror Group::Disband persistence cleanup for temporary arena assembly groups.
+        group->ResetInstances(INSTANCE_RESET_GROUP_DISBAND, false, nullptr);
+        group->ResetInstances(INSTANCE_RESET_GROUP_DISBAND, true, nullptr);
+
+        CharacterDatabase.BeginTransaction();
+        CharacterDatabase.PExecute("DELETE FROM `groups` WHERE groupId='%u'", group->GetId());
+        CharacterDatabase.PExecute("DELETE FROM group_member WHERE groupId='%u'", group->GetId());
+        CharacterDatabase.CommitTransaction();
+    }
+
+    delete group;
+}
+
 bool IsTeamQueuedForArena(ArenaTeam* team, BattleGroundQueueTypeId queueTypeId)
 {
     if (!team)
@@ -570,28 +604,7 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
     }
 
     sLog.outDetail("Team #%d <%s>: Group assembly changed unexpectedly", arenateam->GetId(), arenateam->GetName().c_str());
-
-    for (Player* member : assignedMembers)
-    {
-        if (!member)
-            continue;
-
-        if (member->GetOriginalGroup() == group)
-            member->SetOriginalGroup(nullptr);
-
-        if (member->GetGroup() == group)
-            member->SetGroup(nullptr);
-    }
-
-    if (group->GetId())
-    {
-        CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM `groups` WHERE groupId='%u'", group->GetId());
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE groupId='%u'", group->GetId());
-        CharacterDatabase.CommitTransaction();
-    }
-
-    delete group;
+    RollbackArenaAssemblyGroup(group, assignedMembers);
     return false;
 }
 #endif
