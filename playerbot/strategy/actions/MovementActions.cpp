@@ -3285,10 +3285,10 @@ WorldPosition JumpAction::CalculateJumpParameters(const WorldPosition& src, Unit
             // check ground below current previous point
             float prevGroundZ = oz;
             float nextGroundZ = fz;
-            jumper->UpdateAllowedPositionZ(ox, oy, prevGroundZ);
-            jumper->UpdateAllowedPositionZ(fx, fy, nextGroundZ);
+            bool hasPrevGround = ResolveJumpLandingZ(jumper, ox, oy, oz, prevGroundZ);
+            bool hasNextGround = ResolveJumpLandingZ(jumper, fx, fy, fz, nextGroundZ);
             // calculated point is lower than terrain - land on terrain
-            if (fz < nextGroundZ && oz > prevGroundZ)
+            if (hasPrevGround && hasNextGround && fz < nextGroundZ && oz > prevGroundZ)
             {
                 foundCollision = true;
                 fx = ox;
