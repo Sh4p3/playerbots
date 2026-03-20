@@ -2051,7 +2051,14 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
         const bool sameChaseOffset = sServerFacade.GetChaseOffset(bot) == distance;
         const bool chaseReachable = currentMovement && currentMovement->IsReachable();
         const bool hasActiveDestination = bot->GetMotionMaster()->GetDestination(destX, destY, destZ);
-        const bool chaseInProgress = bot->IsMoving() || hasActiveDestination;
+        const float currentDistance = sServerFacade.GetDistance2d(bot, obj);
+        bool inRequestedRange = sServerFacade.IsDistanceLessOrEqualThan(currentDistance, std::max(distance, MELEE_LEEWAY));
+        if (distance <= MELEE_LEEWAY)
+        {
+            if (Unit* unitTarget = dynamic_cast<Unit*>(obj))
+                inRequestedRange = bot->CanReachWithMeleeAttack(unitTarget);
+        }
+        const bool chaseInProgress = hasActiveDestination || inRequestedRange;
 
         if (sameChaseTarget && sameChaseOffset && chaseReachable && chaseInProgress)
         {

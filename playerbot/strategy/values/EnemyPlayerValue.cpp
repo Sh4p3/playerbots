@@ -32,6 +32,16 @@ std::list<ObjectGuid> EnemyPlayersValue::Calculate()
                 result = AI_VALUE(std::list<ObjectGuid>, "possible attack targets");
                 ApplyFilter(result, getOne);
             }
+
+            // Arena fallback: if no combat targets were produced, force a direct enemy-player scan.
+            // This prevents last survivors from idling indefinitely when no one is currently "attacking".
+            if (result.empty() && bot->InArena())
+            {
+                const int32 searchRange = static_cast<int32>(EnemyPlayerValue::GetMaxAttackDistance(bot));
+                const std::string arenaQualifier = std::to_string(searchRange) + ":1";
+                result = AI_VALUE2(std::list<ObjectGuid>, "possible targets", arenaQualifier);
+                ApplyFilter(result, getOne);
+            }
         }
     }
 
@@ -63,7 +73,10 @@ bool EnemyPlayersValue::IsValid(Unit* target, Player* player)
 
             const float maxPvPDistance = EnemyPlayerValue::GetMaxAttackDistance(player);
             const bool inCannon = player->GetPlayerbotAI() && player->GetPlayerbotAI()->IsInVehicle(false, true);
-            float const pvpDistance = (inCannon || player->GetHealthPercent() > enemyPlayer->GetHealthPercent()) ? maxPvPDistance : 20.0f;
+            // Arena should always keep tracking remaining opponents, regardless of temporary health disadvantage.
+            float const pvpDistance = player->InArena() ?
+                maxPvPDistance :
+                ((inCannon || player->GetHealthPercent() > enemyPlayer->GetHealthPercent()) ? maxPvPDistance : 20.0f);
             if (!player->IsWithinDist(enemyPlayer, pvpDistance, false))
             {
                 return false;
@@ -176,6 +189,9 @@ float EnemyPlayerValue::GetMaxAttackDistance(Player* bot)
 {
     if (!bot->GetBattleGround())
         return 60.0f;
+
+    if (bot->InArena())
+        return std::max(sPlayerbotAIConfig.sightDistance, sPlayerbotAIConfig.reactDistance);
 
     if (bot->InBattleGround())
     {

@@ -141,6 +141,17 @@ namespace
                 hasGround = true;
         }
 
+        if (!hasGround)
+        {
+            // Last-resort ground fallback for unresolved collision probes (for example near wall geometry).
+            // Prevents bots from staying indefinitely in an airborne/desynced state.
+            candidateZ = z;
+            bot->UpdateAllowedPositionZ(x, y, candidateZ);
+            // Accept only if it resolves to a lower valid surface; ignore no-op/invalid results.
+            if (candidateZ > INVALID_HEIGHT && (z - candidateZ) > LANDING_HEIGHT_EPS)
+                hasGround = true;
+        }
+
         if (!hasGround || candidateZ <= INVALID_HEIGHT)
             return false;
 
