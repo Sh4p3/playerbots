@@ -69,8 +69,6 @@ namespace
     constexpr float LANDING_HEIGHT_SEARCH_DIST = 20.0f;
     constexpr float LANDING_PROBE_DEPTH = 200.0f;
     constexpr float LANDING_HEIGHT_EPS = 0.5f;
-    constexpr float EMBEDDED_SURFACE_RECOVER_MIN_HEIGHT = 0.5f;
-    constexpr float EMBEDDED_SURFACE_RECOVER_MAX_HEIGHT = 5.0f;
     constexpr float FORCE_FALL_MIN_HEIGHT = 10.0f;
     constexpr uint32 SOFT_RECOVER_RETRY_MS = 300;
 
@@ -565,24 +563,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         if (!bot->IsFlying() && !bot->IsTaxiFlying() && !bot->IsFreeFlying() && hasResolvedGround)
         {
-            const float embeddedDelta = groundZ - bot->m_movementInfo.pos.z;
-            if (!bot->GetTransport() && !bot->IsInWater() && !sServerFacade.IsUnderwater(bot) &&
-                embeddedDelta > EMBEDDED_SURFACE_RECOVER_MIN_HEIGHT && embeddedDelta < EMBEDDED_SURFACE_RECOVER_MAX_HEIGHT)
-            {
-                const float previousZ = bot->m_movementInfo.pos.z;
-                MotionMaster* motionMaster = bot->GetMotionMaster();
-                if (motionMaster->GetCurrentMovementGeneratorType() == FALL_MOTION_TYPE)
-                    motionMaster->MovementExpired();
-                else
-                    bot->InterruptMoving();
-
-                bot->m_movementInfo.ChangePosition(bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, groundZ, bot->m_movementInfo.pos.o);
-                ClearAirborneFlags(bot);
-                bot->m_movementInfo.jump = MovementInfo::JumpInfo();
-                bot->NearTeleportTo(bot->m_movementInfo.pos.x, bot->m_movementInfo.pos.y, groundZ, bot->m_movementInfo.pos.o);
-                sLog.outDetail("%s: Movement: recovered embedded position from %f to %f", bot->GetName(), previousZ, groundZ);
-            }
-            else if ((bot->m_movementInfo.pos.z - groundZ) > FORCE_FALL_MIN_HEIGHT)
+            if ((bot->m_movementInfo.pos.z - groundZ) > FORCE_FALL_MIN_HEIGHT)
             {
                 SetAirborneFlag(bot, MOVEFLAG_FALLING);
                 if (!bot->GetMotionMaster()->MoveFall())
