@@ -164,9 +164,9 @@ namespace ai
     };
 
     class ReachMeleeAction : public ReachTargetAction
-	{
+    {
     public:
-        ReachMeleeAction(PlayerbotAI* ai) : ReachTargetAction(ai, "reach melee", MELEE_LEEWAY) {}
+        ReachMeleeAction(PlayerbotAI* ai) : ReachTargetAction(ai, "reach melee") {}
     };
 
     class ReachSpellAction : public ReachTargetAction
