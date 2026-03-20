@@ -80,6 +80,78 @@ bool IsArenaTeamMemberReady(Player* member)
     return true;
 }
 
+void QueueArenaMemberPreparation(Player* captain, Player* member)
+{
+    if (!captain || !member)
+        return;
+
+    ObjectGuid captainGuid = captain->GetObjectGuid();
+    ObjectGuid memberGuid = member->GetObjectGuid();
+    uint32 captainMapId = captain->GetMapId();
+    float captainX = captain->GetPositionX();
+    float captainY = captain->GetPositionY();
+    float captainZ = captain->GetPositionZ();
+
+    sWorld.GetMessager().AddMessage([captainGuid, memberGuid, captainMapId, captainX, captainY, captainZ](World* /*world*/)
+    {
+        Player* arenaMember = sObjectMgr.GetPlayer(memberGuid);
+        if (!arenaMember || !arenaMember->GetPlayerbotAI())
+            return;
+
+        if (arenaMember->InBattleGround() || arenaMember->InBattleGroundQueue())
+            return;
+
+        if (arenaMember->IsInCombat())
+            arenaMember->CombatStop(true);
+
+        // Keep behavior parity with previous arena prep while avoiding map-worker direct mutation.
+        if (arenaMember->GetGroup() && !arenaMember->GetPlayerbotAI()->HasRealPlayerMaster())
+            arenaMember->RemoveFromGroup();
+
+        if (arenaMember->IsBeingTeleported())
+        {
+            arenaMember->GetPlayerbotAI()->Reset();
+            return;
+        }
+
+        Player* captain = sObjectMgr.GetPlayer(captainGuid);
+        bool shouldTeleport = true;
+        if (captain && arenaMember->GetMapId() == captain->GetMapId() &&
+            arenaMember->IsWithinDistInMap(captain, sPlayerbotAIConfig.sightDistance, false))
+        {
+            shouldTeleport = false;
+        }
+
+        if (shouldTeleport)
+            arenaMember->TeleportTo(captainMapId, captainX, captainY, captainZ, 0);
+
+        arenaMember->GetPlayerbotAI()->Reset();
+    });
+}
+
+void QueueArenaUngroup(Player* member)
+{
+    if (!member)
+        return;
+
+    ObjectGuid guid = member->GetObjectGuid();
+    sWorld.GetMessager().AddMessage([guid](World* /*world*/)
+    {
+        Player* bot = sObjectMgr.GetPlayer(guid);
+        if (!bot || !bot->GetPlayerbotAI())
+            return;
+
+        if (!bot->GetGroup())
+            return;
+
+        if (bot->GetPlayerbotAI()->HasRealPlayerMaster())
+            return;
+
+        bot->RemoveFromGroup();
+        bot->GetPlayerbotAI()->Reset();
+    });
+}
+
 bool HasAnyArenaTeam(Player* player)
 {
     if (!player)
@@ -494,15 +566,16 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
                 member->CombatStop(true);
 
             if (member->GetGroup())
-                member->RemoveFromGroup();
+            {
+                QueueArenaUngroup(member);
+                continue;
+            }
 
             // Cross-map teleports complete asynchronously.
             if (member->IsBeingTeleported() || member->GetMapId() != bot->GetMapId() || !member->IsWithinDistInMap(bot, sPlayerbotAIConfig.sightDistance, false))
             {
-                if (!member->IsBeingTeleported())
-                    member->TeleportTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0);
-
-                member->GetPlayerbotAI()->Reset();
+                QueueArenaMemberPreparation(bot, member);
+                continue;
             }
 
             members.push_back(member->GetObjectGuid());
@@ -554,7 +627,11 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
 
     // disband leaders group
     if (bot->GetGroup())
-        bot->RemoveFromGroup();
+    {
+        QueueArenaUngroup(bot);
+        delete group;
+        return false;
+    }
 
     if (!group->Create(bot->GetObjectGuid(), bot->GetName()))
     {
