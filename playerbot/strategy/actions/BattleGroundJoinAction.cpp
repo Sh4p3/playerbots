@@ -415,12 +415,13 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
         return false;
     }
 
-    std::vector<uint32> members;
+    std::vector<ObjectGuid> members;
+    members.reserve(needMembers > 0 ? needMembers - 1 : 0);
 
     // search for arena team members and make them online
     for (ArenaTeam::MemberList::iterator itr = arenateam->GetMembers().begin(); itr != arenateam->GetMembers().end(); ++itr)
     {
-        if ((int)members.size() >= (int)needMembers)
+        if (members.size() >= needMembers - 1)
             break;
 
         Player* member = sObjectMgr.GetPlayer(itr->guid);
@@ -464,15 +465,51 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
 
             member->GetPlayerbotAI()->Reset();
 
-            members.push_back(member->GetGUIDLow());
+            members.push_back(member->GetObjectGuid());
         }
     }
 
-    if (!members.size() || (int)members.size() < (int)(needMembers - 1))
+    if (members.size() < needMembers - 1)
     {
         sLog.outDetail("Team #%d <%s> has not enough members for match", arenateam->GetId(), arenateam->GetName().c_str());
         return false;
     }
+
+    std::vector<ObjectGuid> readyMembers;
+    readyMembers.reserve(needMembers > 0 ? needMembers - 1 : 0);
+
+    for (ObjectGuid memberGuid : members)
+    {
+        Player* member = sObjectMgr.GetPlayer(memberGuid);
+        if (!member)
+            continue;
+
+        if (member->GetLevel() < DEFAULT_MAX_LEVEL)
+            continue;
+
+        if (!member->GetPlayerbotAI())
+            continue;
+
+        if (!member->GetSession() || !sPlayerbotAIConfig.IsInRandomAccountList(member->GetSession()->GetAccountId()))
+            continue;
+
+        if (member->InBattleGround() || member->InBattleGroundQueue())
+            continue;
+
+        if (member->GetGroup())
+            continue;
+
+        readyMembers.push_back(memberGuid);
+        if (readyMembers.size() >= needMembers - 1)
+            break;
+    }
+
+    if (readyMembers.size() < needMembers - 1)
+    {
+        sLog.outDetail("Team #%d <%s>: roster changed before arena group creation", arenateam->GetId(), arenateam->GetName().c_str());
+        return false;
+    }
+
     Group* group = new Group();
 
     // disband leaders group
@@ -485,39 +522,15 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
         delete group;
         return false;
     }
-    else
-    {
-        sObjectMgr.AddGroup(group);
-    }
-
     sLog.outDetail("Bot #%d <%s>: Leader of <%s>", bot->GetGUIDLow(), bot->GetName(), arenateam->GetName().c_str());
 
-    for (auto i = begin(members); i != end(members); ++i)
+    for (ObjectGuid memberGuid : readyMembers)
     {
-        if (*i == bot->GetGUIDLow())
-            continue;
-
-        //if (count >= (int)arenateam->GetType())
-        //    break;
-
-        if (group->GetMembersCount() >= needMembers)
-            break;
-
-        Player* member = sObjectMgr.GetPlayer(ObjectGuid(HIGHGUID_PLAYER, *i));
+        Player* member = sObjectMgr.GetPlayer(memberGuid);
         if (!member)
             continue;
 
-        if (member->GetLevel() < DEFAULT_MAX_LEVEL)
-            continue;
-
-        if (!member->GetPlayerbotAI())
-            continue;
-
-        if (member->GetGroup() == group)
-            continue;
-
-        if (!group->AddMember(ObjectGuid(HIGHGUID_PLAYER, *i), member->GetName()))
-            continue;
+        group->AddMember(memberGuid, member->GetName());
 
         member->GetPlayerbotAI()->Reset(true);
 
@@ -527,19 +540,16 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
         sLog.outDetail("Bot #%d <%s>: Member of <%s>", member->GetGUIDLow(), member->GetName(), arenateam->GetName().c_str());
     }
 
-    if (group && group->GetMembersCount() >= needMembers)
+    if (group->GetMembersCount() >= needMembers)
     {
+        sObjectMgr.AddGroup(group);
         sLog.outDetail("Team #%d <%s>: Group is ready for match", arenateam->GetId(), arenateam->GetName().c_str());
         return true;
     }
-    else if (group && group->GetMembersCount() < needMembers)
-    {
-        sLog.outDetail("Team #%d <%s>: Group is not ready for match (not enough members)", arenateam->GetId(), arenateam->GetName().c_str());
-        group->Disband();
-        sObjectMgr.RemoveGroup(group);
-        delete group;
-        return false;
-    }
+
+    sLog.outDetail("Team #%d <%s>: Group assembly changed unexpectedly", arenateam->GetId(), arenateam->GetName().c_str());
+    group->Disband();
+    delete group;
     return false;
 }
 #endif
