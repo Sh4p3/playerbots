@@ -1291,7 +1291,7 @@ bool UseHearthStoneAction::isUseful()
 
 bool UseRandomRecipeAction::isUseful()
 {
-   return !bot->IsInCombat() && !ai->HasActivePlayerMaster() && !bot->InBattleGround();
+   return !bot->IsInCombat() && !bot->InBattleGround();
 }
 
 bool UseRandomRecipeAction::Execute(Event& event)
