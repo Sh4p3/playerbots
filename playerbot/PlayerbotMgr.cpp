@@ -1452,8 +1452,7 @@ std::string PlayerbotHolder::HandleBotAddLogin(Player* bot, Player* master, cons
 
 std::string PlayerbotHolder::HandleBotRemoveLogout(Player* bot, Player* master, const std::string param)
 {
-    Player* player = sObjectMgr.GetPlayer(bot->GetObjectGuid());
-    if (!player)
+    if (!bot)
         return "Player is offline";
 
     uint32 guildId = Player::GetGuildIdFromDB(bot->GetObjectGuid());
@@ -1466,7 +1465,7 @@ std::string PlayerbotHolder::HandleBotRemoveLogout(Player* bot, Player* master, 
     if (master && (isMasterAccount || (sPlayerbotAIConfig.allowGuildBots && masterGuildId && guildId == masterGuildId) || false))
     {
         if (isRandomAccount)
-            sRandomPlayerbotMgr.Remove(player);
+            sRandomPlayerbotMgr.Remove(bot);
         else if (GetPlayerBot(bot->GetGUIDLow()))
             LogoutPlayerBot(bot->GetGUIDLow());
         else
