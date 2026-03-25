@@ -3393,8 +3393,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
         return false;
     }
 
-    bool isRA = false;
-
+    bool isRA = handler->GetSession();
     if (!handler->GetSession() && static_cast<CliHandler*>(handler) && static_cast<CliHandler*>(handler)->GetAccountId())
         isRA = true;        
 
