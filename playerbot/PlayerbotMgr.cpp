@@ -19,6 +19,10 @@ PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase()
     m_holderHandlers["tweak"] = &PlayerbotHolder::HandleTweak;
     m_holderHandlers["self"] = &PlayerbotHolder::HandleSelf;
     m_holderHandlers["spoof"] = &PlayerbotHolder::HandleSpoof;
+    m_holderHandlers["p"] = &PlayerbotHolder::HandleParty;
+    m_holderHandlers["g"] = &PlayerbotHolder::HandleGuild;
+    m_holderHandlers["r"] = &PlayerbotHolder::HandleRaid;
+    m_holderHandlers["rl"] = &PlayerbotHolder::HandleRaidLeader;
 
     m_botCommandHandlers["add"] = &PlayerbotHolder::HandleBotAddLogin;
     m_botCommandHandlers["login"] = &PlayerbotHolder::HandleBotAddLogin;
@@ -517,13 +521,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
 std::string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, ObjectGuid masterguid, bool admin, uint32 masterAccountId, uint32 masterGuildId, const std::string param)
 {
     Player* bot = sObjectMgr.GetPlayer(guid);
-    Player* master = nullptr;
-
-    if (m_spoofGuid)
-        master = sObjectMgr.GetPlayer(m_spoofGuid);
-
-    if (!master && masterguid)
-        master = sObjectMgr.GetPlayer(masterguid);
+    Player* master = masterguid ? sObjectMgr.GetPlayer(masterguid) : nullptr;
 
     if (!sPlayerbotAIConfig.enabled || guid.IsEmpty())
         return "Bot system is disabled";
@@ -608,6 +606,9 @@ bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* a
 std::list<std::string> PlayerbotHolder::HandlePlayerbotCommand(const std::string args, Player* master, AccountTypes security)
 {
     AccountTypes useSecurity = master ? master->GetSession()->GetSecurity() : security;
+
+    if (!master && m_spoofGuid)
+        master = sObjectMgr.GetPlayer(m_spoofGuid);
 
     std::vector<std::string> params = Qualified::getMultiQualifiers(args, " ");
 
@@ -711,7 +712,7 @@ std::list<std::string> PlayerbotHolder::HandlePlayerbotCommand(const std::string
         for (auto& itr : playerBots)
         {
             Player* bot = itr.second;
-            if (bot && bot->IsInWorld())
+            if (bot && (bot->IsInWorld() || param.find("add") == 0 || param.find("login") == 0))
                 bots.insert(bot->GetName());
         }
     }
@@ -758,11 +759,11 @@ std::list<std::string> PlayerbotHolder::HandlePlayerbotCommand(const std::string
         {
             out << "character not found";
         }
-        else if (master && member.GetRawValue() != master->GetObjectGuid().GetRawValue())
+        else if (master)
         {
             out << ProcessBotCommand(command, member, master->GetObjectGuid(), useSecurity >= SEC_GAMEMASTER, master->GetSession()->GetAccountId(), master->GetGuildId(), param);
         }
-        else if (!master)
+        else
         {
             out << ProcessBotCommand(command, member, ObjectGuid(), useSecurity >= SEC_GAMEMASTER, -1, -1, param);
         }
@@ -1094,6 +1095,18 @@ void PlayerbotMgr::TellError(std::string botName, std::string text)
     errors[text] = names;
 }
 
+std::vector<std::string> PlayerbotMgr::GetBotErrors(std::string botName)
+{
+    std::vector<std::string> botErrors;
+    for (auto& [error, names] : errors)
+    {
+        if (names.find(botName) != names.end())
+            botErrors.push_back(error);
+    }
+
+    return botErrors;
+}
+
 void PlayerbotMgr::CheckTellErrors(uint32 elapsed)
 {
     time_t now = time(0);
@@ -1312,7 +1325,7 @@ std::string PlayerbotHolder::HandleBotDebug(Player* bot, Player* master, const s
 
     std::string command = param;
 
-    if(!ai->DoSpecificAction("cdebug", Event(".bot", command, master), true))
+    if(!ai->DoSpecificAction("cdebug", Event(".bot", command, master ? master : bot), true))
     {
         return "debug failed";
     }
@@ -1338,33 +1351,60 @@ std::string PlayerbotHolder::HandleBotC(Player* bot, Player* master, const std::
     if (!ai)
         return "Bot has no AI";
 
-    ai->DoSpecificAction("cdebug", Event(".bot", "monstertalk " + param, master), true);
+    ai->DoSpecificAction("cdebug", Event(".bot", "monstertalk " + param, master ? master : bot), true);
     return "ok";
 }
 
 std::string PlayerbotHolder::HandleConsoleWhisper(Player* bot, Player* master, const std::string param)
 {
-    if (!bot)
+    Player* sender = master;
+    Player* reciever = bot;
+
+
+    if (!reciever)
         return "do requires a bot";
 
     PlayerbotAI* ai = bot->GetPlayerbotAI();
     if (!ai)
         return "Bot has no AI";
 
-    Player* sender = master ? master : bot;
+    std::string message = param;
+
+    if (!sender)
+    {
+        //Try format .(rnd)bot w <sender> <reciever> <message>
+
+        std::string botName = param.substr(0, param.find(" "));
+
+        master = sObjectAccessor.FindPlayerByName(botName.c_str());
+
+        if (master)
+        {
+            if (message.size() > param.find(" ") + 1)
+                message = param.substr(param.find(" ") + 1);
+            else
+                message = "";
+
+            sender = bot; //Switch sender reciever
+            reciever = master; 
+        }
+    }
+
+    if (!sender)
+        sender = bot;
 
     WorldPacket packet_template(CMSG_MESSAGECHAT);
 
     packet_template << CHAT_MSG_WHISPER;
     packet_template << LANG_UNIVERSAL;
-    packet_template << bot->GetName();
-    packet_template << param;
+    packet_template << reciever->GetName();
+    packet_template << message;
 
     std::unique_ptr<WorldPacket> packetPtr(new WorldPacket(packet_template));
 
     sender->GetSession()->QueuePacket(std::move(packetPtr));
 
-    std::string msg = "Sending whisper " + param + " to player " + bot->GetName() + " from " + sender->GetName();
+    std::string msg = "Sending whisper " + message + " to player " + reciever->GetName() + " from " + sender->GetName();
 
     return msg;
 }
@@ -1383,7 +1423,7 @@ std::string PlayerbotHolder::HandleConsoleCmd(Player* bot, Player* master, const
 
     std::string msg = "Sending command " + param + " to player " + bot->GetName();
 
-    if (!helper.HandleCommand(param, "", master))
+    if (!helper.ParseChatCommand(param, master ? master : bot))
     {
         return "command failed";
     }    
@@ -1400,22 +1440,52 @@ std::string PlayerbotHolder::HandleBotDo(Player* bot, Player* master, const std:
     if (!ai)
         return "Bot has no AI";
 
-    Action* action = ai->GetAiObjectContext()->GetAction(param);
-
-    std::string actionName = action->getName();
+    std::string actionName = param;
     std::string subparam = "";
 
-    if (param.find(actionName) == 0 && param.size() > actionName.size()+1)
-        subparam = param.substr(actionName.size() + 1);
+    Action* action = nullptr;
+
+    size_t i = std::string::npos;
+    while (true)
+    {
+        action = ai->GetAiObjectContext()->GetAction(param);
+
+        if (action)
+            break;
+
+        size_t found = param.rfind(" ", i);
+        if (found == std::string::npos || !found)
+            break;
+
+        actionName = param.substr(0, found);
+        subparam = param.substr(found + 1);
+
+        i = found - 1;
+    }
+
+    if (!action)
+        return "action not found";
 
     ai->RecordMessages(true);
 
-    if (!ai->DoSpecificAction(actionName, Event(".bot", subparam, master), true))
+    std::vector<std::string> output;
+
+    if (!ai->DoSpecificAction(actionName, Event(".bot", subparam, master ? master : bot), true))
     {
-        return "action failed";
+        output = GetBotErrors(bot->GetName());
+
+        if (output.empty())
+            return "action failed";
+
+        std::string result;
+        for (const auto& line : output)
+        {
+            result += line + "\n";
+        }
+        return result;
     }
 
-    std::vector<std::string> output = ai->GetRecordedMessages();
+    output = ai->GetRecordedMessages();
     if (output.empty())
         return "(no output)";
 
@@ -1474,6 +1544,193 @@ std::string PlayerbotHolder::HandleBotClear(Player* bot, Player* master, const s
 
     ai->ClearRecordedMessages();
     return "Messages cleared";
+}
+
+std::list<std::string> PlayerbotHolder::HandleParty(Player* master, const std::string param, AccountTypes security)
+{
+    std::string message;
+    std::string botName;
+
+    if (!master)
+    {
+        botName = param.substr(0, param.find(" "));
+        master = sObjectAccessor.FindPlayerByName(botName.c_str());
+    }
+
+    if (!master)
+        return {"No sender found"};
+
+    if (param.find(" ") == std::string::npos)
+        message = "";
+    else if (param.size() > param.find(" ") + 1)
+        message = param.substr(param.find(" ") + 1);
+
+    if (!master->GetGroup())
+        return {"Sender is not in a group"};
+
+    if (message.empty())
+    {
+        Group* group = master->GetGroup();
+        Group::MemberSlotList const& members = group->GetMemberSlots();
+        Player* leader = sObjectMgr.GetPlayer(group->GetLeaderGuid());
+
+        std::string leaderName = leader ? leader->GetName() : "Unknown";
+        std::string otherMembers;
+
+        for (auto const& slot : members)
+        {
+            if (slot.guid == master->GetObjectGuid())
+                continue;
+
+            Player* member = sObjectMgr.GetPlayer(slot.guid);
+            if (member)
+            {
+                if (!otherMembers.empty())
+                    otherMembers += ", ";
+                otherMembers += member->GetName();
+            }
+        }
+
+        return {"Party with " + leaderName + " as leader" + (otherMembers.empty() ? "" : " and " + otherMembers)};
+    }
+
+    WorldPacket packet_template(CMSG_MESSAGECHAT);
+    packet_template << CHAT_MSG_PARTY;
+    packet_template << LANG_UNIVERSAL;
+    packet_template << message;
+
+    std::unique_ptr<WorldPacket> packetPtr(new WorldPacket(packet_template));
+    master->GetSession()->QueuePacket(std::move(packetPtr));
+    return {"Sent party message \"" + message + "\" as " + master->GetName()};
+}
+
+std::list<std::string> PlayerbotHolder::HandleGuild(Player* master, const std::string param, AccountTypes security)
+{
+    std::string message;
+    std::string botName;
+
+    if (!master)
+    {
+        botName = param.substr(0, param.find(" "));
+        master = sObjectAccessor.FindPlayerByName(botName.c_str());
+    }
+
+    if (!master)
+        return {"No sender found"};
+
+    if (param.find(" ") == std::string::npos)
+        message = "";
+    else if (param.size() > param.find(" ") + 1)
+        message = param.substr(param.find(" ") + 1);
+
+    if (!master->GetGuildId())
+        return {"Sender is not in a guild"};
+
+    if (message.empty())
+    {
+        Guild* guild = sGuildMgr.GetGuildById(master->GetGuildId());
+        if (!guild)
+            return {"Guild info not found"};
+
+        std::string guildName = guild->GetName();
+        std::string guildLeader;
+        sObjectMgr.GetPlayerNameByGUID(guild->GetLeaderGuid(), guildLeader);
+        uint32 memberCount = guild->GetMemberSize();
+
+        return {"Guild: " + guildName + ", Leader: " + guildLeader + ", Members: " + std::to_string(memberCount)};
+    }
+
+    WorldPacket packet_template(CMSG_MESSAGECHAT);
+    packet_template << CHAT_MSG_GUILD;
+    packet_template << LANG_UNIVERSAL;
+    packet_template << message;
+
+    std::unique_ptr<WorldPacket> packetPtr(new WorldPacket(packet_template));
+    master->GetSession()->QueuePacket(std::move(packetPtr));
+    return {"Sent guild message \"" + message + "\" as " + master->GetName()};
+}
+
+std::list<std::string> PlayerbotHolder::HandleRaid(Player* master, const std::string param, AccountTypes security)
+{
+    std::string message = param;
+
+    if (!master)
+    {
+        std::string botName = param.substr(0, param.find(" "));
+
+        master = sObjectAccessor.FindPlayerByName(botName.c_str());
+        if (message.size() > param.find(" ") + 1)
+            message = param.substr(param.find(" ") + 1);
+    }
+
+    if (!master)
+        return {"No sender found"};
+
+    if (!master->GetGroup() || !master->GetGroup()->IsRaidGroup())
+        return {"Sender is not in a raid group"};
+
+    if (message.empty())
+    {
+        Group* group = master->GetGroup();
+        Group::MemberSlotList const& members = group->GetMemberSlots();
+        Player* leader = sObjectMgr.GetPlayer(group->GetLeaderGuid());
+
+        std::string leaderName = leader ? leader->GetName() : "Unknown";
+        std::string otherMembers;
+
+        for (auto const& slot : members)
+        {
+            if (slot.guid == master->GetObjectGuid())
+                continue;
+
+            Player* member = sObjectMgr.GetPlayer(slot.guid);
+            if (member)
+            {
+                if (!otherMembers.empty())
+                    otherMembers += ", ";
+                otherMembers += member->GetName();
+            }
+        }
+
+        return {"Raid with " + leaderName + " as leader" + (otherMembers.empty() ? "" : " and " + otherMembers)};
+    }
+
+    WorldPacket packet_template(CMSG_MESSAGECHAT);
+    packet_template << CHAT_MSG_RAID;
+    packet_template << LANG_UNIVERSAL;
+    packet_template << message;
+
+    std::unique_ptr<WorldPacket> packetPtr(new WorldPacket(packet_template));
+    master->GetSession()->QueuePacket(std::move(packetPtr));
+    return {"Sent raid message \"" + message + "\" as " + master->GetName()};
+}
+
+std::list<std::string> PlayerbotHolder::HandleRaidLeader(Player* master, const std::string param, AccountTypes security)
+{
+    std::string message = "give leader";
+
+    if (!master)
+    {
+        std::string botName = param.substr(0, param.find(" "));
+
+        master = sObjectAccessor.FindPlayerByName(botName.c_str());
+    }
+
+    if (!master)
+        return {"No sender found"};
+
+    if (!master->GetGroup() || !master->GetGroup()->IsRaidGroup())
+        return {"Sender is not in a raid group"};
+
+    WorldPacket packet_template(CMSG_MESSAGECHAT);
+    packet_template << CHAT_MSG_RAID;
+    packet_template << LANG_UNIVERSAL;
+    packet_template << message;
+
+    std::unique_ptr<WorldPacket> packetPtr(new WorldPacket(packet_template));
+    master->GetSession()->QueuePacket(std::move(packetPtr));
+    std::string result = "Sent raid leader transfer request as " + std::string(master->GetName());
+    return {result};
 }
 
 std::string PlayerbotHolder::HandleBotAddLogin(Player* bot, Player* master, const std::string param)
@@ -1725,71 +1982,83 @@ std::unordered_map<std::string, std::string> PlayerbotHolder::GetCommandTexts()
 {
     return std::unordered_map<std::string, std::string>
     {
-        // Holder commands (used with .rndbot)
-        {"list", "List all active player bots.\nUsage: .rndbot list"},
-        {"help", "Show help for commands.\nUsage: .rndbot help [command]"},
-        {"reload", "Reload the playerbot config (GM only).\nUsage: .rndbot reload"},
-        {"tweak", "Adjust the tweak value for testing (GM only).\nUsage: .rndbot tweak"},
-        {"self", "Enable self-bot mode for a player.\nUsage: .rndbot self [playername]"},
+        // Holder commands (used with .(rnd)bot)
+        {"list", "List all active player bots.\nUsage: .(rnd)bot list"},
+        {"help", "Show help for commands.\nUsage: .(rnd)bot help <command>"},
+        {"reload", "Reload the playerbot config (GM only).\nUsage: .(rnd)bot reload"},
+        {"tweak", "Adjust the tweak value for testing (GM only).\nUsage: .(rnd)bot tweak"},
+        {"self", "Enable self-bot mode for a player.\nUsage: .(rnd)bot self <playername>"},
         
-        // Bot commands (used with .rndbot <bot> ...)
-        {"add", "Add a bot to the player's group.\nUsage: .rndbot add <playername>"},
-        {"login", "Add a bot to the player's group.\nUsage: .rndbot login <playername>"},
-        {"remove", "Remove a bot from the player's group.\nUsage: .rndbot remove <botname>"},
-        {"logout", "Remove a bot from the player's group.\nUsage: .rndbot logout <botname>"},
-        {"rm", "Remove a bot from the player's group.\nUsage: .rndbot rm <botname>"},
+        // Bot commands (used with .(rnd)bot <bot> ...)
+        {"add", "Add a bot to the player's group.\nUsage: .(rnd)bot add <playername>"},
+        {"login", "Add a bot to the player's group.\nUsage: .(rnd)bot login <playername>"},
+        {"remove", "Remove a bot from the player's group.\nUsage: .(rnd)bot remove <botname>"},
+        {"logout", "Remove a bot from the player's group.\nUsage: .(rnd)bot logout <botname>"},
+        {"rm", "Remove a bot from the player's group.\nUsage: .(rnd)bot rm <botname>"},
         
-        {"gear", "Equip best gear on bot.\nUsage: .rndbot <bot> gear"},
-        {"equip", "Equip best gear on bot.\nUsage: .rndbot <bot> equip"},
+        {"gear", "Equip best gear on bot.\nUsage: .(rnd)bot gear <bot> "},
+        {"equip", "Equip best gear on bot.\nUsage: .(rnd)bot equip  <bot> "},
         
-        {"train", "Train bot spells at trainer.\nUsage: .rndbot <bot> train"},
-        {"learn", "Train bot spells at trainer.\nUsage: .rndbot <bot> learn"},
+        {"train", "Train bot spells at trainer.\nUsage: .(rnd)bot train <bot> "},
+        {"learn", "Train bot spells at trainer.\nUsage: .(rnd)bot learn <bot> "},
         
-        {"food", "Buy food/drink for bot.\nUsage: .rndbot <bot> food"},
-        {"drink", "Buy food/drink for bot.\nUsage: .rndbot <bot> drink"},
+        {"food", "Buy food/drink for bot.\nUsage: .(rnd)bot food <bot> "},
+        {"drink", "Buy food/drink for bot.\nUsage: .(rnd)bot drink <bot> "},
         
-        {"potions", "Buy potions for bot.\nUsage: .rndbot <bot> potions"},
-        {"pots", "Buy potions for bot.\nUsage: .rndbot <bot> pots"},
+        {"potions", "Buy potions for bot.\nUsage: .(rnd)bot potions <bot> "},
+        {"pots", "Buy potions for bot.\nUsage: .(rnd)bot pots <bot> "},
         
-        {"consumes", "Buy all consumables for bot.\nUsage: .rndbot <bot> consumes"},
-        {"consumables", "Buy all consumables for bot.\nUsage: .rndbot <bot> consumables"},
+        {"consumes", "Buy all consumables for bot.\nUsage: .(rnd)bot consumes <bot> "},
+        {"consumables", "Buy all consumables for bot.\nUsage: .(rnd)bot consumables <bot> "},
         
-        {"regs", "Buy reagents for bot.\nUsage: .rndbot <bot> regs"},
-        {"reg", "Buy reagents for bot.\nUsage: .rndbot <bot> reg"},
-        {"reagents", "Buy reagents for bot.\nUsage: .rndbot <bot> reagents"},
+        {"regs", "Buy reagents for bot.\nUsage: .(rnd)bot regs <bot> "},
+        {"reg", "Buy reagents for bot.\nUsage: .(rnd)bot reg <bot> "},
+        {"reagents", "Buy reagents for bot.\nUsage: .(rnd)bot reagents  <bot> "},
         
-        {"prepare", "Prepare bot (gear, food, pots, etc).\nUsage: .rndbot <bot> prepare"},
-        {"prep", "Prepare bot (gear, food, pots, etc).\nUsage: .rndbot <bot> prep"},
-        {"refresh", "Refresh bot gear and items.\nUsage: .rndbot <bot> refresh"},
+        {"prepare", "Prepare bot (gear, food, pots, etc).\nUsage: .(rnd)bot prepare <bot> "},
+        {"prep", "Prepare bot (gear, food, pots, etc).\nUsage: .(rnd)bot prep <bot>"},
+        {"refresh", "Refresh bot gear and items.\nUsage: .(rnd)bot refresh <bot> "},
         
-        {"init", "Initialize bot with default actions.\nUsage: .rndbot <bot> init"},
+        {"init", "Initialize bot with default actions.\nUsage: .(rnd)bot init <bot> "},
         
-        {"enchants", "Apply enchants to bot's gear.\nUsage: .rndbot <bot> enchants"},
+        {"enchants", "Apply enchants to bot's gear.\nUsage: .(rnd)bot enchants <bot> "},
         
-        {"ammo", "Buy ammo for bot.\nUsage: .rndbot <bot> ammo"},
+        {"ammo", "Buy ammo for bot.\nUsage: .(rnd)bot ammo <bot> "},
         
-        {"pet", "Summon/dismiss pet for bot.\nUsage: .rndbot <bot> pet"},
+        {"pet", "Summon/dismiss pet for bot.\nUsage: .(rnd)bot pet <bot> "},
         
-        {"levelup", "Level up bot.\nUsage: .rndbot <bot> levelup"},
-        {"level", "Level up bot.\nUsage: .rndbot <bot> level"},
+        {"levelup", "Level up bot.\nUsage: .(rnd)bot levelup <bot>"},
+        {"level", "Level up bot.\nUsage: .(rnd)bot level <bot>"},
         
-        {"random", "Randomize bot appearance and gear.\nUsage: .rndbot <bot> random"},
+        {"random", "Randomize bot appearance and gear.\nUsage: .(rnd)bot random <bot>"},
         
-        {"always", "Enable offline AI for a player.\nUsage: .rndbot always [playername]"},
+        {"always", "Enable offline AI for a player.\nUsage: .(rnd)bot always <playername>"},
         
-        {"debug", "Run debug commands on the bot (GM only).\nUsage: .rndbot <bot> debug <command>"},
+        {"debug", "Run debug commands on the bot (GM only).\nUsage: .(rnd)bot debug <bot> <command>"},
         
-        {"c", "Execute a chat command on the bot.\nUsage: .rndbot <bot> c <command>"},
+        {"c", "Execute a chat command on the bot.\nUsage: .(rnd)bot c <bot> <command>"},
         
-        {"do", "Execute a bot action (sync, immediate response).\nUsage: .rndbot <bot> do <action>\nExample: .rndbot <bot> do stats, where, quests, who"},
+        {"w", "Send a whisper.\nUsage: .(rnd)bot w <bot> <message> (while spoofing as sender)\nUsage: .(rnd)bot <sender> <reciever> "},
         
-        {"cmd", "Execute a bot action (async, queued).\nUsage: .rndbot cmd <bot> do <action>\nNote: Use with record to capture output."},
+        {"p", "Send a party message as the bot.\nUsage: .(rnd)bot p <message> (while spoofing as sender)\n .(rnd)bot p <botname> <message>\nNote: No message = party info.\nExample: .rndbot p Dunpriest (shows party info)"},
         
-        {"record", "Enable message recording for async commands.\nUsage: .rndbot record <bot> enable\n       .rndbot record <bot> disable"},
+        {"g", "Send a guild message as the bot.\nUsage: .(rnd)bot g <message> (while spoofing as sender)\n .(rnd)bot g <botname> <message>\nNote: No message = guild info.\nExample: .rndbot g Dunpriest (shows guild info)"},
         
-        {"read", "Get recorded async command output.\nUsage: .rndbot read <bot>"},
+        {"r", "Send a raid message as the bot.\nUsage: .(rnd)bot r <message> (while spoofing as sender)\n .(rnd)bot r <botname> <message>"},
         
-        {"clear", "Clear recorded messages without retrieving.\nUsage: .rndbot clear <bot>"}
+        {"rl", "Transfer raid leadership.\nUsage: .(rnd)bot rl <message> (while spoofing as sender)\n .(rnd)bot rl <botname>"},
+        
+        {"do", "Execute a bot action (sync, immediate response).\nUsage: .(rnd)bot do <bot> <action>\nExample: .(rnd)bot do <bot> stats, where, quests, who"},
+        
+        {"cmd", "Execute a bot action (async, queued).\nUsage: .(rnd)bot cmd <bot> do <action>\nNote: Use with record to capture output."},
+        
+        {"record", "Enable message recording for async commands.\nUsage: .(rnd)bot record <bot> enable\nUsage: .(rnd)bot record <bot> disable"},
+        
+        {"read", "Get recorded async command output.\nUsage: .(rnd)bot read <bot>"},
+        
+        {"clear", "Clear recorded messages without retrieving.\nUsage: .(rnd)bot clear <bot>"},
+        
+        {"spoof", "Spoof as another bot for command routing.\nUsage: .(rnd)bot spoof <botname>\nUsage: .(rnd)bot spoof (to clear)"}
     };
 }
 

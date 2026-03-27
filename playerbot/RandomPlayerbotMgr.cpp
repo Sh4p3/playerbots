@@ -540,11 +540,38 @@ inline void print_path(Unit* bot, std::vector<std::pair<int, int>>& log)
 
 void RandomPlayerbotMgr::LogPlayerLocation()
 {
+    botCount = 0;
+    activeBots = 0;
+    if (sPlayerbotAIConfig.randomBotAutologin)
+    {
+        ForEachPlayerbot([&](Player* bot) {
+            if (bot->GetPlayerbotAI())
+            {
+
+                botCount++;
+                if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
+                {
+                    activeBots++;
+                }
+            }
+        });
+    }
+
+    for (auto i : GetPlayers())
+    {
+        Player* bot = i.second;
+        if (!bot)
+            continue;
+        if (bot->GetPlayerbotAI())
+        {
+            botCount++;
+            if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
+                activeBots++;
+        }
+    }
+
     if (sPlayerbotAIConfig.hasLog("player_location.csv"))
     {
-        botCount = 0;
-        activeBots = 0;
-
         try
         {
             sPlayerbotAIConfig.openLog("player_location.csv", "w");
@@ -572,7 +599,6 @@ void RandomPlayerbotMgr::LogPlayerLocation()
 
                     if (bot->GetPlayerbotAI())
                     {
-                        botCount++;
                         out << std::to_string(uint8(bot->GetPlayerbotAI()->GetGrouperType())) << ",";
                         out << std::to_string(uint8(bot->GetPlayerbotAI()->GetGuilderType())) << ",";
                         out << (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY) ? "active" : "inactive") << ",";
@@ -582,9 +608,6 @@ void RandomPlayerbotMgr::LogPlayerLocation()
                         AiObjectContext* context = ai->GetAiObjectContext();
 
                         out << (AI_VALUE(bool, "should get money") ? "should get money" : "has enough money") << ",";
-
-                        if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
-                            activeBots++;
 
                         if (sPlayerbotAIConfig.hasLog("player_route.csv") && WorldPosition(bot))
                         {
@@ -694,7 +717,6 @@ void RandomPlayerbotMgr::LogPlayerLocation()
                 out << bot->GetMoney() << ",";
                 if (bot->GetPlayerbotAI())
                 {
-                    botCount++;
                     out << std::to_string(uint8(bot->GetPlayerbotAI()->GetGrouperType())) << ",";
                     out << std::to_string(uint8(bot->GetPlayerbotAI()->GetGuilderType())) << ",";
                     out << (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY) ? "active" : "inactive") << ",";
@@ -704,9 +726,6 @@ void RandomPlayerbotMgr::LogPlayerLocation()
                     AiObjectContext* context = ai->GetAiObjectContext();
 
                     out << (AI_VALUE(bool, "should get money") ? "should get money" : "has enough money") << ",";
-
-                    if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
-                        activeBots++;
                 }
                 else
                 {
@@ -745,35 +764,11 @@ void RandomPlayerbotMgr::LogPlayerLocation()
             //We really don't care here. Just skip a log. Making this thread-safe is not worth the effort.
         }
     }
-    else if (sPlayerbotAIConfig.hasLog("activity_pid.csv"))
-    {
-        activeBots = 0;
-        if (sPlayerbotAIConfig.randomBotAutologin)
-        {
-            ForEachPlayerbot([&](Player* bot) {
-                if (bot->GetPlayerbotAI() && bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
-                {
-                    activeBots++;
-                }
-            });
-        }
-
-        for (auto i : GetPlayers())
-        {
-            Player* bot = i.second;
-            if (!bot)
-                continue;
-            if (bot->GetPlayerbotAI())
-                if (bot->GetPlayerbotAI()->AllowActivity(ALL_ACTIVITY))
-                    activeBots++;
-        }
-    }
-
     if (sPlayerbotAIConfig.hasLog("transport.csv"))
     {
         sPlayerbotAIConfig.openLog("transport.csv", "w");
         for (auto& [mapId, map] : sMapMgr.Maps())
-        {         
+        {
             for (auto& transport : WorldPosition(map->GetId(), 1, 1).getTransports())
             {
                 std::ostringstream out;
@@ -3413,12 +3408,15 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
         size_t prefixLen = prefix.size();
         std::string param = cmd.size() > prefixLen + 1 ? cmd.substr(prefixLen + 1) : "";
 
+        if (prefix == "stats")
+            param = handler->GetSession() ? std::to_string(handler->GetSession()->GetPlayer()->GetObjectGuid()) : "";
+
         std::list<std::string> messages = (sRandomPlayerbotMgr.*consoleHandler)(param);
         for (auto& msg : messages)
         {
             sLog.outString("%s", msg.c_str());
             if(isRA)
-                handler->SendSysMessage(msg.c_str());
+                handler->SendSysMessage(msg.c_str());      
         }
 
         if (!messages.empty() && (prefix != "help" || param != "commands"))
@@ -4428,18 +4426,23 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsoleReset(std::string param)
     CharacterDatabase.PExecute("delete from ai_playerbot_random_bots");
     sRandomPlayerbotMgr.eventCache.clear();
     std::string msg = "Random bots were reset for all players. Please restart the Server.";
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
 
 std::list<std::string> RandomPlayerbotMgr::HandleConsoleStats(std::string param)
 {
+    if (!Qualified::isValidNumberString(param))
+    {
+        return {"Stats: Error parsing " + param};
+    }
+
     std::list<std::string> messages;
-    std::string msg = "Stats requested - use 'rndbot diff' to see results.";
-    sLog.outString("%s", msg.c_str());
+    std::string msg = "Stats requested.";
     messages.push_back(msg);
-    activatePrintStatsThread(0);
+
+    ObjectGuid guid = ObjectGuid(uint64(std::stoull(param)));
+    activatePrintStatsThread(guid);
     return messages;
 }
 
@@ -4448,7 +4451,6 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsoleReload(std::string param
     std::list<std::string> messages;
     sPlayerbotAIConfig.Initialize();
     std::string msg = "Playerbot config reloaded.";
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
@@ -4458,7 +4460,6 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsoleUpdate(std::string param
     std::list<std::string> messages;
     sRandomPlayerbotMgr.UpdateAIInternal(0);
     std::string msg = "Playerbot update triggered.";
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
@@ -4478,7 +4479,6 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsolePid(std::string param)
     sRandomPlayerbotMgr.pid.adjust(stof(pid[0]), stof(pid[1]), stof(pid[2]));
 
     std::string msg = "Pid set to p:" + std::to_string(stof(pid[0])) + " i:" + std::to_string(stof(pid[1])) + " d:" + std::to_string(stof(pid[2]));
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
@@ -4529,7 +4529,6 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsoleCleanMap(std::string par
     }
 
     std::string msg = "Map cleaning initiated.";
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
@@ -4539,7 +4538,6 @@ std::list<std::string> RandomPlayerbotMgr::HandleConsoleLoginDebug(std::string p
     std::list<std::string> messages;
     sPlayerBotLoginMgr.ToggleDebug();
     std::string msg = "Login debug toggled.";
-    sLog.outString("%s", msg.c_str());
     messages.push_back(msg);
     return messages;
 }
