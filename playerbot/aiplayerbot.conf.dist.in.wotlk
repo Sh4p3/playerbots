@@ -41,19 +41,8 @@ AiPlayerbot.RandomBotJoinBG = 1
 # Enable Auto join BG - bots randomly join WSG and 2v2 Arena if server is not lagging
 AiPlayerbot.RandomBotAutoJoinBG = 0
 
-# Enable global arena auto-join. This is broader than the underplayed team boost below.
+# Enable global arena auto-join
 AiPlayerbot.RandomBotAutoJoinArena = 0
-
-# Allow arena-team captains to give rated teams with low weekly activity a slight queue boost.
-# This does not replace normal player-driven or NeedBots arena queueing.
-AiPlayerbot.RandomBotArenaTeamBoost = 1
-
-# Use weighted random selection between eligible rated arena teams.
-# Low-activity teams are preferred, but active teams can still be selected.
-AiPlayerbot.RandomBotArenaTeamRotation = 1
-
-# Arena-team boost weekly-games threshold. Captains can push rated arena while games_week stays below this value.
-AiPlayerbot.RandomBotArenaTeamBoostWeeklyGames = 10
 
 # Mark many quests <= Bot level as complete (slows down bot creation)
 AiPlayerbot.PreQuests = 0

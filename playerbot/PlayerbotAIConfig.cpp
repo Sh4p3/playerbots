@@ -250,9 +250,6 @@ bool PlayerbotAIConfig::Initialize()
     randomBotJoinBG = config.GetBoolDefault("AiPlayerbot.RandomBotJoinBG", true);
     randomBotAutoJoinBG = config.GetBoolDefault("AiPlayerbot.RandomBotAutoJoinBG", false);
     randomBotAutoJoinArena = config.GetBoolDefault("AiPlayerbot.RandomBotAutoJoinArena", false);
-    randomBotArenaTeamBoost = config.GetBoolDefault("AiPlayerbot.RandomBotArenaTeamBoost", true);
-    randomBotArenaTeamRotation = config.GetBoolDefault("AiPlayerbot.RandomBotArenaTeamRotation", true);
-    randomBotArenaTeamBoostWeeklyGames = config.GetIntDefault("AiPlayerbot.RandomBotArenaTeamBoostWeeklyGames", 10);
     randomBotBracketCount = config.GetIntDefault("AiPlayerbot.RandomBotBracketCount", 3);
     logInGroupOnly = config.GetBoolDefault("AiPlayerbot.LogInGroupOnly", true);
     logValuesPerTick = config.GetBoolDefault("AiPlayerbot.LogValuesPerTick", false);

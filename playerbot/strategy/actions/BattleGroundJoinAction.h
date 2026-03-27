@@ -14,6 +14,7 @@
 
 using namespace ai;
 
+
 class BGJoinAction : public Action
 {
 public:
