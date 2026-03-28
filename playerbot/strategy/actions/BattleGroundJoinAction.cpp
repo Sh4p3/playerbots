@@ -1550,10 +1550,13 @@ bool BGStatusAction::Execute(Event& event)
             return true;
         }
 
+        // Some invites can carry instanceId=0; use queue type as fallback token to avoid double accept.
+        int32 inviteToken = instanceId ? int32(instanceId) : -int32(queueTypeId);
+
         if (bot->IsBeingTeleported() || (instanceId && bot->GetBattleGroundId() == instanceId))
             return true;
 
-        if (instanceId && AI_VALUE2_EXISTS(int32, "manual int", acceptedInviteValue, 0) == int32(instanceId))
+        if (AI_VALUE2_EXISTS(int32, "manual int", acceptedInviteValue, 0) == inviteToken)
             return true;
 
 #ifdef MANGOSBOT_ZERO
@@ -1562,8 +1565,7 @@ bool BGStatusAction::Execute(Event& event)
         sLog.outDetail("Bot #%d %s:%d <%s> joined %s - %s", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG", _bgType.c_str());
 #endif
 
-        if (instanceId)
-            SET_AI_VALUE2(int32, "manual int", acceptedInviteValue, int32(instanceId));
+        SET_AI_VALUE2(int32, "manual int", acceptedInviteValue, inviteToken);
 
         bot->GetSession()->HandleBattlefieldPortOpcode(packet);
 
