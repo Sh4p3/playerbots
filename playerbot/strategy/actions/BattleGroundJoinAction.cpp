@@ -1001,6 +1001,14 @@ bool BGLeaveAction::Execute(Event& event)
     RESET_AI_VALUE2(int32, "manual int", acceptedInviteValue);
 
     BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(0);
+    uint32 selectedQueueType = AI_VALUE(uint32, "bg type");
+    if (selectedQueueType)
+    {
+        BattleGroundQueueTypeId selectedQueueTypeId = BattleGroundQueueTypeId(selectedQueueType);
+        if (bot->InBattleGroundQueueForBattleGroundQueueType(selectedQueueTypeId))
+            queueTypeId = selectedQueueTypeId;
+    }
+
     BattleGroundTypeId _bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
     uint8 type = false;
     uint16 unk = 0x1F90;
@@ -1040,10 +1048,13 @@ bool BGLeaveAction::Execute(Event& event)
     }
 #endif
 
-    uint32 queueType = AI_VALUE(uint32, "bg type");
-    if (!queueType && event.getSource().empty())
+    if (!selectedQueueType && queueTypeId == BATTLEGROUND_QUEUE_NONE && event.getSource().empty())
         return false;
-    BattleGroundTypeId queueBgTypeId = queueType ? sServerFacade.BgTemplateId(BattleGroundQueueTypeId(queueType)) : _bgTypeId;
+    BattleGroundTypeId queueBgTypeId = _bgTypeId;
+    if (queueTypeId != BATTLEGROUND_QUEUE_NONE)
+        queueBgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+    else if (selectedQueueType)
+        queueBgTypeId = sServerFacade.BgTemplateId(BattleGroundQueueTypeId(selectedQueueType));
 
     sLog.outDetail("Bot #%d %s:%d <%s> leaves %s queue", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(), isArena ? "Arena" : "BG");
 
