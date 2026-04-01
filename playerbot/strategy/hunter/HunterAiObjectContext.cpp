@@ -281,6 +281,7 @@ namespace ai
                 creators["trueshot aura"] = [](PlayerbotAI* ai) { return new CastTrueshotAuraAction(ai); };
                 creators["feign death"] = [](PlayerbotAI* ai) { return new CastFeignDeathAction(ai); };
                 creators["wing clip"] = [](PlayerbotAI* ai) { return new CastWingClipAction(ai); };
+                creators["disengage"] = [](PlayerbotAI* ai) { return new CastDisengageAction(ai); };
                 creators["raptor strike"] = [](PlayerbotAI* ai) { return new CastRaptorStrikeAction(ai); };
                 creators["feed pet"] = [](PlayerbotAI* ai) { return new FeedPetAction(ai); };
                 creators["bestial wrath"] = [](PlayerbotAI* ai) { return new CastBestialWrathAction(ai); };
