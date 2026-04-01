@@ -28,7 +28,7 @@ namespace ai
 		}
 	};
 
-	REACH_ACTION_U(CastDeathGripAction, "death grip", 15.0f, CastReachTargetSpellAction::isUseful() && GetTarget() && !GetTarget()->IsCrowdControlled());
+	REACH_ACTION_U(CastDeathGripAction, "death grip", 15.0f, CastReachTargetSpellAction::isUseful() && GetTarget() && !GetTarget()->IsCrowdControlled() && bot->IsWithinLOSInMap(GetTarget(), true) && !bot->CanReachWithMeleeAttack(GetTarget()));
 
 	// Unholy presence
 	class CastUnholyMeleeSpellAction : public CastMeleeSpellAction {
