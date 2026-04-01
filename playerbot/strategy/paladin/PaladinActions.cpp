@@ -121,7 +121,7 @@ std::string CastBlessingAction::GetBlessingForTarget(Unit* target)
         for (const std::string& blessing : possibleBlessings)
         {
             const std::string greaterBlessing = "greater " + blessing;
-            if ((greater || !ai->HasAura(blessing, target)) && !ai->HasAura(greaterBlessing, target))
+            if (!ai->HasAura(blessing, target) && !ai->HasAura(greaterBlessing, target))
             {
                 if ((greater && ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true)) ||
                     (!greater && ai->CanCastSpell(blessing, target, 0, nullptr, true)))
@@ -225,10 +225,10 @@ std::string CastBlessingOnPartyAction::GetBlessingForTarget(Unit* target)
             }
 
             const std::string greaterBlessing = "greater " + blessing;
-            if ((greater || !ai->HasAura(blessing, target)) && !ai->HasAura(greaterBlessing, target))
+            if (!ai->HasAura(blessing, target) && !ai->HasAura(greaterBlessing, target))
             {
-                if((greater && ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true)) ||
-                   (!greater && ai->CanCastSpell(blessing, target, 0, nullptr, true)))
+                if ((greater && ai->CanCastSpell(greaterBlessing, target, 0, nullptr, true)) ||
+                    (!greater && ai->CanCastSpell(blessing, target, 0, nullptr, true)))
                 {
                     chosenBlessing = greater ? greaterBlessing : blessing;
                     break;
