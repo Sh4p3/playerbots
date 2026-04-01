@@ -239,13 +239,19 @@ namespace
         return (recoverGroundZ - currentZ) > ARENA_UNDERGROUND_RECOVER_DEPTH;
     }
 
-    bool ShouldRecoverArenaBoundsHeuristic(Player* bot)
+    struct ArenaBoundsHeuristicData
     {
-        if (!bot || !bot->InArena() || bot->IsBeingTeleported() || bot->IsTaxiFlying() || bot->GetTransport())
-            return false;
+        uint32 mapId = 0;
+        float centerX = 0.0f;
+        float centerY = 0.0f;
+        float centerZ = 0.0f;
+        float hardRadiusSq = 0.0f;
+        float suspectRadiusSq = 0.0f;
+    };
 
-        BattleGround* bg = bot->GetBattleGround();
-        if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
+    bool BuildArenaBoundsHeuristicData(BattleGround* bg, ArenaBoundsHeuristicData& data)
+    {
+        if (!bg)
             return false;
 
         float ax, ay, az, ao;
@@ -256,24 +262,63 @@ namespace
         if (!MaNGOS::IsValidMapCoord(ax, ay, az, 0.0f) || !MaNGOS::IsValidMapCoord(hx, hy, hz, 0.0f))
             return false;
 
-        const float centerX = (ax + hx) * 0.5f;
-        const float centerY = (ay + hy) * 0.5f;
-        const float centerZ = (az + hz) * 0.5f;
-        const float startDistance = std::max(1.0f, sqrtf((ax - hx) * (ax - hx) + (ay - hy) * (ay - hy)));
-        const float distToCenter = bot->GetDistance2d(centerX, centerY);
+        data.mapId = bg->GetMapId();
+        data.centerX = (ax + hx) * 0.5f;
+        data.centerY = (ay + hy) * 0.5f;
+        data.centerZ = (az + hz) * 0.5f;
+
+        const float spanDx = ax - hx;
+        const float spanDy = ay - hy;
+        const float startDistance = std::max(1.0f, sqrtf(spanDx * spanDx + spanDy * spanDy));
 
         const float hardRadius = std::clamp(startDistance * 1.15f, 85.0f, 125.0f);
-        if (distToCenter > hardRadius || fabs(bot->GetPositionZ() - centerZ) > 80.0f)
+        const float suspectRadius = std::clamp(startDistance * 0.8f, 60.0f, 100.0f);
+        data.hardRadiusSq = hardRadius * hardRadius;
+        data.suspectRadiusSq = suspectRadius * suspectRadius;
+
+        return true;
+    }
+
+    bool IsArenaBoundsHeuristicHardFail(Player* bot, const ArenaBoundsHeuristicData& data, bool& requiresPathConnectivityCheck)
+    {
+        if (!bot)
+            return false;
+
+        const float dx = bot->GetPositionX() - data.centerX;
+        const float dy = bot->GetPositionY() - data.centerY;
+        const float distSq = dx * dx + dy * dy;
+
+        if (distSq > data.hardRadiusSq || fabs(bot->GetPositionZ() - data.centerZ) > 80.0f)
             return true;
 
-        const float suspectRadius = std::clamp(startDistance * 0.8f, 60.0f, 100.0f);
-        if (distToCenter <= suspectRadius)
+        requiresPathConnectivityCheck = distSq > data.suspectRadiusSq;
+        return false;
+    }
+
+    bool ShouldRecoverArenaBoundsHeuristic(Player* bot)
+    {
+        if (!bot || !bot->InArena() || bot->IsBeingTeleported() || bot->IsTaxiFlying() || bot->GetTransport())
+            return false;
+
+        BattleGround* bg = bot->GetBattleGround();
+        if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
+            return false;
+
+        ArenaBoundsHeuristicData data;
+        if (!BuildArenaBoundsHeuristicData(bg, data))
+            return false;
+
+        bool requiresPathConnectivityCheck = false;
+        if (IsArenaBoundsHeuristicHardFail(bot, data, requiresPathConnectivityCheck))
+            return true;
+
+        if (!requiresPathConnectivityCheck)
             return false;
 
         // Positions near edges should still remain path-connected to arena center.
         const WorldPosition botPosition(bot);
-        const WorldPosition arenaCenter(bg->GetMapId(), centerX, centerY, centerZ);
-        return !botPosition.canPathTo(arenaCenter, bot) && !arenaCenter.canPathTo(botPosition, bot);
+        const WorldPosition arenaCenter(data.mapId, data.centerX, data.centerY, data.centerZ);
+        return !botPosition.canPathTo(arenaCenter, bot);
     }
 
     void RecoverArenaBounds(Player* bot)
