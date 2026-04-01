@@ -16,11 +16,11 @@ namespace ai
     BUFF_TRIGGER(DevotionAuraTrigger, "devotion aura");
     BUFF_TRIGGER(RetributionAuraTrigger, "retribution aura");
     BUFF_TRIGGER(CrusaderAuraTrigger, "crusader aura");
+    BUFF_TRIGGER(SanctityAuraTrigger, "sanctity aura");
     BUFF_TRIGGER(ConcentrationAuraTrigger, "concentration aura");
 
     BUFF_TRIGGER(HolyShieldTrigger, "holy shield");
     BUFF_TRIGGER(RighteousFuryTrigger, "righteous fury");
-    BUFF_TRIGGER(AuraMasteryTrigger, "aura mastery");
 
 	class SealTrigger : public BuffTrigger
 	{
@@ -30,14 +30,10 @@ namespace ai
 	};
 
     // judgements
-#ifndef MANGOSBOT_TWO
-    BUFF_TRIGGER(SanctityAuraTrigger, "sanctity aura"); 
     DEBUFF_TRIGGER(JudgementTrigger, "judgement");
-#else
-    CAN_CAST_TRIGGER(JudgementOfLightTrigger, "judgement of light");
-    CAN_CAST_TRIGGER(JudgementOfWisdomTrigger, "judgement of wisdom");
-#endif
-    
+    DEBUFF_TRIGGER(JudgementOfLightTrigger, "judgement of light");
+    DEBUFF_TRIGGER(JudgementOfWisdomTrigger, "judgement of wisdom");
+
     class ConsecrationTrigger : public SpellNoCooldownTrigger
     {
     public:
@@ -45,13 +41,18 @@ namespace ai
         bool IsActive() override;
     };
 
-    CAN_CAST_TRIGGER(ExorcismTrigger, "exorcism");
+    class ExorcismTrigger : public SpellNoCooldownTrigger
+    {
+    public:
+        ExorcismTrigger(PlayerbotAI* ai) : SpellNoCooldownTrigger(ai, "exorcism") {}
+        bool IsActive() override;
+    };
 
-    CAN_CAST_TRIGGER(CrusaderStrikeTrigger, "crusader strike");
+    CD_TRIGGER(CrusaderStrikeTrigger, "crusader strike");
 
     // repentance triggers
-    INTERRUPT_HEALER_TRIGGER(RepentanceOnHealerTrigger, "repentance");
-    SNARE_TRIGGER(RepentanceSnareTrigger, "repentance");
+    INTERRUPT_HEALER_TRIGGER(RepentanceOnHealerTrigger, "repentance on enemy healer");
+    SNARE_TRIGGER(RepentanceSnareTrigger, "repentance on snare target");
     INTERRUPT_TRIGGER(RepentanceInterruptTrigger, "repentance");
 
     class BlessingOnPartyTrigger : public BuffOnPartyTrigger
@@ -85,6 +86,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfMightOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of might", "blessing of might", 4) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfWisdomOnPartyTrigger : public BuffOnPartyTrigger
@@ -104,6 +106,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfWisdomOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of wisdom", "blessing of wisdom", 4) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
@@ -123,9 +126,9 @@ namespace ai
     {
     public:
         GreaterBlessingOfKingsOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of kings", "blessing of kings", 4) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
-#ifndef MANGOSBOT_TWO
     class BlessingOfLightOnPartyTrigger : public BuffOnPartyTrigger
     {
     public:
@@ -143,8 +146,8 @@ namespace ai
     {
     public:
         GreaterBlessingOfLightOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of light", "blessing of light", 4) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
-#endif
 
     class BlessingOfSalvationOnPartyTrigger : public BuffOnPartyTrigger
     {
@@ -163,6 +166,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfSalvationOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of salvation", "blessing of salvation", 4, true) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
@@ -182,6 +186,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of sanctuary", "blessing of sanctuary", 4) {}
+        bool IsActive() override { return (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround()) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingTrigger : public BuffTrigger
@@ -212,6 +217,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -240,6 +248,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -268,6 +279,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -282,7 +296,6 @@ namespace ai
         }
     };
 
-#ifndef MANGOSBOT_TWO
     class BlessingOfLightTrigger : public BuffTrigger
     {
     public:
@@ -297,6 +310,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -310,7 +326,6 @@ namespace ai
             return false;
         }
     };
-#endif
 
     class BlessingOfSalvationTrigger : public BuffTrigger
     {
@@ -326,6 +341,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -354,6 +372,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -380,10 +401,10 @@ namespace ai
         HammerOfJusticeSnareTrigger(PlayerbotAI* ai) : SnareTargetTrigger(ai, "hammer of justice") {}
     };
 
-    class HammerOfJusticeOnEnemyTrigger : public SpellTrigger
+    class HammerOfJusticeOnEnemyTrigger : public Trigger
     {
     public:
-        HammerOfJusticeOnEnemyTrigger(PlayerbotAI* ai) : SpellTrigger(ai, "hammer of justice") {}
+        HammerOfJusticeOnEnemyTrigger(PlayerbotAI* ai) : Trigger(ai, "hammer of justice on enemy") {}
         virtual bool IsActive() override;
     };
 
@@ -453,32 +474,12 @@ namespace ai
         HandOfSacrificeTrigger(PlayerbotAI* ai) : PartyMemberLowHealthTrigger(ai, "hand of sacrifice", sPlayerbotAIConfig.criticalHealth, 0, true) {}
     };
 
-    DEBUFF_TRIGGER_OWN(AvengerShieldTrigger, "avenger's shield");
-    class HandOfFreedomTrigger : public BuffOnPartyTrigger
+    class BlessingOfSacrificeTrigger : public PartyMemberLowHealthTrigger
     {
     public:
-        HandOfFreedomTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "hand of freedom") {}
-        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("party member to remove roots"); }
-        bool IsActive() override;
-    };
-    BOOST_TRIGGER(DivineIlluminationBoostTrigger, "divine illumination");
-    CAN_CAST_TRIGGER(HammerOfTheRighteousTrigger, "hammer of the righteous");
-    CAN_CAST_TRIGGER(ShieldOfRighteousnessTrigger, "shield of righteousness");
-    CAN_CAST_TRIGGER(DivineStormTrigger, "divine storm");
-    BUFF_TRIGGER(DivinePleaTrigger, "divine plea");
-    class SacredShieldTrigger : public BuffOnPartyTrigger
-    {
-    public:
-        SacredShieldTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "sacred shield") {}
-        std::string getName() override { return "sacred shield"; }
-        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("preferred single buff target", "sacred shield"); }
+        BlessingOfSacrificeTrigger(PlayerbotAI* ai) : PartyMemberLowHealthTrigger(ai, "blessing of sacrifice", sPlayerbotAIConfig.criticalHealth, 0, true) {}
     };
 
-    class BeaconOfLightTrigger : public BuffOnPartyTrigger
-    {
-    public:
-        BeaconOfLightTrigger(PlayerbotAI* ai) : BuffOnPartyTrigger(ai, "beacon of light") {}
-        std::string getName() override { return "beacon of light"; }
-        Value<Unit*>* GetTargetValue() override { return context->GetValue<Unit*>("preferred single buff target", "beacon of light"); }
-    };
+    DEBUFF_TRIGGER(AvengerShieldTrigger, "avenger's shield");
+    BOOST_TRIGGER(DivineIlluminationBoostTrigger, "divine illumination");
 }

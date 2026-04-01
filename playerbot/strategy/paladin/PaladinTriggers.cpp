@@ -12,8 +12,8 @@ bool SealTrigger::IsActive()
         !ai->HasAura("seal of command", target) &&
         !ai->HasAura("seal of vengeance", target) &&
 		!ai->HasAura("seal of righteousness", target) &&
-		(!ai->HasAura("seal of light", target) || AI_VALUE2(uint8, "health", "self target") > 85) &&
-        (!ai->HasAura("seal of wisdom", target) || AI_VALUE2(uint8, "mana", "self target") > 85) &&
+		!ai->HasAura("seal of light", target) &&
+        !ai->HasAura("seal of wisdom", target) &&
         AI_VALUE2(bool, "combat", "self target");
 }
 
@@ -29,9 +29,7 @@ bool BlessingTrigger::IsActive()
         altBlessings.push_back("blessing of kings");
         altBlessings.push_back("blessing of sanctuary");
         altBlessings.push_back("blessing of salvation");
-#ifndef MANGOSBOT_TWO
         altBlessings.push_back("blessing of light");
-#endif
 
         for (auto blessing : altBlessings)
         {
@@ -72,6 +70,9 @@ bool GreaterBlessingTrigger::IsActive()
     Unit* target = GetTarget();
     if (target)
     {
+        if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
+            return false;
+
         std::vector<std::string> altBlessings;
         std::vector<std::string> haveBlessings;
         altBlessings.push_back("blessing of might");
@@ -79,9 +80,7 @@ bool GreaterBlessingTrigger::IsActive()
         altBlessings.push_back("blessing of kings");
         altBlessings.push_back("blessing of sanctuary");
         altBlessings.push_back("blessing of salvation");
-#ifndef MANGOSBOT_TWO
         altBlessings.push_back("blessing of light");
-#endif
 
         for (auto blessing : altBlessings)
         {
@@ -114,92 +113,142 @@ bool GreaterBlessingTrigger::IsActive()
 
 bool BlessingOnPartyTrigger::IsActive()
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
+    std::vector<std::string> altBlessings;
+    std::vector<std::string> haveBlessings;
+    altBlessings.push_back("blessing of might");
+    altBlessings.push_back("blessing of wisdom");
+    altBlessings.push_back("blessing of kings");
+    altBlessings.push_back("blessing of sanctuary");
+    altBlessings.push_back("blessing of salvation");
+    altBlessings.push_back("blessing of light");
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    for (auto blessing : altBlessings)
     {
-        Player* player = ref->getSource();
-        if (!player || player == bot || player->GetMapId() != bot->GetMapId())
-            continue;
-
-        if (HasPossibleBlessingForTarget(player, ai, false))
-            return true;
-
-        Pet* pet = player->GetPet();
-        if (pet && pet->GetMapId() == bot->GetMapId() && HasPossibleBlessingForTarget(pet, ai, false))
-            return true;
-    }
-
-    return false;
-}
-
-bool GreaterBlessingOnPartyTrigger::IsActive()
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* player = ref->getSource();
-        if (!player || player == bot || player->GetMapId() != bot->GetMapId())
-            continue;
-
-        if (HasPossibleBlessingForTarget(player, ai, true))
-            return true;
-
-        Pet* pet = player->GetPet();
-        if (pet && pet->GetMapId() == bot->GetMapId() && HasPossibleBlessingForTarget(pet, ai, true))
-            return true;
-    }
-
-    return false;
-}
-
-bool NoPaladinAuraTrigger::IsActive()
-{
-    // List of alternative auras
-    const std::vector<std::string> altAuras = {
-        "devotion aura",
-        "retribution aura",
-        "concentration aura",
-#ifndef MANGOSBOT_TWO
-        "sanctity aura",
-#endif
-        "shadow resistance aura",
-        "fire resistance aura",
-        "frost resistance aura",
-        "crusader aura"
-    };
-
-    bool hasAura = false;
-    bool needAura = false;
-
-    for (const auto& aura : altAuras)
-    {
-        // Check if the aura is available to the bot
-        if (AI_VALUE2(uint32, "spell id", aura))
+        if (AI_VALUE2(uint32, "spell id", blessing))
         {
-            if (ai->HasMyAura(aura, bot))
-            {
-                hasAura = true;
-                break; // No need to continue if the bot already has an aura
-            }
+            haveBlessings.push_back(blessing);
 
-            if (!ai->HasAura(aura, bot))
+            const std::string greaterBlessing = "greater " + blessing;
+            if (AI_VALUE2(uint32, "spell id", greaterBlessing))
             {
-                needAura = true;
+                haveBlessings.push_back(greaterBlessing);
             }
         }
     }
 
-    // If the bot already has one of its own auras, return false
-    if (hasAura)
+    if (haveBlessings.empty())
+    {
+        return false;
+    }
+
+    std::string blessings = "";
+    for (auto blessing : haveBlessings)
+    {
+        blessings += blessing;
+        if (blessing != haveBlessings[haveBlessings.size() - 1])
+        {
+            blessings += ",";
+        }
+    }
+
+    // Doesn't have any of my blessings
+    return AI_VALUE2(Unit*, "party member without my aura", blessings);
+}
+
+bool GreaterBlessingOnPartyTrigger::IsActive()
+{
+    if (!bot->GetMap()->IsDungeon() && !bot->GetMap()->IsBattleGround())
         return false;
 
-    // If no aura is active and an aura is available, return true
+    std::vector<std::string> altBlessings;
+    std::vector<std::string> haveBlessings;
+    altBlessings.push_back("blessing of might");
+    altBlessings.push_back("blessing of wisdom");
+    altBlessings.push_back("blessing of kings");
+    altBlessings.push_back("blessing of sanctuary");
+    altBlessings.push_back("blessing of salvation");
+    altBlessings.push_back("blessing of light");
+
+    for (auto blessing : altBlessings)
+    {
+        const std::string greaterBlessing = "greater " + blessing;
+        if (AI_VALUE2(uint32, "spell id", greaterBlessing))
+        {
+            haveBlessings.push_back(greaterBlessing);
+        }
+    }
+
+    if (haveBlessings.empty())
+    {
+        return false;
+    }
+
+    std::string blessings = "";
+    for (auto blessing : haveBlessings)
+    {
+        blessings += blessing;
+        if (blessing != haveBlessings[haveBlessings.size() - 1])
+        {
+            blessings += ",";
+        }
+    }
+
+    // Doesn't have any of my blessings
+    Unit* target = AI_VALUE2(Unit*, "party member without my aura", blessings);
+    return target && bot->IsInGroup(target);
+}
+
+bool NoPaladinAuraTrigger::IsActive()
+{
+    std::vector<std::string> altAuras;
+    std::vector<std::string> haveAuras;
+    altAuras.push_back("devotion aura");
+    altAuras.push_back("retribution aura");
+    altAuras.push_back("concentration aura");
+    altAuras.push_back("sanctity aura");
+    altAuras.push_back("shadow resistance aura");
+    altAuras.push_back("fire resistance aura");
+    altAuras.push_back("frost resistance aura");
+    altAuras.push_back("crusader aura");
+
+    for (auto aura : altAuras)
+    {
+        if (AI_VALUE2(uint32, "spell id", aura))
+        {
+            haveAuras.push_back(aura);
+        }
+    }
+
+    if (haveAuras.empty())
+    {
+        return false;
+    }
+
+    bool hasAura = false;
+    for (auto aura : haveAuras)
+    {
+        if (ai->HasMyAura(aura, bot))
+        {
+            hasAura = true;
+            break;
+        }
+    }
+
+    if (hasAura)
+    {
+        return false;
+    }
+
+    bool needAura = false;
+    for (auto aura : haveAuras)
+    {
+        if (!ai->HasAura(aura, bot))
+        {
+            needAura = true;
+            break;
+        }
+    }
+
     return needAura;
 }
 
@@ -240,11 +289,16 @@ bool ConsecrationTrigger::IsActive()
     return false;
 }
 
-bool HandOfFreedomTrigger::IsActive()
+bool ExorcismTrigger::IsActive()
 {
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId)
-        return false;
+    if (SpellNoCooldownTrigger::IsActive())
+    {
+#ifdef MANGOSBOT_TWO
+        return ai->HasAura("the art of war", bot);
+#else
+        return AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumMana;
+#endif
+    }
 
-    return bot->IsSpellReady(spellId) && BuffOnPartyTrigger::IsActive();
+    return false;
 }
