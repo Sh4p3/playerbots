@@ -53,7 +53,7 @@ HunterStrategy::HunterStrategy(PlayerbotAI* ai) : ClassStrategy(ai)
 
 NextAction** HunterStrategy::GetDefaultCombatActions()
 {
-    return NextAction::array(0, new NextAction("auto shot", ACTION_NORMAL), NULL);
+    return NextAction::array(0, new NextAction("auto shot", ACTION_IDLE), NULL);
 }
 
 void HunterStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -103,7 +103,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no ammo",
-        NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+    NextAction::array(0,
+        new NextAction("equip ammo", ACTION_EMERGENCY),
+        new NextAction("say::no ammo", ACTION_NORMAL),
+        NULL)));
 
     triggers.push_back(new TriggerNode(
         "no pet",
@@ -208,7 +211,7 @@ void HunterAoeStrategy::InitCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "multi-shot",
-        NextAction::array(0, new NextAction("multi-shot", ACTION_HIGH + 1), NULL)));
+        NextAction::array(0, new NextAction("multi-shot", ACTION_HIGH), NULL)));
 }
 
 void HunterAoeStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
@@ -573,7 +576,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no ammo",
-        NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+    NextAction::array(0,
+        new NextAction("equip ammo", ACTION_EMERGENCY),
+        new NextAction("say::no ammo", ACTION_NORMAL),
+        NULL)));
 
     triggers.push_back(new TriggerNode(
         "no pet",
@@ -1037,7 +1043,10 @@ void HunterStrategy::InitNonCombatTriggers(std::list<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "no ammo",
-        NextAction::array(0, new NextAction("say::no ammo", ACTION_NORMAL), NULL)));
+    NextAction::array(0,
+        new NextAction("equip ammo", ACTION_EMERGENCY),
+        new NextAction("say::no ammo", ACTION_NORMAL),
+        NULL)));
 
     triggers.push_back(new TriggerNode(
         "no pet",
