@@ -3,6 +3,11 @@
 
 namespace ai
 {
+    inline bool IsGreaterBlessingAllowed(Player* bot)
+    {
+        return bot && bot->GetMap() && (bot->GetMap()->IsDungeon() || bot->GetMap()->IsBattleGround());
+    }
+
     class NoPaladinAuraTrigger : public BuffTrigger
     {
     public:
@@ -85,6 +90,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfMightOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of might", "blessing of might", 4) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfWisdomOnPartyTrigger : public BuffOnPartyTrigger
@@ -104,6 +110,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfWisdomOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of wisdom", "blessing of wisdom", 4) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
@@ -123,6 +130,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfKingsOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of kings", "blessing of kings", 4) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
 #ifndef MANGOSBOT_TWO
@@ -143,6 +151,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfLightOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of light", "blessing of light", 4) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 #endif
 
@@ -163,6 +172,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfSalvationOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of salvation", "blessing of salvation", 4, true) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
@@ -182,6 +192,7 @@ namespace ai
     {
     public:
         GreaterBlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* ai) : GreaterBuffOnPartyTrigger(ai, "greater blessing of sanctuary", "blessing of sanctuary", 4) {}
+        bool IsActive() override { return IsGreaterBlessingAllowed(bot) && GreaterBuffOnPartyTrigger::IsActive(); }
     };
 
     class BlessingTrigger : public BuffTrigger
@@ -212,6 +223,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -240,6 +254,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -268,6 +285,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -297,6 +317,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -326,6 +349,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {
@@ -354,6 +380,9 @@ namespace ai
 
         bool IsActive() override
         {
+            if (!IsGreaterBlessingAllowed(bot))
+                return false;
+
             Unit* target = GetTarget();
             if (target && target->IsPlayer())
             {

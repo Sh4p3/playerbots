@@ -69,6 +69,9 @@ bool BlessingTrigger::IsActive()
 
 bool GreaterBlessingTrigger::IsActive()
 {
+    if (!IsGreaterBlessingAllowed(bot))
+        return false;
+
     Unit* target = GetTarget();
     if (target)
     {
@@ -137,6 +140,9 @@ bool BlessingOnPartyTrigger::IsActive()
 
 bool GreaterBlessingOnPartyTrigger::IsActive()
 {
+    if (!IsGreaterBlessingAllowed(bot))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
